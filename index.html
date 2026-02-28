@@ -22,6 +22,89 @@
             margin: 0;
         }
 
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a2f3f, #0f1f29);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.5);
+            border: 3px solid #c9ae5b;
+            animation: glowPulse 2s infinite alternate;
+        }
+
+        .loading-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffdfa0;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0 #7a4c1d;
+        }
+
+        .loading-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #0c202b;
+            border-radius: 30px;
+            border: 2px solid #aa873f;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .loading-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0b345, #ffd966);
+            border-radius: 30px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #ffaa33;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #ffdcaa;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .loading-tip {
+            font-size: 16px;
+            color: #acccdd;
+            font-style: italic;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
+            border-left: 4px solid #c9ae5b;
+        }
+
         .game-container {
             max-width: 550px;
             width: 100%;
@@ -260,7 +343,7 @@
             overflow-y: auto;
         }
 
-        /* word card */
+        /* word card - with smaller collect button */
         .word-card {
             max-width: 380px;
             width: 100%;
@@ -308,22 +391,26 @@
             word-break: break-word;
         }
 
+        /* 25% smaller collect button */
         .collect-btn {
             background: #f5b342;
             border: none;
-            border-radius: 60px;
-            padding: 18px;
+            border-radius: 50px;
+            padding: 14px;
             font-weight: 700;
-            font-size: 26px;
+            font-size: 22px;
             color: #1f3826;
-            box-shadow: 0 7px 0 #9e691f;
+            box-shadow: 0 5px 0 #9e691f;
             cursor: pointer;
-            width: 100%;
+            width: 80%;
+            margin: 0 auto;
+            display: block;
             border: 2px solid #ffe39b;
+            transition: 0.08s;
         }
 
         .collect-btn:active {
-            transform: translateY(5px);
+            transform: translateY(3px);
             box-shadow: 0 2px 0 #9e691f;
         }
 
@@ -687,570 +774,607 @@
     </style>
 </head>
 <body>
-<div class="game-container" id="gameContainer">
-    <!-- header -->
-    <div class="header">
-        <span class="title">⚒️ SPELLFORGE</span>
-        <span class="progress-badge" id="progressDisplay">0/20</span>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <!-- Your photo -->
+            <img src="https://i.postimg.cc/TwmzR9V2/grok-image-1772302795443.jpg" 
+                 alt="Spellforge" 
+                 class="loading-image">
+            
+            <div class="loading-title">⚒️ SPELLFORGE</div>
+            
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            
+            <div class="loading-text" id="loadingText">Loading forge...</div>
+            
+            <div class="loading-tip" id="loadingTip">
+                "Every word forged strengthens the crystal"
+            </div>
+        </div>
     </div>
 
-    <!-- word list -->
-    <div class="word-section">
-        <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
-        <div class="word-grid" id="wordListContainer"></div>
+    <div class="game-container" id="gameContainer">
+        <!-- header -->
+        <div class="header">
+            <span class="title">⚒️ SPELLFORGE</span>
+            <span class="progress-badge" id="progressDisplay">0/20</span>
+        </div>
+
+        <!-- word list -->
+        <div class="word-section">
+            <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
+            <div class="word-grid" id="wordListContainer"></div>
+        </div>
+
+        <!-- active word hint -->
+        <div class="active-hint" id="activeHintArea">
+            <span class="target-word" id="activeWordDisplay">—</span>
+            <span class="next-letter" id="nextLetterDisplay">?</span>
+        </div>
+
+        <!-- letter grid -->
+        <div class="letter-section">
+            <div class="section-label">🔤 LETTER FORGE · tap in order</div>
+            <div class="letter-grid" id="letterGridContainer"></div>
+        </div>
+
+        <!-- artifact progress -->
+        <div class="artifact-box" id="artifactBox">
+            <span class="artifact-icon">🏆</span>
+            <span id="artifactText">LOCKED</span>
+            <span>⚒️</span>
+        </div>
+
+        <!-- reset button -->
+        <button class="reset-btn" id="resetButton">🔄 FORGE AGAIN</button>
+        <div class="telegram-footer">Telegram Mini App · forge words to unlock</div>
     </div>
 
-    <!-- active word hint -->
-    <div class="active-hint" id="activeHintArea">
-        <span class="target-word" id="activeWordDisplay">—</span>
-        <span class="next-letter" id="nextLetterDisplay">?</span>
+    <!-- popup overlay (handles all popups) -->
+    <div id="popupOverlay" class="popup-overlay hidden">
+        <!-- This will be dynamically populated -->
     </div>
 
-    <!-- letter grid -->
-    <div class="letter-section">
-        <div class="section-label">🔤 LETTER FORGE · tap in order</div>
-        <div class="letter-grid" id="letterGridContainer"></div>
-    </div>
-
-    <!-- artifact progress -->
-    <div class="artifact-box" id="artifactBox">
-        <span class="artifact-icon">🏆</span>
-        <span id="artifactText">LOCKED</span>
-        <span>⚒️</span>
-    </div>
-
-    <!-- reset button -->
-    <button class="reset-btn" id="resetButton">🔄 FORGE AGAIN</button>
-    <div class="telegram-footer">Telegram Mini App · forge words to unlock</div>
-</div>
-
-<!-- popup overlay (handles all popups) -->
-<div id="popupOverlay" class="popup-overlay hidden">
-    <!-- This will be dynamically populated -->
-</div>
-
-<script>
-    (function() {
-        // ---------- TELEGRAM WEB APP INTEGRATION ----------
-        let tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.expand();
-            tg.enableClosingConfirmation?.();
-            tg.setHeaderColor?.('#1a2f3f');
-        }
-
-        // ---------- WORD DATABASE ----------
-        const wordsDatabase = [
-            { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
-            { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
-            { word: "chart", emoji: "📊", sentence: "We made a chart of everyone's favorite pizza." },
-            { word: "cloud", emoji: "☁️", sentence: "That cloud looks exactly like a dragon." },
-            { word: "comprehend", emoji: "🧠", sentence: "It's hard to comprehend how big the universe is." },
-            { word: "describe", emoji: "🗣️", sentence: "Can you describe your perfect day?" },
-            { word: "ever", emoji: "🌟", sentence: "This is the most beautiful sunset ever." },
-            { word: "fail", emoji: "😤", sentence: "It's okay to fail when you're learning something new." },
-            { word: "friendly", emoji: "🐕", sentence: "The friendly dog wagged its tail at everyone." },
-            { word: "grade", emoji: "📝", sentence: "She got an A+ on her spelling grade." },
-            { word: "instead", emoji: "🔄", sentence: "Let's play outside instead of watching TV." },
-            { word: "library", emoji: "📚", sentence: "The library has a story hour every Tuesday." },
-            { word: "planet", emoji: "🪐", sentence: "Which planet has the most beautiful rings?" },
-            { word: "report", emoji: "📰", sentence: "I need to write a report about frogs." },
-            { word: "several", emoji: "🧮", sentence: "I've read several books by that author." },
-            { word: "solve", emoji: "🧩", sentence: "Together we can solve any puzzle." },
-            { word: "suddenly", emoji: "⚡", sentence: "Suddenly, the room filled with colorful light." },
-            { word: "suppose", emoji: "🤔", sentence: "I suppose we could share the last cookie." },
-            { word: "universe", emoji: "🌌", sentence: "How many stars are in the universe?" },
-            { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
-        ];
-
-        // ---------- GAME STATE ----------
-        let currentLetters = [];
-        let completedWords = [];
-        let activeWordIndex = null;
-        let currentPosition = 0;
-        let allWords = wordsDatabase.map(w => w.word);
-        
-        // Stats tracking
-        let gameStartTime = null;
-        let totalTaps = 0;
-        let correctTaps = 0;
-        let gameCompleted = false;
-
-        // Queue for word cards
-        let wordCardQueue = [];
-        let showingWordCard = false;
-
-        // ---------- SPELLFORGE RATING (SFR) SYSTEM ----------
-        function calculateSFR(timeSeconds, accuracy, totalTapsCount, correctTapsCount) {
-            // Base score from accuracy (max 200)
-            const accuracyScore = Math.round(accuracy * 2);
-            
-            // Speed score: 100000 / time in seconds (faster = higher)
-            // Prevents division by zero
-            const speedScore = timeSeconds > 0 ? Math.round(100000 / timeSeconds) : 2000;
-            
-            // Perfection bonus for 100% accuracy AND no wrong taps
-            const perfectionBonus = (accuracy === 100 && totalTapsCount === correctTapsCount) ? 100 : 0;
-            
-            // Streak bonus placeholder (could be expanded later)
-            const streakBonus = 0;
-            
-            // Calculate total
-            let total = accuracyScore + speedScore + perfectionBonus + streakBonus;
-            
-            // Cap at reasonable max (world record pace: ~1:20 perfect = ~1450)
-            total = Math.min(total, 1600);
-            
-            return total;
-        }
-
-        function getRatingFromScore(score) {
-            if (score >= 1400) return { title: "LEGEND", emoji: "🔥", color: "#ffd700" };
-            if (score >= 1200) return { title: "MASTER", emoji: "👑", color: "#c0c0c0" };
-            if (score >= 1000) return { title: "EXPERT", emoji: "⚡", color: "#cd7f32" };
-            if (score >= 800) return { title: "ADVANCED", emoji: "🛡️", color: "#4a90e2" };
-            if (score >= 600) return { title: "INTERMEDIATE", emoji: "📘", color: "#50c878" };
-            return { title: "NOVICE", emoji: "🌱", color: "#ffffff" };
-        }
-
-        // ---------- MOCK LEADERBOARD WITH SFR ----------
-        const mockLeaderboard = [
-            { name: "LIAM", score: 1420, time: "1:24", accuracy: 98, rank: 1 },
-            { name: "ELENA", score: 1380, time: "1:28", accuracy: 99, rank: 2 },
-            { name: "NOAH", score: 1350, time: "1:31", accuracy: 97, rank: 3 },
-            { name: "SOFIA", score: 1310, time: "1:35", accuracy: 98, rank: 4 },
-            { name: "OLIVER", score: 1280, time: "1:38", accuracy: 96, rank: 5 },
-            { name: "MIA", score: 1240, time: "1:42", accuracy: 97, rank: 6 },
-            { name: "LUCAS", score: 1210, time: "1:45", accuracy: 95, rank: 7 },
-            { name: "AMELIA", score: 1180, time: "1:48", accuracy: 96, rank: 8 },
-            { name: "ELIJAH", score: 1150, time: "1:51", accuracy: 94, rank: 9 },
-            { name: "HARPER", score: 1120, time: "1:54", accuracy: 95, rank: 10 },
-            { name: "JAMES", score: 1090, time: "1:57", accuracy: 93, rank: 11 },
-            { name: "EVELYN", score: 1060, time: "2:00", accuracy: 94, rank: 12 },
-            { name: "BENJAMIN", score: 1030, time: "2:03", accuracy: 92, rank: 13 },
-            { name: "ABIGAIL", score: 1000, time: "2:06", accuracy: 93, rank: 14 },
-            { name: "ALEXANDER", score: 970, time: "2:09", accuracy: 91, rank: 15 },
-            { name: "ELIZABETH", score: 940, time: "2:12", accuracy: 92, rank: 16 },
-            { name: "HENRY", score: 910, time: "2:15", accuracy: 90, rank: 17 },
-            { name: "SOPHIA", score: 880, time: "2:18", accuracy: 91, rank: 18 },
-            { name: "DANIEL", score: 850, time: "2:21", accuracy: 89, rank: 19 },
-            { name: "CHARLOTTE", score: 820, time: "2:24", accuracy: 90, rank: 20 },
-            { name: "MATTHEW", score: 790, time: "2:27", accuracy: 88, rank: 21 },
-            { name: "AVA", score: 760, time: "2:30", accuracy: 89, rank: 22 },
-            { name: "JACKSON", score: 730, time: "2:33", accuracy: 87, rank: 23 },
-            { name: "SCARLETT", score: 700, time: "2:36", accuracy: 88, rank: 24 },
-            { name: "SEBASTIAN", score: 670, time: "2:39", accuracy: 86, rank: 25 },
-            { name: "GRACE", score: 640, time: "2:42", accuracy: 87, rank: 26 },
-            { name: "DAVID", score: 610, time: "2:45", accuracy: 85, rank: 27 },
-            { name: "CHLOE", score: 580, time: "2:48", accuracy: 86, rank: 28 },
-            { name: "JOSEPH", score: 550, time: "2:51", accuracy: 84, rank: 29 },
-            { name: "VICTORIA", score: 520, time: "2:54", accuracy: 85, rank: 30 },
-            { name: "SAMUEL", score: 490, time: "2:57", accuracy: 83, rank: 31 },
-            { name: "LILY", score: 460, time: "3:00", accuracy: 84, rank: 32 }
-        ];
-
-        // We'll insert YOU dynamically with actual score later
-
-        // ---------- HELPER FUNCTIONS ----------
-        function generateInitialLetters() {
-            let allChars = [];
-            wordsDatabase.forEach(entry => {
-                allChars.push(...entry.word.split(''));
-            });
-            // scramble
-            for (let i = allChars.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [allChars[i], allChars[j]] = [allChars[j], allChars[i]];
-            }
-            return allChars;
-        }
-
-        function getWordData(idx) {
-            return wordsDatabase[idx];
-        }
-
-        function isGameComplete() {
-            return completedWords.length === allWords.length;
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function calculateAccuracy() {
-            if (totalTaps === 0) return 100;
-            return Math.round((correctTaps / totalTaps) * 100);
-        }
-
-        // ---------- POPUP FUNCTIONS ----------
-        function showWordCard(wordData) {
-            wordCardQueue.push(wordData);
-            processWordCardQueue();
-        }
-
-        function processWordCardQueue() {
-            if (showingWordCard || wordCardQueue.length === 0) return;
-            
-            showingWordCard = true;
-            const wordData = wordCardQueue.shift();
-            
-            const overlay = document.getElementById('popupOverlay');
-            overlay.innerHTML = '';
-            
-            const card = document.createElement('div');
-            card.className = 'word-card';
-            card.innerHTML = `
-                <div class="word-emoji">${wordData.emoji}</div>
-                <div class="word-title">${wordData.word.toUpperCase()}</div>
-                <div class="word-sentence">${wordData.sentence}</div>
-                <button class="collect-btn" id="collectWordBtn">✨ COLLECT</button>
-            `;
-            
-            overlay.appendChild(card);
-            overlay.classList.remove('hidden');
-            
-            document.getElementById('collectWordBtn').addEventListener('click', () => {
-                overlay.classList.add('hidden');
-                showingWordCard = false;
-                
-                // Check if game is complete
-                if (isGameComplete() && !gameCompleted) {
-                    gameCompleted = true;
-                    setTimeout(() => {
-                        showArtifactPopup();
-                    }, 300);
-                } else {
-                    processWordCardQueue();
-                }
-            });
-            
-            tg?.HapticFeedback?.notificationOccurred?.('success');
-        }
-
-        function showArtifactPopup() {
-            const overlay = document.getElementById('popupOverlay');
-            overlay.innerHTML = '';
-            
-            const artifactCard = document.createElement('div');
-            artifactCard.className = 'artifact-card';
-            artifactCard.innerHTML = `
-                <div class="artifact-emoji">🔮</div>
-                <div class="artifact-title">ARTIFACT</div>
-                <div class="artifact-title">UNLOCKED!</div>
-                <div class="artifact-sub">WORD CRYSTAL</div>
-                <div class="artifact-tap">✨ tap anywhere to continue ✨</div>
-            `;
-            
-            overlay.appendChild(artifactCard);
-            overlay.classList.remove('hidden');
-            
-            // Tap anywhere to continue
-            artifactCard.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showLeaderboardPopup();
-            });
-            
-            tg?.HapticFeedback?.notificationOccurred?.('success');
-        }
-
-        function showLeaderboardPopup() {
-            const overlay = document.getElementById('popupOverlay');
-            
-            // Calculate player's SFR
-            const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-            const accuracy = calculateAccuracy();
-            const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
-            const playerRating = getRatingFromScore(playerSFR);
-            
-            // Create a fresh leaderboard with player inserted
-            const leaderboardWithPlayer = [...mockLeaderboard];
-            
-            // Find where to insert YOU based on score
-            const yourEntry = {
-                name: "YOU",
-                score: playerSFR,
-                time: formatTime(timeElapsed),
-                accuracy: accuracy,
-                rank: 0 // Will set after sorting
-            };
-            
-            // Add YOU to leaderboard
-            leaderboardWithPlayer.push(yourEntry);
-            
-            // Sort by score (highest first)
-            leaderboardWithPlayer.sort((a, b) => b.score - a.score);
-            
-            // Re-assign ranks
-            leaderboardWithPlayer.forEach((entry, index) => {
-                entry.rank = index + 1;
-            });
-            
-            // Build leaderboard HTML
-            let leaderboardHtml = '';
-            leaderboardWithPlayer.forEach(entry => {
-                const youClass = entry.name === 'YOU' ? ' you' : '';
-                const rating = entry.name === 'YOU' ? playerRating : getRatingFromScore(entry.score);
-                
-                let crownEmoji = '';
-                if (entry.rank === 1) crownEmoji = '👑';
-                else if (entry.rank === 2) crownEmoji = '⚡';
-                else if (entry.rank === 3) crownEmoji = '🥉';
-                
-                leaderboardHtml += `
-                    <div class="leaderboard-row${youClass}" data-rank="${entry.rank}">
-                        <span class="rank">${entry.rank}.</span>
-                        <span class="player-name">${entry.name}</span>
-                        <span class="score">${entry.score}</span>
-                        <span class="rating-badge">${rating.emoji} ${rating.title}</span>
-                        <span class="crown">${crownEmoji}</span>
-                    </div>
-                `;
-            });
-
-            // Get your rank
-            const yourRank = leaderboardWithPlayer.find(e => e.name === 'YOU').rank;
-            
-            const leaderboardCard = document.createElement('div');
-            leaderboardCard.className = 'leaderboard-card';
-            leaderboardCard.innerHTML = `
-                <div class="leaderboard-title">⚒️ FORGE COMPLETE</div>
-                
-                <div class="score-highlight">
-                    <div class="score-title">SPELLFORGE RATING (SFR)</div>
-                    <div class="score-number">${playerSFR}</div>
-                    <div class="score-rating">${playerRating.emoji} ${playerRating.title}</div>
-                </div>
-                
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <div class="stat-value">${formatTime(timeElapsed)}</div>
-                        <div class="stat-label">TIME</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${accuracy}%</div>
-                        <div class="stat-label">ACCURACY</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${correctTaps}/${totalTaps}</div>
-                        <div class="stat-label">TAPS</div>
-                    </div>
-                </div>
-
-                <div class="leaderboard-title">🏆 SFR LEADERBOARD · ${leaderboardWithPlayer.length} PLAYERS</div>
-                <div class="leaderboard-list" id="leaderboardList">
-                    ${leaderboardHtml}
-                </div>
-
-                <div class="leaderboard-footer">
-                    You're #${yourRank} of ${leaderboardWithPlayer.length}!
-                    ${yourRank === 1 ? ' 🏆 CHAMPION!' : yourRank <= 3 ? ' ⚡ PODIUM FINISH!' : ''}
-                </div>
-
-                <div class="button-group">
-                    <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
-                    <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
-                </div>
-            `;
-            
-            overlay.innerHTML = '';
-            overlay.appendChild(leaderboardCard);
-            
-            // Auto-scroll to player's position
-            setTimeout(() => {
-                const leaderboardList = document.getElementById('leaderboardList');
-                const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
-                if (yourRow) {
-                    yourRow.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, 100);
-            
-            // Attach button listeners
-            document.getElementById('playAgainBtn').addEventListener('click', () => {
-                overlay.classList.add('hidden');
-                resetGame();
-            });
-
-            document.getElementById('shareBtn').addEventListener('click', () => {
-                const text = `I forged all 20 words in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
-                
-                if (tg) {
-                    tg.shareToStory?.(text);
-                } else {
-                    alert('Share: ' + text);
-                }
-            });
-        }
-
-        // ---------- GAME MECHANICS ----------
-        function resetGame() {
-            currentLetters = generateInitialLetters();
-            completedWords = [];
-            activeWordIndex = null;
-            currentPosition = 0;
-            gameStartTime = Date.now();
-            totalTaps = 0;
-            correctTaps = 0;
-            gameCompleted = false;
-            wordCardQueue = [];
-            showingWordCard = false;
-            document.getElementById('popupOverlay').classList.add('hidden');
-            renderAll();
-        }
-
-        function handleWordCompletion(completedIdx) {
-            if (!completedWords.includes(completedIdx)) {
-                completedWords.push(completedIdx);
-            }
-
-            // Show word card popup
-            const wordData = getWordData(completedIdx);
-            showWordCard(wordData);
-
-            // Deactivate word
-            activeWordIndex = null;
-            currentPosition = 0;
-
-            renderAll();
-        }
-
-        function handleLetterTap(letter, indexInGrid) {
-            if (gameCompleted) return;
-            
-            totalTaps++;
-            
-            if (activeWordIndex === null) {
-                tg?.HapticFeedback?.notificationOccurred?.('warning');
-                return;
-            }
-            
-            if (completedWords.includes(activeWordIndex)) {
-                activeWordIndex = null;
-                currentPosition = 0;
-                renderAll();
-                return;
-            }
-
-            const targetWord = allWords[activeWordIndex];
-            const neededLetter = targetWord[currentPosition];
-
-            if (letter.toLowerCase() !== neededLetter.toLowerCase()) {
-                tg?.HapticFeedback?.notificationOccurred?.('error');
-                renderAll();
-                return;
-            }
-
-            // Correct tap
-            correctTaps++;
-            currentLetters.splice(indexInGrid, 1);
-            currentPosition++;
-            
-            tg?.HapticFeedback?.impactOccurred?.('light');
-            renderAll();
-
-            if (currentPosition === targetWord.length) {
-                handleWordCompletion(activeWordIndex);
-            }
-        }
-
-        // ---------- RENDER UI ----------
-        function renderAll() {
-            // Word list
-            const wordContainer = document.getElementById('wordListContainer');
-            wordContainer.innerHTML = '';
-            allWords.forEach((w, idx) => {
-                const chip = document.createElement('div');
-                chip.className = 'word-chip';
-                if (completedWords.includes(idx)) {
-                    chip.classList.add('completed');
-                } else if (activeWordIndex === idx) {
-                    chip.classList.add('active-word');
-                }
-                chip.innerText = w;
-                chip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (completedWords.includes(idx) || gameCompleted) return;
-                    activeWordIndex = idx;
-                    currentPosition = 0;
-                    renderAll();
-                    tg?.HapticFeedback?.selectionChanged?.();
-                });
-                wordContainer.appendChild(chip);
-            });
-
-            // Active hint
-            if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted) {
-                const w = allWords[activeWordIndex];
-                const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
-                document.getElementById('activeWordDisplay').innerText = progressWord || '—';
-                const nextChar = (currentPosition < w.length) ? w[currentPosition].toUpperCase() : '✅';
-                document.getElementById('nextLetterDisplay').innerText = nextChar;
-            } else {
-                document.getElementById('activeWordDisplay').innerText = '—';
-                document.getElementById('nextLetterDisplay').innerText = '?';
-            }
-
-            // Letter grid
-            const gridContainer = document.getElementById('letterGridContainer');
-            gridContainer.innerHTML = '';
-            currentLetters.forEach((letter, idx) => {
-                const tile = document.createElement('div');
-                tile.className = 'letter-tile';
-                tile.innerText = letter.toUpperCase();
-                tile.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    handleLetterTap(letter, idx);
-                });
-                gridContainer.appendChild(tile);
-            });
-
-            // Progress
-            document.getElementById('progressDisplay').innerText = `${completedWords.length}/${allWords.length}`;
-            
-            // Artifact text
-            const artifactEl = document.getElementById('artifactText');
-            if (completedWords.length === allWords.length) {
-                artifactEl.innerText = '🌟 ARTIFACT UNLOCKED! 🌟';
-            } else {
-                artifactEl.innerText = `🔒 LOCKED (${completedWords.length}/${allWords.length})`;
-            }
-        }
-
-        // ---------- RESET WITH CONFIRMATION ----------
-        function confirmReset() {
+    <script>
+        (function() {
+            // ---------- TELEGRAM WEB APP INTEGRATION ----------
+            let tg = window.Telegram?.WebApp;
             if (tg) {
-                tg.showConfirm('Restart from beginning? All progress will be lost.', (ok) => {
-                    if (ok) {
-                        resetGame();
-                        tg.HapticFeedback?.impactOccurred?.('heavy');
+                tg.expand();
+                tg.enableClosingConfirmation?.();
+                tg.setHeaderColor?.('#1a2f3f');
+            }
+
+            // ---------- LOADING SCREEN ----------
+            const loadingTips = [
+                '"Every word forged strengthens the crystal"',
+                '"The forge remembers every letter"',
+                '"Speed and accuracy forge the strongest words"',
+                '"Ancient runes glow brighter with each completion"',
+                '"The Word Crystal chooses its master wisely"',
+                '"Patience tempers the strongest steel"',
+                '"Even legends started as apprentices"',
+                '"The guild watches your progress"',
+                '"Each unit tells a story"',
+                '"Forgemasters never rush the craft"'
+            ];
+
+            // Set random initial tip
+            document.getElementById('loadingTip').innerText = 
+                loadingTips[Math.floor(Math.random() * loadingTips.length)];
+
+            let loadingComplete = false;
+            let minimumTimePassed = false;
+
+            // Simulate loading progress
+            function simulateLoading() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                const loadingBar = document.getElementById('loadingBar');
+                const loadingText = document.getElementById('loadingText');
+                const loadingTip = document.getElementById('loadingTip');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15 + 5;
+                    
+                    if (progress >= 100) {
+                        progress = 100;
+                        loadingBar.style.width = progress + '%';
+                        loadingText.innerText = 'Forge ready!';
+                        
+                        loadingComplete = true;
+                        if (minimumTimePassed) {
+                            setTimeout(() => {
+                                loadingScreen.classList.add('fade-out');
+                                setTimeout(() => {
+                                    loadingScreen.style.display = 'none';
+                                }, 500);
+                            }, 300);
+                        }
+                        
+                        clearInterval(interval);
+                    } else {
+                        loadingBar.style.width = progress + '%';
+                        loadingText.innerText = `Loading forge... ${Math.floor(progress)}%`;
+                        
+                        if (Math.random() > 0.7) {
+                            const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+                            loadingTip.innerText = randomTip;
+                        }
+                    }
+                }, 200);
+            }
+
+            // Ensure minimum loading time
+            setTimeout(() => {
+                minimumTimePassed = true;
+                if (loadingComplete) {
+                    document.getElementById('loadingScreen').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').style.display = 'none';
+                    }, 500);
+                }
+            }, 2000);
+
+            // Start loading
+            window.addEventListener('load', simulateLoading);
+
+            // ---------- WORD DATABASE ----------
+            const wordsDatabase = [
+                { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
+                { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
+                { word: "chart", emoji: "📊", sentence: "We made a chart of everyone's favorite pizza." },
+                { word: "cloud", emoji: "☁️", sentence: "That cloud looks exactly like a dragon." },
+                { word: "comprehend", emoji: "🧠", sentence: "It's hard to comprehend how big the universe is." },
+                { word: "describe", emoji: "🗣️", sentence: "Can you describe your perfect day?" },
+                { word: "ever", emoji: "🌟", sentence: "This is the most beautiful sunset ever." },
+                { word: "fail", emoji: "😤", sentence: "It's okay to fail when you're learning something new." },
+                { word: "friendly", emoji: "🐕", sentence: "The friendly dog wagged its tail at everyone." },
+                { word: "grade", emoji: "📝", sentence: "She got an A+ on her spelling grade." },
+                { word: "instead", emoji: "🔄", sentence: "Let's play outside instead of watching TV." },
+                { word: "library", emoji: "📚", sentence: "The library has a story hour every Tuesday." },
+                { word: "planet", emoji: "🪐", sentence: "Which planet has the most beautiful rings?" },
+                { word: "report", emoji: "📰", sentence: "I need to write a report about frogs." },
+                { word: "several", emoji: "🧮", sentence: "I've read several books by that author." },
+                { word: "solve", emoji: "🧩", sentence: "Together we can solve any puzzle." },
+                { word: "suddenly", emoji: "⚡", sentence: "Suddenly, the room filled with colorful light." },
+                { word: "suppose", emoji: "🤔", sentence: "I suppose we could share the last cookie." },
+                { word: "universe", emoji: "🌌", sentence: "How many stars are in the universe?" },
+                { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
+            ];
+
+            // ---------- GAME STATE ----------
+            let currentLetters = [];
+            let completedWords = [];
+            let activeWordIndex = null;
+            let currentPosition = 0;
+            let allWords = wordsDatabase.map(w => w.word);
+            
+            // Stats tracking
+            let gameStartTime = null;
+            let totalTaps = 0;
+            let correctTaps = 0;
+            let gameCompleted = false;
+
+            // Queue for word cards
+            let wordCardQueue = [];
+            let showingWordCard = false;
+
+            // ---------- SPELLFORGE RATING (SFR) SYSTEM ----------
+            function calculateSFR(timeSeconds, accuracy, totalTapsCount, correctTapsCount) {
+                const accuracyScore = Math.round(accuracy * 2);
+                const speedScore = timeSeconds > 0 ? Math.round(100000 / timeSeconds) : 2000;
+                const perfectionBonus = (accuracy === 100 && totalTapsCount === correctTapsCount) ? 100 : 0;
+                
+                let total = accuracyScore + speedScore + perfectionBonus;
+                total = Math.min(total, 1600);
+                
+                return total;
+            }
+
+            function getRatingFromScore(score) {
+                if (score >= 1400) return { title: "LEGEND", emoji: "🔥", color: "#ffd700" };
+                if (score >= 1200) return { title: "MASTER", emoji: "👑", color: "#c0c0c0" };
+                if (score >= 1000) return { title: "EXPERT", emoji: "⚡", color: "#cd7f32" };
+                if (score >= 800) return { title: "ADVANCED", emoji: "🛡️", color: "#4a90e2" };
+                if (score >= 600) return { title: "INTERMEDIATE", emoji: "📘", color: "#50c878" };
+                return { title: "NOVICE", emoji: "🌱", color: "#ffffff" };
+            }
+
+            // ---------- MOCK LEADERBOARD ----------
+            const mockLeaderboard = [
+                { name: "LIAM", score: 1420, time: "1:24", accuracy: 98, rank: 1 },
+                { name: "ELENA", score: 1380, time: "1:28", accuracy: 99, rank: 2 },
+                { name: "NOAH", score: 1350, time: "1:31", accuracy: 97, rank: 3 },
+                { name: "SOFIA", score: 1310, time: "1:35", accuracy: 98, rank: 4 },
+                { name: "OLIVER", score: 1280, time: "1:38", accuracy: 96, rank: 5 },
+                { name: "MIA", score: 1240, time: "1:42", accuracy: 97, rank: 6 },
+                { name: "LUCAS", score: 1210, time: "1:45", accuracy: 95, rank: 7 },
+                { name: "AMELIA", score: 1180, time: "1:48", accuracy: 96, rank: 8 },
+                { name: "ELIJAH", score: 1150, time: "1:51", accuracy: 94, rank: 9 },
+                { name: "HARPER", score: 1120, time: "1:54", accuracy: 95, rank: 10 }
+            ];
+
+            // ---------- HELPER FUNCTIONS ----------
+            function generateInitialLetters() {
+                let allChars = [];
+                wordsDatabase.forEach(entry => {
+                    allChars.push(...entry.word.split(''));
+                });
+                for (let i = allChars.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allChars[i], allChars[j]] = [allChars[j], allChars[i]];
+                }
+                return allChars;
+            }
+
+            function getWordData(idx) {
+                return wordsDatabase[idx];
+            }
+
+            function isGameComplete() {
+                return completedWords.length === allWords.length;
+            }
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            function calculateAccuracy() {
+                if (totalTaps === 0) return 100;
+                return Math.round((correctTaps / totalTaps) * 100);
+            }
+
+            // ---------- POPUP FUNCTIONS ----------
+            function showWordCard(wordData) {
+                wordCardQueue.push(wordData);
+                processWordCardQueue();
+            }
+
+            function processWordCardQueue() {
+                if (showingWordCard || wordCardQueue.length === 0) return;
+                
+                showingWordCard = true;
+                const wordData = wordCardQueue.shift();
+                
+                const overlay = document.getElementById('popupOverlay');
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.innerHTML = `
+                    <div class="word-emoji">${wordData.emoji}</div>
+                    <div class="word-title">${wordData.word.toUpperCase()}</div>
+                    <div class="word-sentence">${wordData.sentence}</div>
+                    <button class="collect-btn" id="collectWordBtn">✨ COLLECT</button>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                document.getElementById('collectWordBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    showingWordCard = false;
+                    
+                    if (isGameComplete() && !gameCompleted) {
+                        gameCompleted = true;
+                        setTimeout(() => {
+                            showArtifactPopup();
+                        }, 300);
+                    } else {
+                        processWordCardQueue();
                     }
                 });
-            } else {
-                if (confirm('Restart from beginning?')) {
+                
+                tg?.HapticFeedback?.notificationOccurred?.('success');
+            }
+
+            function showArtifactPopup() {
+                const overlay = document.getElementById('popupOverlay');
+                overlay.innerHTML = '';
+                
+                const artifactCard = document.createElement('div');
+                artifactCard.className = 'artifact-card';
+                artifactCard.innerHTML = `
+                    <div class="artifact-emoji">🔮</div>
+                    <div class="artifact-title">ARTIFACT</div>
+                    <div class="artifact-title">UNLOCKED!</div>
+                    <div class="artifact-sub">WORD CRYSTAL</div>
+                    <div class="artifact-tap">✨ tap anywhere to continue ✨</div>
+                `;
+                
+                overlay.appendChild(artifactCard);
+                overlay.classList.remove('hidden');
+                
+                artifactCard.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showLeaderboardPopup();
+                });
+                
+                tg?.HapticFeedback?.notificationOccurred?.('success');
+            }
+
+            function showLeaderboardPopup() {
+                const overlay = document.getElementById('popupOverlay');
+                
+                const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+                const accuracy = calculateAccuracy();
+                const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
+                const playerRating = getRatingFromScore(playerSFR);
+                
+                const leaderboardWithPlayer = [...mockLeaderboard];
+                
+                const yourEntry = {
+                    name: "YOU",
+                    score: playerSFR,
+                    time: formatTime(timeElapsed),
+                    accuracy: accuracy,
+                    rank: 0
+                };
+                
+                leaderboardWithPlayer.push(yourEntry);
+                leaderboardWithPlayer.sort((a, b) => b.score - a.score);
+                leaderboardWithPlayer.forEach((entry, index) => {
+                    entry.rank = index + 1;
+                });
+                
+                let leaderboardHtml = '';
+                leaderboardWithPlayer.forEach(entry => {
+                    const youClass = entry.name === 'YOU' ? ' you' : '';
+                    const rating = entry.name === 'YOU' ? playerRating : getRatingFromScore(entry.score);
+                    
+                    let crownEmoji = '';
+                    if (entry.rank === 1) crownEmoji = '👑';
+                    else if (entry.rank === 2) crownEmoji = '⚡';
+                    else if (entry.rank === 3) crownEmoji = '🥉';
+                    
+                    leaderboardHtml += `
+                        <div class="leaderboard-row${youClass}" data-rank="${entry.rank}">
+                            <span class="rank">${entry.rank}.</span>
+                            <span class="player-name">${entry.name}</span>
+                            <span class="score">${entry.score}</span>
+                            <span class="rating-badge">${rating.emoji} ${rating.title}</span>
+                            <span class="crown">${crownEmoji}</span>
+                        </div>
+                    `;
+                });
+
+                const yourRank = leaderboardWithPlayer.find(e => e.name === 'YOU').rank;
+                
+                const leaderboardCard = document.createElement('div');
+                leaderboardCard.className = 'leaderboard-card';
+                leaderboardCard.innerHTML = `
+                    <div class="leaderboard-title">⚒️ FORGE COMPLETE</div>
+                    
+                    <div class="score-highlight">
+                        <div class="score-title">SPELLFORGE RATING (SFR)</div>
+                        <div class="score-number">${playerSFR}</div>
+                        <div class="score-rating">${playerRating.emoji} ${playerRating.title}</div>
+                    </div>
+                    
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value">${formatTime(timeElapsed)}</div>
+                            <div class="stat-label">TIME</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${accuracy}%</div>
+                            <div class="stat-label">ACCURACY</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${correctTaps}/${totalTaps}</div>
+                            <div class="stat-label">TAPS</div>
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-title">🏆 SFR LEADERBOARD · ${leaderboardWithPlayer.length} PLAYERS</div>
+                    <div class="leaderboard-list" id="leaderboardList">
+                        ${leaderboardHtml}
+                    </div>
+
+                    <div class="leaderboard-footer">
+                        You're #${yourRank} of ${leaderboardWithPlayer.length}!
+                        ${yourRank === 1 ? ' 🏆 CHAMPION!' : yourRank <= 3 ? ' ⚡ PODIUM FINISH!' : ''}
+                    </div>
+
+                    <div class="button-group">
+                        <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
+                        <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
+                    </div>
+                `;
+                
+                overlay.innerHTML = '';
+                overlay.appendChild(leaderboardCard);
+                
+                setTimeout(() => {
+                    const leaderboardList = document.getElementById('leaderboardList');
+                    const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
+                    if (yourRow) {
+                        yourRow.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                }, 100);
+                
+                document.getElementById('playAgainBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
                     resetGame();
+                });
+
+                document.getElementById('shareBtn').addEventListener('click', () => {
+                    const text = `I forged all 20 words in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
+                    
+                    if (tg) {
+                        tg.shareToStory?.(text);
+                    } else {
+                        alert('Share: ' + text);
+                    }
+                });
+            }
+
+            // ---------- GAME MECHANICS ----------
+            function resetGame() {
+                currentLetters = generateInitialLetters();
+                completedWords = [];
+                activeWordIndex = null;
+                currentPosition = 0;
+                gameStartTime = Date.now();
+                totalTaps = 0;
+                correctTaps = 0;
+                gameCompleted = false;
+                wordCardQueue = [];
+                showingWordCard = false;
+                document.getElementById('popupOverlay').classList.add('hidden');
+                renderAll();
+            }
+
+            function handleWordCompletion(completedIdx) {
+                if (!completedWords.includes(completedIdx)) {
+                    completedWords.push(completedIdx);
+                }
+
+                const wordData = getWordData(completedIdx);
+                showWordCard(wordData);
+
+                activeWordIndex = null;
+                currentPosition = 0;
+
+                renderAll();
+            }
+
+            function handleLetterTap(letter, indexInGrid) {
+                if (gameCompleted) return;
+                
+                totalTaps++;
+                
+                if (activeWordIndex === null) {
+                    tg?.HapticFeedback?.notificationOccurred?.('warning');
+                    return;
+                }
+                
+                if (completedWords.includes(activeWordIndex)) {
+                    activeWordIndex = null;
+                    currentPosition = 0;
+                    renderAll();
+                    return;
+                }
+
+                const targetWord = allWords[activeWordIndex];
+                const neededLetter = targetWord[currentPosition];
+
+                if (letter.toLowerCase() !== neededLetter.toLowerCase()) {
+                    tg?.HapticFeedback?.notificationOccurred?.('error');
+                    renderAll();
+                    return;
+                }
+
+                correctTaps++;
+                currentLetters.splice(indexInGrid, 1);
+                currentPosition++;
+                
+                tg?.HapticFeedback?.impactOccurred?.('light');
+                renderAll();
+
+                if (currentPosition === targetWord.length) {
+                    handleWordCompletion(activeWordIndex);
                 }
             }
-        }
 
-        // ---------- INITIALIZATION ----------
-        document.getElementById('resetButton').addEventListener('click', confirmReset);
+            // ---------- RENDER UI ----------
+            function renderAll() {
+                const wordContainer = document.getElementById('wordListContainer');
+                wordContainer.innerHTML = '';
+                allWords.forEach((w, idx) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'word-chip';
+                    if (completedWords.includes(idx)) {
+                        chip.classList.add('completed');
+                    } else if (activeWordIndex === idx) {
+                        chip.classList.add('active-word');
+                    }
+                    chip.innerText = w;
+                    chip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (completedWords.includes(idx) || gameCompleted) return;
+                        activeWordIndex = idx;
+                        currentPosition = 0;
+                        renderAll();
+                        tg?.HapticFeedback?.selectionChanged?.();
+                    });
+                    wordContainer.appendChild(chip);
+                });
 
-        // Start game
-        resetGame();
+                if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted) {
+                    const w = allWords[activeWordIndex];
+                    const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
+                    document.getElementById('activeWordDisplay').innerText = progressWord || '—';
+                    const nextChar = (currentPosition < w.length) ? w[currentPosition].toUpperCase() : '✅';
+                    document.getElementById('nextLetterDisplay').innerText = nextChar;
+                } else {
+                    document.getElementById('activeWordDisplay').innerText = '—';
+                    document.getElementById('nextLetterDisplay').innerText = '?';
+                }
 
-        // Telegram back button
-        if (tg) {
-            tg.onEvent('backButtonClicked', () => {
-                tg.close();
-            });
-            tg.BackButton?.show();
-            tg.ready();
-        }
-    })();
-</script>
+                const gridContainer = document.getElementById('letterGridContainer');
+                gridContainer.innerHTML = '';
+                currentLetters.forEach((letter, idx) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'letter-tile';
+                    tile.innerText = letter.toUpperCase();
+                    tile.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        handleLetterTap(letter, idx);
+                    });
+                    gridContainer.appendChild(tile);
+                });
+
+                document.getElementById('progressDisplay').innerText = `${completedWords.length}/${allWords.length}`;
+                
+                const artifactEl = document.getElementById('artifactText');
+                if (completedWords.length === allWords.length) {
+                    artifactEl.innerText = '🌟 ARTIFACT UNLOCKED! 🌟';
+                } else {
+                    artifactEl.innerText = `🔒 LOCKED (${completedWords.length}/${allWords.length})`;
+                }
+            }
+
+            // ---------- RESET WITH CONFIRMATION ----------
+            function confirmReset() {
+                if (tg) {
+                    tg.showConfirm('Restart from beginning? All progress will be lost.', (ok) => {
+                        if (ok) {
+                            resetGame();
+                            tg.HapticFeedback?.impactOccurred?.('heavy');
+                        }
+                    });
+                } else {
+                    if (confirm('Restart from beginning?')) {
+                        resetGame();
+                    }
+                }
+            }
+
+            // ---------- INITIALIZATION ----------
+            document.getElementById('resetButton').addEventListener('click', confirmReset);
+
+            // Start game
+            resetGame();
+
+            // Telegram back button
+            if (tg) {
+                tg.onEvent('backButtonClicked', () => {
+                    tg.close();
+                });
+                tg.BackButton?.show();
+                tg.ready();
+            }
+        })();
+    </script>
 </body>
 </html>
