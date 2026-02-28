@@ -255,12 +255,15 @@
             align-items: center;
             z-index: 1000;
             transition: all 0.3s;
+            padding: 16px;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        /* word card popup (existing style) */
+        /* word card */
         .word-card {
             max-width: 380px;
-            width: 90%;
+            width: 100%;
             background: linear-gradient(165deg, #fff8e7, #ffffff);
             border-radius: 58px;
             padding: 30px 20px;
@@ -268,6 +271,7 @@
             text-align: center;
             animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
             border: 3px solid #ffcd7e;
+            margin: auto;
         }
 
         @keyframes pop {
@@ -289,6 +293,7 @@
             letter-spacing: 3px;
             text-shadow: 3px 5px 0 #ffcd7e;
             margin: 5px 0;
+            word-break: break-word;
         }
 
         .word-sentence {
@@ -300,6 +305,7 @@
             font-weight: 500;
             margin: 20px 0;
             border: 2px dashed #a5723b;
+            word-break: break-word;
         }
 
         .collect-btn {
@@ -316,10 +322,15 @@
             border: 2px solid #ffe39b;
         }
 
+        .collect-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #9e691f;
+        }
+
         /* artifact popup */
         .artifact-card {
             max-width: 420px;
-            width: 90%;
+            width: 100%;
             background: linear-gradient(165deg, #4a2e1e, #6b4a2e);
             border-radius: 70px;
             padding: 40px 25px 45px;
@@ -327,6 +338,7 @@
             text-align: center;
             animation: glowPulse 2s infinite alternate;
             border: 3px solid #ffb347;
+            margin: auto;
         }
 
         @keyframes glowPulse {
@@ -339,7 +351,6 @@
             line-height: 1.2;
             margin: 15px 0;
             filter: drop-shadow(8px 15px 0 #3f2b16);
-            transform: scale(1);
             animation: float 3s ease-in-out infinite;
         }
 
@@ -357,6 +368,7 @@
             letter-spacing: 4px;
             text-shadow: 5px 5px 0 #7a4c1d;
             margin: 10px 0;
+            line-height: 1.2;
         }
 
         .artifact-sub {
@@ -383,95 +395,144 @@
             100% { opacity: 0.6; }
         }
 
-        /* leaderboard popup */
+        /* leaderboard popup - scrollable */
         .leaderboard-card {
             max-width: 480px;
-            width: 90%;
+            width: 100%;
+            max-height: 90vh;
             background: linear-gradient(165deg, #1e3b4a, #16323f);
-            border-radius: 60px;
-            padding: 30px 20px 30px;
-            box-shadow: 0 30px 50px #000000, 0 0 0 6px #c9ae5b;
+            border-radius: 50px;
+            padding: 20px 18px 22px;
+            box-shadow: 0 25px 45px #000000, 0 0 0 6px #c9ae5b;
             text-align: center;
-            border: 3px solid #dbb45c;
+            border: 2px solid #dbb45c;
             animation: pop 0.3s ease-out;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .stats-row {
             display: flex;
             justify-content: space-around;
             background: #0e2938;
-            border-radius: 50px;
-            padding: 18px 12px;
-            margin: 15px 0 20px;
+            border-radius: 40px;
+            padding: 12px 10px;
+            margin: 10px 0 15px;
             border: 2px solid #b8944a;
+            flex-shrink: 0;
         }
 
         .stat-item {
             text-align: center;
             color: white;
+            min-width: 70px;
         }
 
         .stat-value {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             color: #ffdb8e;
+            line-height: 1.2;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 13px;
             color: #acccdd;
+            text-transform: uppercase;
         }
 
         .leaderboard-title {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 800;
             color: #ffdfa0;
-            margin: 10px 0 15px;
-            letter-spacing: 2px;
+            margin: 5px 0 10px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
 
+        /* Scrollable leaderboard list */
         .leaderboard-list {
             background: #0c202b;
-            border-radius: 40px;
-            padding: 15px;
-            margin: 15px 0;
+            border-radius: 30px;
+            padding: 12px;
+            margin: 5px 0 10px;
             border: 2px solid #aa873f;
+            overflow-y: auto;
+            flex-grow: 1;
+            min-height: 200px;
+            max-height: 400px;
+            scrollbar-width: thin;
+            scrollbar-color: #c9ae5b #1d3f4f;
+        }
+
+        /* Custom scrollbar for webkit */
+        .leaderboard-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-track {
+            background: #1d3f4f;
+            border-radius: 10px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-thumb {
+            background: #c9ae5b;
+            border-radius: 10px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-thumb:hover {
+            background: #e5c87c;
         }
 
         .leaderboard-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 18px;
-            margin: 5px 0;
+            padding: 8px 15px;
+            margin: 4px 0;
             background: #1d3f4f;
-            border-radius: 50px;
-            font-size: 22px;
+            border-radius: 40px;
+            font-size: 18px;
             font-weight: 600;
             color: white;
+            transition: all 0.1s;
         }
 
+        /* Highlight player's position */
         .leaderboard-row.you {
             background: #c9a34b;
             color: #0a1f29;
             font-weight: 800;
             border: 2px solid gold;
             box-shadow: 0 0 15px gold;
+            transform: scale(1.02);
+            position: relative;
+            z-index: 2;
         }
 
         .rank {
-            min-width: 45px;
+            min-width: 40px;
+            font-size: 16px;
         }
 
         .player-name {
             flex: 1;
             text-align: left;
             padding-left: 10px;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
 
         .score {
             font-weight: 700;
             color: #ffd966;
+            font-size: 16px;
+            min-width: 45px;
+            text-align: right;
         }
 
         .you .score {
@@ -479,32 +540,37 @@
         }
 
         .crown {
-            font-size: 24px;
-            margin-left: 5px;
+            font-size: 18px;
+            margin-left: 6px;
+            min-width: 22px;
+            text-align: right;
         }
 
         .leaderboard-footer {
-            font-size: 18px;
+            font-size: 16px;
             color: #ffdcaa;
-            margin: 15px 0 10px;
+            margin: 10px 0 8px;
+            font-weight: 500;
+            flex-shrink: 0;
         }
 
         .button-group {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 12px;
+            flex-shrink: 0;
         }
 
         .action-btn {
             flex: 1;
             background: #f0b345;
             border: none;
-            border-radius: 50px;
-            padding: 16px 10px;
+            border-radius: 40px;
+            padding: 14px 10px;
             font-weight: 700;
-            font-size: 22px;
+            font-size: 20px;
             color: #1d332b;
-            box-shadow: 0 6px 0 #9e691f;
+            box-shadow: 0 5px 0 #9e691f;
             cursor: pointer;
             border: 2px solid #ffe694;
             transition: 0.08s;
@@ -512,12 +578,12 @@
 
         .action-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 #9e691f;
+            box-shadow: 0 1px 0 #9e691f;
         }
 
         .action-btn.secondary {
             background: #557a8b;
-            box-shadow: 0 6px 0 #2e4a57;
+            box-shadow: 0 5px 0 #2e4a57;
             color: white;
         }
 
@@ -550,6 +616,31 @@
             text-align: center;
             color: #aac3d0;
             margin-top: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .leaderboard-card {
+                padding: 15px 15px 18px;
+            }
+            
+            .stats-row {
+                padding: 8px 5px;
+                margin: 5px 0 10px;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+            
+            .leaderboard-row {
+                padding: 5px 12px;
+                font-size: 16px;
+            }
+            
+            .leaderboard-list {
+                min-height: 150px;
+            }
         }
     </style>
 </head>
@@ -643,21 +734,71 @@
         let correctTaps = 0;
         let gameCompleted = false;
 
-        // Queue for word cards (to prevent interference)
+        // Queue for word cards
         let wordCardQueue = [];
         let showingWordCard = false;
 
-        // Mock leaderboard data (would come from server in real app)
+        // Mock leaderboard data (50 players for scrolling demo)
         const mockLeaderboard = [
             { name: "LIAM", time: "1:24", accuracy: 98, rank: 1 },
-            { name: "YOU", time: "1:47", accuracy: 100, rank: 2 },
-            { name: "SOFIA", time: "1:52", accuracy: 97, rank: 3 },
-            { name: "NOAH", time: "2:01", accuracy: 95, rank: 4 },
-            { name: "EMMA", time: "2:15", accuracy: 96, rank: 5 },
-            { name: "OLIVER", time: "2:32", accuracy: 92, rank: 6 },
-            { name: "MIA", time: "2:48", accuracy: 94, rank: 7 },
-            { name: "LUCAS", time: "3:04", accuracy: 90, rank: 8 }
+            { name: "SOFIA", time: "1:28", accuracy: 99, rank: 2 },
+            { name: "NOAH", time: "1:32", accuracy: 97, rank: 3 },
+            { name: "EMMA", time: "1:35", accuracy: 98, rank: 4 },
+            { name: "OLIVER", time: "1:38", accuracy: 96, rank: 5 },
+            { name: "MIA", time: "1:42", accuracy: 97, rank: 6 },
+            { name: "LUCAS", time: "1:45", accuracy: 95, rank: 7 },
+            { name: "AMELIA", time: "1:47", accuracy: 96, rank: 8 },
+            { name: "ELIJAH", time: "1:49", accuracy: 94, rank: 9 },
+            { name: "HARPER", time: "1:51", accuracy: 95, rank: 10 },
+            { name: "JAMES", time: "1:53", accuracy: 93, rank: 11 },
+            { name: "EVELYN", time: "1:55", accuracy: 94, rank: 12 },
+            { name: "BENJAMIN", time: "1:57", accuracy: 92, rank: 13 },
+            { name: "ABIGAIL", time: "1:59", accuracy: 93, rank: 14 },
+            { name: "ALEXANDER", time: "2:01", accuracy: 91, rank: 15 },
+            { name: "ELIZABETH", time: "2:03", accuracy: 92, rank: 16 },
+            { name: "HENRY", time: "2:05", accuracy: 90, rank: 17 },
+            { name: "SOPHIA", time: "2:07", accuracy: 91, rank: 18 },
+            { name: "DANIEL", time: "2:09", accuracy: 89, rank: 19 },
+            { name: "CHARLOTTE", time: "2:11", accuracy: 90, rank: 20 },
+            { name: "MATTHEW", time: "2:13", accuracy: 88, rank: 21 },
+            { name: "AVA", time: "2:15", accuracy: 89, rank: 22 },
+            { name: "JACKSON", time: "2:17", accuracy: 87, rank: 23 },
+            { name: "SCARLETT", time: "2:19", accuracy: 88, rank: 24 },
+            { name: "SEBASTIAN", time: "2:21", accuracy: 86, rank: 25 },
+            { name: "GRACE", time: "2:23", accuracy: 87, rank: 26 },
+            { name: "DAVID", time: "2:25", accuracy: 85, rank: 27 },
+            { name: "CHLOE", time: "2:27", accuracy: 86, rank: 28 },
+            { name: "JOSEPH", time: "2:29", accuracy: 84, rank: 29 },
+            { name: "VICTORIA", time: "2:31", accuracy: 85, rank: 30 },
+            { name: "SAMUEL", time: "2:33", accuracy: 83, rank: 31 },
+            { name: "LILY", time: "2:35", accuracy: 84, rank: 32 },
+            { name: "CHRISTOPHER", time: "2:37", accuracy: 82, rank: 33 },
+            { name: "HANNAH", time: "2:39", accuracy: 83, rank: 34 },
+            { name: "ANDREW", time: "2:41", accuracy: 81, rank: 35 },
+            { name: "ZOE", time: "2:43", accuracy: 82, rank: 36 },
+            { name: "JOSHUA", time: "2:45", accuracy: 80, rank: 37 },
+            { name: "PENELOPE", time: "2:47", accuracy: 81, rank: 38 },
+            { name: "RYAN", time: "2:49", accuracy: 79, rank: 39 },
+            { name: "ELEANOR", time: "2:51", accuracy: 80, rank: 40 },
+            { name: "WILLIAM", time: "2:53", accuracy: 78, rank: 41 },
+            { name: "LUCY", time: "2:55", accuracy: 79, rank: 42 },
+            { name: "GABRIEL", time: "2:57", accuracy: 77, rank: 43 },
+            { name: "MAYA", time: "2:59", accuracy: 78, rank: 44 },
+            { name: "ANTHONY", time: "3:01", accuracy: 76, rank: 45 },
+            { name: "LAYLA", time: "3:03", accuracy: 77, rank: 46 },
+            { name: "DYLAN", time: "3:05", accuracy: 75, rank: 47 },
+            { name: "RILEY", time: "3:07", accuracy: 76, rank: 48 },
+            { name: "NATHAN", time: "3:09", accuracy: 74, rank: 49 },
+            { name: "AURORA", time: "3:11", accuracy: 75, rank: 50 }
         ];
+
+        // Insert YOU at position 15
+        mockLeaderboard.splice(14, 0, { name: "YOU", time: "1:47", accuracy: 100, rank: 15 });
+
+        // Re-number ranks
+        mockLeaderboard.forEach((entry, index) => {
+            entry.rank = index + 1;
+        });
 
         // ---------- HELPER FUNCTIONS ----------
         function generateInitialLetters() {
@@ -723,7 +864,7 @@
                 overlay.classList.add('hidden');
                 showingWordCard = false;
                 
-                // Check if game is complete and process next in queue or show artifact
+                // Check if game is complete
                 if (isGameComplete() && !gameCompleted) {
                     gameCompleted = true;
                     setTimeout(() => {
@@ -776,9 +917,10 @@
                 let crownEmoji = '';
                 if (entry.rank === 1) crownEmoji = '👑';
                 else if (entry.rank === 2) crownEmoji = '⚡';
+                else if (entry.rank === 3) crownEmoji = '🥉';
                 
                 leaderboardHtml += `
-                    <div class="leaderboard-row${youClass}">
+                    <div class="leaderboard-row${youClass}" data-rank="${entry.rank}">
                         <span class="rank">${entry.rank}.</span>
                         <span class="player-name">${entry.name}</span>
                         <span class="score">${entry.time}</span>
@@ -787,15 +929,9 @@
                 `;
             });
 
-            // Set message
+            // Find your rank
             const yourEntry = mockLeaderboard.find(e => e.name === 'YOU');
-            let message = '';
-            if (yourEntry && yourEntry.rank === 1) {
-                message = '🏆 You\'re the champion!';
-            } else if (yourEntry) {
-                message = `You're #${yourEntry.rank}! ${yourEntry.rank === 2 ? 'So close to the top!' : 'Keep forging!'}`;
-            }
-
+            
             const leaderboardCard = document.createElement('div');
             leaderboardCard.className = 'leaderboard-card';
             leaderboardCard.innerHTML = `
@@ -816,12 +952,14 @@
                     </div>
                 </div>
 
-                <div class="leaderboard-title">🏆 LEADERBOARD</div>
-                <div class="leaderboard-list">
+                <div class="leaderboard-title">🏆 LEADERBOARD · ${mockLeaderboard.length} PLAYERS</div>
+                <div class="leaderboard-list" id="leaderboardList">
                     ${leaderboardHtml}
                 </div>
 
-                <div class="leaderboard-footer">${message}</div>
+                <div class="leaderboard-footer">
+                    ${yourEntry ? `You're #${yourEntry.rank} of ${mockLeaderboard.length}!` : ''}
+                </div>
 
                 <div class="button-group">
                     <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
@@ -832,6 +970,18 @@
             overlay.innerHTML = '';
             overlay.appendChild(leaderboardCard);
             
+            // Auto-scroll to player's position
+            setTimeout(() => {
+                const leaderboardList = document.getElementById('leaderboardList');
+                const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
+                if (yourRow) {
+                    yourRow.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 100);
+            
             // Attach button listeners
             document.getElementById('playAgainBtn').addEventListener('click', () => {
                 overlay.classList.add('hidden');
@@ -840,7 +990,9 @@
 
             document.getElementById('shareBtn').addEventListener('click', () => {
                 const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-                const text = `I forged all 20 words in Spellforge in ${formatTime(timeElapsed)} with ${calculateAccuracy()}% accuracy! 🔮⚒️`;
+                const yourEntry = mockLeaderboard.find(e => e.name === 'YOU');
+                const text = `I forged all 20 words in Spellforge in ${formatTime(timeElapsed)} with ${calculateAccuracy()}% accuracy! Rank #${yourEntry?.rank} of ${mockLeaderboard.length}! 🔮⚒️`;
+                
                 if (tg) {
                     tg.shareToStory?.(text);
                 } else {
