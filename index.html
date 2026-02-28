@@ -170,6 +170,87 @@
             backdrop-filter: blur(4px);
         }
 
+        /* word list area - RESTORED */
+        .word-section {
+            background: rgba(10, 25, 35, 0.7);
+            border-radius: 38px;
+            padding: 18px 15px;
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .section-label {
+            color: #b6d8e6;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .word-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #c9ae5b #1d3f4f;
+        }
+
+        .word-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .word-grid::-webkit-scrollbar-track {
+            background: #1d3f4f;
+            border-radius: 10px;
+        }
+
+        .word-grid::-webkit-scrollbar-thumb {
+            background: #c9ae5b;
+            border-radius: 10px;
+        }
+
+        .word-chip {
+            background: #2c4556;
+            border-radius: 40px;
+            padding: 12px 22px;
+            font-weight: 600;
+            font-size: 18px;
+            color: #c9e9ff;
+            box-shadow: 0 6px 0 #0f1f29, 0 8px 10px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+            border: 1px solid #598baa;
+            user-select: none;
+            cursor: pointer;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .word-chip.completed {
+            background: #3f6a4a;
+            color: #d9ffd9;
+            border-color: #a5d6a5;
+            box-shadow: 0 4px 0 #1b3b24, 0 6px 8px rgba(0,0,0,0.3);
+            text-decoration: line-through 2px rgba(255,255,255,0.4);
+            opacity: 0.8;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .word-chip.active-word {
+            background: #f5c542;
+            color: #1e2f3a;
+            border-color: #ffea9e;
+            box-shadow: 0 0 0 3px #fce49c, 0 6px 0 #a07d2b;
+            transform: scale(1.02);
+            font-weight: 800;
+        }
+
         /* unit selector */
         .unit-section {
             background: rgba(10, 25, 35, 0.7);
@@ -217,7 +298,7 @@
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
-            max-height: 300px;
+            max-height: 200px;
             overflow-y: auto;
             padding: 5px;
             scrollbar-width: thin;
@@ -837,6 +918,12 @@
             .score-number {
                 font-size: 42px;
             }
+            .word-grid {
+                max-height: 150px;
+            }
+            .unit-grid {
+                max-height: 150px;
+            }
         }
     </style>
 </head>
@@ -874,11 +961,15 @@
                 <span class="unit-label" id="unitLabel">INGOTS</span>
                 <select class="unit-selector" id="unitSelector">
                     <option value="1">Ingot 01 · First Spark</option>
-                    <option value="2">Ingot 02 · Kindling</option>
-                    <option value="3">Ingot 03 · Ember</option>
                 </select>
             </div>
             <div class="unit-grid" id="unitGrid"></div>
+        </div>
+
+        <!-- word list area - RESTORED -->
+        <div class="word-section">
+            <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
+            <div class="word-grid" id="wordListContainer"></div>
         </div>
 
         <!-- active word hint -->
@@ -896,7 +987,7 @@
         <!-- artifact progress -->
         <div class="artifact-box" id="artifactBox">
             <span class="artifact-icon">🏆</span>
-            <span id="artifactText">LOCKED</span>
+            <span id="artifactText">🔒 0/20</span>
             <span>⚒️</span>
         </div>
 
@@ -1000,15 +1091,15 @@
                     units: [
                         // Tier 1: Foundation (1-10)
                         { id: 1, name: "First Spark", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 2, name: "Kindling", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 3, name: "Ember", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 4, name: "Bellows", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 5, name: "Tongs", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 6, name: "Hammer", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 7, name: "Anvil", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 8, name: "Quench", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 9, name: "Temper", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 10, name: "Forgefire", wordsCompleted: 0, totalWords: 20, unlocked: true },
+                        { id: 2, name: "Kindling", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 3, name: "Ember", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 4, name: "Bellows", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 5, name: "Tongs", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 6, name: "Hammer", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 7, name: "Anvil", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 8, name: "Quench", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 9, name: "Temper", wordsCompleted: 0, totalWords: 20, unlocked: false },
+                        { id: 10, name: "Forgefire", wordsCompleted: 0, totalWords: 20, unlocked: false },
                         // Tier 2: Crafting (11-20)
                         { id: 11, name: "Raw Iron", wordsCompleted: 0, totalWords: 20, unlocked: false },
                         { id: 12, name: "Steel Blend", wordsCompleted: 0, totalWords: 20, unlocked: false },
@@ -1133,7 +1224,7 @@
             let wordCardQueue = [];
             let showingWordCard = false;
 
-            // Mock word database for current unit (will be replaced with real words later)
+            // Mock word database for current unit (20 words)
             const mockWords = [
                 { word: "forge", emoji: "⚒️", sentence: "The forge glows with heat." },
                 { word: "hammer", emoji: "🔨", sentence: "The hammer strikes true." },
@@ -1154,7 +1245,7 @@
                 { word: "power", emoji: "💪", sentence: "Words hold great power." },
                 { word: "wisdom", emoji: "🦉", sentence: "Wisdom in every word." },
                 { word: "legacy", emoji: "📜", sentence: "Build a lasting legacy." },
-                { word: "forge", emoji: "⚒️", sentence: "Forge your destiny." }
+                { word: "destiny", emoji: "✨", sentence: "Forge your destiny." }
             ];
 
             // ---------- HELPER FUNCTIONS ----------
@@ -1163,6 +1254,7 @@
                 mockWords.forEach(entry => {
                     allChars.push(...entry.word.split(''));
                 });
+                // Shuffle
                 for (let i = allChars.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allChars[i], allChars[j]] = [allChars[j], allChars[i]];
@@ -1178,7 +1270,7 @@
                 const world = worlds[currentWorld];
                 document.getElementById('worldIcon').innerText = world.icon;
                 document.getElementById('worldName').innerText = world.name;
-                document.getElementById('unitLabel').innerText = world.unitName;
+                document.getElementById('unitLabel').innerText = world.unitName + 'S';
                 
                 // Update unit selector dropdown
                 const selector = document.getElementById('unitSelector');
@@ -1209,9 +1301,11 @@
                             </div>
                         `;
                         card.addEventListener('click', () => {
-                            currentUnit = unit.id;
-                            updateWorldDisplay();
-                            resetForNewUnit();
+                            if (unit.id !== currentUnit) {
+                                currentUnit = unit.id;
+                                resetForNewUnit();
+                                updateWorldDisplay();
+                            }
                         });
                         grid.appendChild(card);
                     }
@@ -1253,6 +1347,12 @@
                 if (score >= 800) return { title: "ADVANCED", emoji: "🛡️" };
                 if (score >= 600) return { title: "INTERMEDIATE", emoji: "📘" };
                 return { title: "NOVICE", emoji: "🌱" };
+            }
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
             }
 
             // ---------- MOCK LEADERBOARD ----------
@@ -1302,14 +1402,16 @@
                     
                     // Check if unit completed
                     const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                    if (unit.wordsCompleted === unit.totalWords) {
+                    if (unit && unit.wordsCompleted === unit.totalWords) {
                         // Unlock next unit
                         const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
-                        if (nextUnit) nextUnit.unlocked = true;
+                        if (nextUnit) {
+                            nextUnit.unlocked = true;
+                        }
                         
                         // Check if world completed
-                        const worldCompleted = worlds[currentWorld].units.every(u => u.wordsCompleted === 20);
-                        if (worldCompleted && currentWorld < 6) {
+                        const allUnitsCompleted = worlds[currentWorld].units.every(u => u.wordsCompleted === 20);
+                        if (allUnitsCompleted && currentWorld < 6) {
                             worlds[currentWorld + 1].unlocked = true;
                             // Show world unlock message
                             setTimeout(() => {
@@ -1487,12 +1589,6 @@
                 });
             }
 
-            function formatTime(seconds) {
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            }
-
             // ---------- GAME MECHANICS ----------
             function handleWordCompletion(wordIndex) {
                 if (!completedWords.includes(wordIndex)) {
@@ -1500,7 +1596,9 @@
                     
                     // Update unit progress
                     const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                    unit.wordsCompleted = completedWords.length;
+                    if (unit) {
+                        unit.wordsCompleted = completedWords.length;
+                    }
                     
                     const wordData = mockWords[wordIndex];
                     showWordCard(wordData);
@@ -1555,7 +1653,7 @@
             function renderAll() {
                 const words = getCurrentUnitWords();
                 
-                // Word list
+                // Word list - RESTORED
                 const wordContainer = document.getElementById('wordListContainer');
                 if (wordContainer) {
                     wordContainer.innerHTML = '';
@@ -1609,10 +1707,12 @@
                 // Artifact text
                 const artifactEl = document.getElementById('artifactText');
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                if (unit && unit.wordsCompleted === 20) {
-                    artifactEl.innerText = '🌟 UNIT COMPLETE! 🌟';
-                } else {
-                    artifactEl.innerText = `🔒 ${unit ? unit.wordsCompleted : 0}/20`;
+                if (unit) {
+                    if (unit.wordsCompleted === 20) {
+                        artifactEl.innerText = '🌟 UNIT COMPLETE! 🌟';
+                    } else {
+                        artifactEl.innerText = `🔒 ${unit.wordsCompleted}/20`;
+                    }
                 }
             }
 
@@ -1639,15 +1739,6 @@
                 resetForNewUnit();
                 updateWorldDisplay();
             });
-
-            // Add word list container if it doesn't exist
-            const wordSection = document.querySelector('.word-section');
-            if (!document.getElementById('wordListContainer')) {
-                const wordGrid = document.createElement('div');
-                wordGrid.className = 'word-grid';
-                wordGrid.id = 'wordListContainer';
-                wordSection.appendChild(wordGrid);
-            }
 
             // Start game
             updateWorldDisplay();
