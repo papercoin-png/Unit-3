@@ -2201,11 +2201,9 @@
             }
 
             function calculateSuccessChance(ingotId) {
-                // Get base chance from difficulty database
                 const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
                 let baseChance = difficulty.baseChance;
                 
-                // Calculate modifiers
                 let modifiers = 0;
                 let breakdown = {
                     streak: 0,
@@ -2215,44 +2213,35 @@
                     rusty: 0
                 };
                 
-                // Hot streak bonus (+5% per 3 consecutive completed)
                 const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
                 modifiers += streakBonus;
                 breakdown.streak = streakBonus;
                 
-                // Perfect accuracy bonus (+10% if last ingot was 100%)
                 if (playerPerformance.lastAccuracy === 100) {
                     modifiers += 10;
                     breakdown.perfect = 10;
                 }
                 
-                // World mastery bonus (+2% per ingot completed in current world)
                 const worldCompleted = playerPerformance.worldProgress[currentWorld].completed;
                 const masteryBonus = Math.floor(worldCompleted / 5) * 2;
                 modifiers += masteryBonus;
                 breakdown.mastery = masteryBonus;
                 
-                // Recent failure penalty (-10% if last ingot failed)
                 if (playerPerformance.lastAttemptFailed) {
                     modifiers -= 10;
                     breakdown.failure = -10;
                 }
                 
-                // Rusty penalty (-5% if inactive > 7 days)
                 const daysSinceLastPlay = Math.floor((new Date() - new Date(playerPerformance.lastPlayedDate)) / (1000 * 60 * 60 * 24));
                 if (daysSinceLastPlay > 7) {
                     modifiers -= 5;
                     breakdown.rusty = -5;
                 }
                 
-                // Cap modifiers
                 modifiers = Math.min(modifiers, 30);
                 modifiers = Math.max(modifiers, -20);
                 
-                // Calculate final chance
                 let finalChance = baseChance + modifiers;
-                
-                // Ensure within bounds
                 finalChance = Math.min(finalChance, 100);
                 finalChance = Math.max(finalChance, 1);
                 
@@ -2267,14 +2256,9 @@
 
             function calculateRiskBonus(baseChance, actualChance, success) {
                 if (!success) return 0;
-                
-                // The lower the chance, the higher the bonus
                 const riskFactor = 100 - actualChance;
-                
-                // Bonus formula: risk factor × 10
                 const bonus = riskFactor * 10;
-                
-                return Math.min(bonus, 1000); // Cap at 1000 bonus
+                return Math.min(bonus, 1000);
             }
 
             function getDaysSince(dateString) {
@@ -2291,7 +2275,6 @@
                 document.getElementById('worldName').innerText = world.name;
                 document.getElementById('unitLabel').innerText = world.unitName + 'S';
                 
-                // Update unit selector dropdown
                 const selector = document.getElementById('unitSelector');
                 selector.innerHTML = '';
                 world.units.forEach((unit) => {
@@ -2306,7 +2289,6 @@
                     }
                 });
 
-                // Update unit grid
                 const grid = document.getElementById('unitGrid');
                 grid.innerHTML = '';
                 world.units.forEach(unit => {
@@ -2334,7 +2316,6 @@
                     }
                 });
 
-                // Update total progress
                 const totalCompleted = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
                 document.getElementById('progressDisplay').innerText = `${totalCompleted}/${world.totalWords}`;
             }
@@ -2428,14 +2409,13 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Ingot Complete Popup
+            // FIXED: Ingot Complete Popup with fromCompletion flag
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
                 const unit = world.units.find(u => u.id === currentUnit);
                 const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
                 
-                // Calculate stats for this ingot
                 const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
                 const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
                 const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
@@ -2476,18 +2456,17 @@
                 
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    showLeaderboardPopup();
+                    // Pass true to indicate we came from a completed ingot
+                    showLeaderboardPopup(true);
                 });
                 
                 document.getElementById('continueBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
                     
-                    // Check if this was the last ingot in the world
                     const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
                     if (allUnitsCompleted) {
                         showWorldArtifactPopup();
                     } else {
-                        // Show next ingot preview
                         showNextIngotPreview();
                     }
                 });
@@ -2501,11 +2480,10 @@
                 const world = worlds[currentWorld];
                 const nextUnitData = MASTER_WORDS[`world${currentWorld}`].units[nextIngotId];
                 
-                if (!nextUnitData) return; // No next ingot
+                if (!nextUnitData) return;
                 
                 const chance = calculateSuccessChance(nextIngotId);
                 
-                // Determine chance color class
                 let chanceColorClass = 'chance-high';
                 if (chance.final < 50) chanceColorClass = 'chance-low';
                 else if (chance.final < 80) chanceColorClass = 'chance-medium';
@@ -2586,7 +2564,6 @@
                 const world = worlds[currentWorld];
                 const overlay = document.getElementById('popupOverlay');
                 
-                // Get completed ingots for practice
                 const completedIngots = world.units.filter(u => u.wordsCompleted === 20 && u.id !== currentUnit);
                 
                 overlay.innerHTML = '';
@@ -2617,7 +2594,6 @@
                 overlay.appendChild(card);
                 overlay.classList.remove('hidden');
                 
-                // Add click handlers to practice items
                 document.querySelectorAll('.practice-item').forEach(item => {
                     item.addEventListener('click', () => {
                         const practiceId = parseInt(item.dataset.id);
@@ -2703,7 +2679,8 @@
                 });
             }
 
-            function showLeaderboardPopup() {
+            // FIXED: Leaderboard Popup with fromCompletion parameter
+            function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
                 const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
@@ -2786,7 +2763,7 @@
                     </div>
 
                     <div class="button-group">
-                        <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
+                        <button class="action-btn" id="backFromLeaderboardBtn">← BACK</button>
                         <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
                     </div>
                 `;
@@ -2802,9 +2779,28 @@
                     }
                 }, 100);
                 
-                document.getElementById('playAgainBtn').addEventListener('click', () => {
+                document.getElementById('backFromLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    resetForNewUnit();
+                    
+                    if (fromCompletion) {
+                        const world = worlds[currentWorld];
+                        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+                        
+                        if (allUnitsCompleted) {
+                            showWorldArtifactPopup();
+                        } else {
+                            const nextIngotId = currentUnit + 1;
+                            const nextUnit = world.units.find(u => u.id === nextIngotId);
+                            
+                            if (nextUnit && nextUnit.unlocked) {
+                                showNextIngotPreview();
+                            } else {
+                                renderAll();
+                            }
+                        }
+                    } else {
+                        renderAll();
+                    }
                 });
 
                 document.getElementById('shareBtn').addEventListener('click', () => {
@@ -2822,7 +2818,6 @@
                 if (!completedWords.includes(wordIndex)) {
                     completedWords.push(wordIndex);
                     
-                    // Update unit progress
                     const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                     if (unit) {
                         unit.wordsCompleted = completedWords.length;
@@ -2840,10 +2835,8 @@
                 renderAll();
                 updateWorldDisplay();
                 
-                // Check if unit is now complete
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                 if (unit && unit.wordsCompleted === unit.totalWords) {
-                    // Update performance tracking
                     const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
                     
                     playerPerformance.currentStreak++;
@@ -2853,12 +2846,10 @@
                     playerPerformance.lastPlayedDate = new Date().toISOString();
                     playerPerformance.worldProgress[currentWorld].completed++;
                     
-                    // Calculate risk bonus
                     const chance = calculateSuccessChance(currentUnit);
                     const riskBonus = calculateRiskBonus(chance.base, chance.final, true);
                     playerPerformance.totalRiskBonus += riskBonus;
                     
-                    // Add to history
                     playerPerformance.ingotHistory.push({
                         id: currentUnit,
                         success: true,
@@ -2868,11 +2859,9 @@
                         date: new Date().toISOString()
                     });
                     
-                    // Show ingot complete popup
                     setTimeout(() => {
                         showIngotCompletePopup();
                         
-                        // Unlock next unit
                         const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
                         if (nextUnit) {
                             nextUnit.unlocked = true;
@@ -2926,7 +2915,6 @@
             function renderAll() {
                 const words = getCurrentUnitWords();
                 
-                // Word list
                 const wordContainer = document.getElementById('wordListContainer');
                 if (wordContainer) {
                     wordContainer.innerHTML = '';
@@ -2958,7 +2946,6 @@
                     }
                 }
 
-                // Active hint
                 if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted && words && words.length > 0) {
                     const w = words[activeWordIndex].word;
                     const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
@@ -2970,7 +2957,6 @@
                     document.getElementById('nextLetterDisplay').innerText = '?';
                 }
 
-                // Letter grid
                 const gridContainer = document.getElementById('letterGridContainer');
                 gridContainer.innerHTML = '';
                 if (currentLetters.length > 0) {
@@ -2986,7 +2972,6 @@
                     });
                 }
 
-                // Artifact text
                 const artifactEl = document.getElementById('artifactText');
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                 if (unit) {
@@ -3022,11 +3007,9 @@
                 updateWorldDisplay();
             });
 
-            // Start game
             updateWorldDisplay();
             resetForNewUnit();
 
-            // Telegram back button
             if (tg) {
                 tg.onEvent('backButtonClicked', () => {
                     tg.close();
