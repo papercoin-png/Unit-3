@@ -170,7 +170,7 @@
             backdrop-filter: blur(4px);
         }
 
-        /* word list area - RESTORED */
+        /* word list area */
         .word-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
@@ -966,7 +966,7 @@
             <div class="unit-grid" id="unitGrid"></div>
         </div>
 
-        <!-- word list area - RESTORED -->
+        <!-- word list area - with original words -->
         <div class="word-section">
             <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
             <div class="word-grid" id="wordListContainer"></div>
@@ -1077,6 +1077,30 @@
             }, 2000);
 
             window.addEventListener('load', simulateLoading);
+
+            // ---------- ORIGINAL WORD DATABASE (RESTORED) ----------
+            const wordsDatabase = [
+                { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
+                { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
+                { word: "chart", emoji: "📊", sentence: "We made a chart of everyone's favorite pizza." },
+                { word: "cloud", emoji: "☁️", sentence: "That cloud looks exactly like a dragon." },
+                { word: "comprehend", emoji: "🧠", sentence: "It's hard to comprehend how big the universe is." },
+                { word: "describe", emoji: "🗣️", sentence: "Can you describe your perfect day?" },
+                { word: "ever", emoji: "🌟", sentence: "This is the most beautiful sunset ever." },
+                { word: "fail", emoji: "😤", sentence: "It's okay to fail when you're learning something new." },
+                { word: "friendly", emoji: "🐕", sentence: "The friendly dog wagged its tail at everyone." },
+                { word: "grade", emoji: "📝", sentence: "She got an A+ on her spelling grade." },
+                { word: "instead", emoji: "🔄", sentence: "Let's play outside instead of watching TV." },
+                { word: "library", emoji: "📚", sentence: "The library has a story hour every Tuesday." },
+                { word: "planet", emoji: "🪐", sentence: "Which planet has the most beautiful rings?" },
+                { word: "report", emoji: "📰", sentence: "I need to write a report about frogs." },
+                { word: "several", emoji: "🧮", sentence: "I've read several books by that author." },
+                { word: "solve", emoji: "🧩", sentence: "Together we can solve any puzzle." },
+                { word: "suddenly", emoji: "⚡", sentence: "Suddenly, the room filled with colorful light." },
+                { word: "suppose", emoji: "🤔", sentence: "I suppose we could share the last cookie." },
+                { word: "universe", emoji: "🌌", sentence: "How many stars are in the universe?" },
+                { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
+            ];
 
             // ---------- WORLD DATA STRUCTURE ----------
             const worlds = {
@@ -1224,34 +1248,10 @@
             let wordCardQueue = [];
             let showingWordCard = false;
 
-            // Mock word database for current unit (20 words)
-            const mockWords = [
-                { word: "forge", emoji: "⚒️", sentence: "The forge glows with heat." },
-                { word: "hammer", emoji: "🔨", sentence: "The hammer strikes true." },
-                { word: "anvil", emoji: "⛓️", sentence: "Words shape on the anvil." },
-                { word: "spark", emoji: "✨", sentence: "A spark ignites the forge." },
-                { word: "steel", emoji: "⚔️", sentence: "Steel tempered with care." },
-                { word: "flame", emoji: "🔥", sentence: "The flame dances bright." },
-                { word: "iron", emoji: "⛓️", sentence: "Raw iron waits." },
-                { word: "temper", emoji: "⚖️", sentence: "Temper your words wisely." },
-                { word: "quench", emoji: "💧", sentence: "Quench in cool wisdom." },
-                { word: "shape", emoji: "🔷", sentence: "Shape each letter with care." },
-                { word: "edge", emoji: "⚔️", sentence: "A sharp edge cuts true." },
-                { word: "gleam", emoji: "✨", sentence: "The gleam of finished work." },
-                { word: "polish", emoji: "🪞", sentence: "Polish until it shines." },
-                { word: "craft", emoji: "🛠️", sentence: "Craft each word with skill." },
-                { word: "master", emoji: "👑", sentence: "Mastery takes time." },
-                { word: "skill", emoji: "🎯", sentence: "Skill grows with practice." },
-                { word: "power", emoji: "💪", sentence: "Words hold great power." },
-                { word: "wisdom", emoji: "🦉", sentence: "Wisdom in every word." },
-                { word: "legacy", emoji: "📜", sentence: "Build a lasting legacy." },
-                { word: "destiny", emoji: "✨", sentence: "Forge your destiny." }
-            ];
-
             // ---------- HELPER FUNCTIONS ----------
             function generateInitialLetters() {
                 let allChars = [];
-                mockWords.forEach(entry => {
+                wordsDatabase.forEach(entry => {
                     allChars.push(...entry.word.split(''));
                 });
                 // Shuffle
@@ -1263,7 +1263,7 @@
             }
 
             function getCurrentUnitWords() {
-                return mockWords; // Will be replaced with actual unit words later
+                return wordsDatabase; // Your original 20 words
             }
 
             function updateWorldDisplay() {
@@ -1600,7 +1600,7 @@
                         unit.wordsCompleted = completedWords.length;
                     }
                     
-                    const wordData = mockWords[wordIndex];
+                    const wordData = wordsDatabase[wordIndex];
                     showWordCard(wordData);
                 }
 
@@ -1653,7 +1653,7 @@
             function renderAll() {
                 const words = getCurrentUnitWords();
                 
-                // Word list - RESTORED
+                // Word list with original words
                 const wordContainer = document.getElementById('wordListContainer');
                 if (wordContainer) {
                     wordContainer.innerHTML = '';
