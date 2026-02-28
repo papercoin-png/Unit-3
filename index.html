@@ -683,6 +683,284 @@
             color: white;
         }
 
+        /* next ingot preview popup */
+        .preview-card {
+            max-width: 440px;
+            width: 100%;
+            background: linear-gradient(165deg, #1e3b4a, #16323f);
+            border-radius: 60px;
+            padding: 30px 25px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #c9ae5b;
+            text-align: center;
+            border: 3px solid #dbb45c;
+            margin: auto;
+        }
+
+        .preview-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffdfa0;
+            margin-bottom: 15px;
+        }
+
+        .preview-ingot {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffdb8e;
+            margin-bottom: 20px;
+        }
+
+        .chance-container {
+            background: #0e2938;
+            border-radius: 50px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #b8944a;
+        }
+
+        .chance-label {
+            font-size: 18px;
+            color: #acccdd;
+            margin-bottom: 10px;
+        }
+
+        .chance-value {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .chance-high { color: #4ade80; }
+        .chance-medium { color: #fbbf24; }
+        .chance-low { color: #f87171; }
+
+        .chance-bar {
+            width: 100%;
+            height: 20px;
+            background: #0f1f29;
+            border-radius: 30px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .chance-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f0b345, #ffd966);
+            border-radius: 30px;
+            transition: width 0.3s;
+        }
+
+        .modifiers-list {
+            text-align: left;
+            background: #0c202b;
+            border-radius: 30px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #aa873f;
+        }
+
+        .modifier-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1d3f4f;
+        }
+
+        .modifier-row:last-child {
+            border-bottom: none;
+        }
+
+        .modifier-name {
+            color: #ffdcaa;
+        }
+
+        .modifier-value {
+            font-weight: 700;
+        }
+
+        .modifier-value.positive { color: #4ade80; }
+        .modifier-value.negative { color: #f87171; }
+
+        .preview-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .preview-btn {
+            flex: 1;
+            background: #f0b345;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 10px;
+            font-weight: 700;
+            font-size: 20px;
+            color: #1d332b;
+            box-shadow: 0 5px 0 #9e691f;
+            cursor: pointer;
+            border: 2px solid #ffe694;
+            transition: 0.08s;
+        }
+
+        .preview-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #9e691f;
+        }
+
+        .preview-btn.secondary {
+            background: #557a8b;
+            box-shadow: 0 5px 0 #2e4a57;
+            color: white;
+        }
+
+        /* practice mode popup */
+        .practice-card {
+            max-width: 440px;
+            width: 100%;
+            background: linear-gradient(165deg, #1e3b4a, #16323f);
+            border-radius: 60px;
+            padding: 30px 25px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #c9ae5b;
+            text-align: center;
+            border: 3px solid #dbb45c;
+            margin: auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .practice-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffdfa0;
+            margin-bottom: 20px;
+        }
+
+        .practice-list {
+            background: #0c202b;
+            border-radius: 40px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #aa873f;
+        }
+
+        .practice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 5px 0;
+            background: #1d3f4f;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .practice-item:hover {
+            background: #2c5a6e;
+        }
+
+        .practice-item.selected {
+            background: #c9a34b;
+            color: #0a1f29;
+            border: 2px solid gold;
+        }
+
+        .practice-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .practice-icon {
+            font-size: 24px;
+        }
+
+        .practice-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .practice-chance {
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 30px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* failure popup */
+        .failure-card {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(165deg, #4a1e1e, #6b2e2e);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ff6666;
+            text-align: center;
+            animation: shake 0.5s;
+            border: 3px solid #ff4747;
+            margin: auto;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .failure-emoji {
+            font-size: 90px;
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+
+        .failure-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ffb3b3;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 5px 5px 0 #7a1d1d;
+            margin: 5px 0;
+        }
+
+        /* legendary success popup */
+        .legendary-card {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(165deg, #4a2e6b, #6b4a9e);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33;
+            text-align: center;
+            animation: legendaryPulse 2s infinite;
+            border: 3px solid gold;
+            margin: auto;
+        }
+
+        @keyframes legendaryPulse {
+            0% { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33; }
+            50% { box-shadow: 0 30px 50px #000000cc, 0 0 0 12px #ffd966, 0 0 60px #ffd966; }
+            100% { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33; }
+        }
+
+        .legendary-emoji {
+            font-size: 90px;
+            line-height: 1.2;
+            margin: 15px 0;
+            filter: drop-shadow(0 0 20px gold);
+        }
+
+        .legendary-title {
+            font-size: 42px;
+            font-weight: 900;
+            color: gold;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px #ffaa33;
+            margin: 10px 0;
+        }
+
         /* world complete popup */
         .world-card {
             max-width: 420px;
@@ -735,11 +1013,6 @@
             animation: glowPulse 2s infinite alternate;
             border: 3px solid #ffb347;
             margin: auto;
-        }
-
-        @keyframes glowPulse {
-            from { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffd966; }
-            to { box-shadow: 0 30px 60px #000000, 0 0 0 12px #ffaa33; }
         }
 
         .artifact-emoji {
@@ -1546,6 +1819,220 @@
                 }
             };
 
+            // ---------- INGOT DIFFICULTY DATABASE ----------
+            const ingotDifficulty = {
+                // WORLD 1: Grand Forge (Ingots 1-30)
+                1: { baseChance: 100, tier: "Foundation" },
+                2: { baseChance: 99, tier: "Foundation" },
+                3: { baseChance: 98, tier: "Foundation" },
+                4: { baseChance: 97, tier: "Foundation" },
+                5: { baseChance: 96, tier: "Foundation" },
+                6: { baseChance: 95, tier: "Foundation" },
+                7: { baseChance: 94, tier: "Foundation" },
+                8: { baseChance: 93, tier: "Foundation" },
+                9: { baseChance: 92, tier: "Foundation" },
+                10: { baseChance: 91, tier: "Foundation" },
+                11: { baseChance: 90, tier: "Crafting" },
+                12: { baseChance: 89, tier: "Crafting" },
+                13: { baseChance: 88, tier: "Crafting" },
+                14: { baseChance: 87, tier: "Crafting" },
+                15: { baseChance: 86, tier: "Crafting" },
+                16: { baseChance: 85, tier: "Crafting" },
+                17: { baseChance: 84, tier: "Crafting" },
+                18: { baseChance: 83, tier: "Crafting" },
+                19: { baseChance: 82, tier: "Crafting" },
+                20: { baseChance: 81, tier: "Crafting" },
+                21: { baseChance: 80, tier: "Masterwork" },
+                22: { baseChance: 79, tier: "Masterwork" },
+                23: { baseChance: 78, tier: "Masterwork" },
+                24: { baseChance: 77, tier: "Masterwork" },
+                25: { baseChance: 76, tier: "Masterwork" },
+                26: { baseChance: 75, tier: "Masterwork" },
+                27: { baseChance: 74, tier: "Masterwork" },
+                28: { baseChance: 73, tier: "Masterwork" },
+                29: { baseChance: 72, tier: "Masterwork" },
+                30: { baseChance: 71, tier: "Masterwork" },
+                
+                // WORLD 2: Enchanted Forest (Seeds 31-60)
+                31: { baseChance: 70, tier: "Sprouting" },
+                32: { baseChance: 69, tier: "Sprouting" },
+                33: { baseChance: 68, tier: "Sprouting" },
+                34: { baseChance: 67, tier: "Sprouting" },
+                35: { baseChance: 66, tier: "Sprouting" },
+                36: { baseChance: 65, tier: "Sprouting" },
+                37: { baseChance: 64, tier: "Sprouting" },
+                38: { baseChance: 63, tier: "Sprouting" },
+                39: { baseChance: 62, tier: "Sprouting" },
+                40: { baseChance: 61, tier: "Sprouting" },
+                41: { baseChance: 60, tier: "Blooming" },
+                42: { baseChance: 59, tier: "Blooming" },
+                43: { baseChance: 58, tier: "Blooming" },
+                44: { baseChance: 57, tier: "Blooming" },
+                45: { baseChance: 56, tier: "Blooming" },
+                46: { baseChance: 55, tier: "Blooming" },
+                47: { baseChance: 54, tier: "Blooming" },
+                48: { baseChance: 53, tier: "Blooming" },
+                49: { baseChance: 52, tier: "Blooming" },
+                50: { baseChance: 51, tier: "Blooming" },
+                51: { baseChance: 50, tier: "Ancient" },
+                52: { baseChance: 49, tier: "Ancient" },
+                53: { baseChance: 48, tier: "Ancient" },
+                54: { baseChance: 47, tier: "Ancient" },
+                55: { baseChance: 46, tier: "Ancient" },
+                56: { baseChance: 45, tier: "Ancient" },
+                57: { baseChance: 44, tier: "Ancient" },
+                58: { baseChance: 43, tier: "Ancient" },
+                59: { baseChance: 42, tier: "Ancient" },
+                60: { baseChance: 41, tier: "Ancient" },
+                
+                // WORLD 3: Crystal Caverns (Geodes 61-90)
+                61: { baseChance: 40, tier: "Rough" },
+                62: { baseChance: 39, tier: "Rough" },
+                63: { baseChance: 38, tier: "Rough" },
+                64: { baseChance: 37, tier: "Rough" },
+                65: { baseChance: 36, tier: "Rough" },
+                66: { baseChance: 35, tier: "Rough" },
+                67: { baseChance: 34, tier: "Rough" },
+                68: { baseChance: 33, tier: "Rough" },
+                69: { baseChance: 32, tier: "Rough" },
+                70: { baseChance: 31, tier: "Rough" },
+                71: { baseChance: 30, tier: "Revealed" },
+                72: { baseChance: 29, tier: "Revealed" },
+                73: { baseChance: 28, tier: "Revealed" },
+                74: { baseChance: 27, tier: "Revealed" },
+                75: { baseChance: 26, tier: "Revealed" },
+                76: { baseChance: 25, tier: "Revealed" },
+                77: { baseChance: 24, tier: "Revealed" },
+                78: { baseChance: 23, tier: "Revealed" },
+                79: { baseChance: 22, tier: "Revealed" },
+                80: { baseChance: 21, tier: "Revealed" },
+                81: { baseChance: 20, tier: "Perfect" },
+                82: { baseChance: 19, tier: "Perfect" },
+                83: { baseChance: 18, tier: "Perfect" },
+                84: { baseChance: 17, tier: "Perfect" },
+                85: { baseChance: 16, tier: "Perfect" },
+                86: { baseChance: 15, tier: "Perfect" },
+                87: { baseChance: 14, tier: "Perfect" },
+                88: { baseChance: 13, tier: "Perfect" },
+                89: { baseChance: 12, tier: "Perfect" },
+                90: { baseChance: 11, tier: "Perfect" },
+                
+                // WORLD 4: Sky Citadel (Clouds 91-120)
+                91: { baseChance: 10, tier: "Drifting" },
+                92: { baseChance: 10, tier: "Drifting" },
+                93: { baseChance: 10, tier: "Drifting" },
+                94: { baseChance: 10, tier: "Drifting" },
+                95: { baseChance: 10, tier: "Drifting" },
+                96: { baseChance: 9, tier: "Drifting" },
+                97: { baseChance: 9, tier: "Drifting" },
+                98: { baseChance: 9, tier: "Drifting" },
+                99: { baseChance: 9, tier: "Drifting" },
+                100: { baseChance: 9, tier: "Drifting" },
+                101: { baseChance: 8, tier: "Powerful" },
+                102: { baseChance: 8, tier: "Powerful" },
+                103: { baseChance: 8, tier: "Powerful" },
+                104: { baseChance: 8, tier: "Powerful" },
+                105: { baseChance: 8, tier: "Powerful" },
+                106: { baseChance: 7, tier: "Powerful" },
+                107: { baseChance: 7, tier: "Powerful" },
+                108: { baseChance: 7, tier: "Powerful" },
+                109: { baseChance: 7, tier: "Powerful" },
+                110: { baseChance: 7, tier: "Powerful" },
+                111: { baseChance: 6, tier: "Masterful" },
+                112: { baseChance: 6, tier: "Masterful" },
+                113: { baseChance: 6, tier: "Masterful" },
+                114: { baseChance: 6, tier: "Masterful" },
+                115: { baseChance: 6, tier: "Masterful" },
+                116: { baseChance: 5, tier: "Masterful" },
+                117: { baseChance: 5, tier: "Masterful" },
+                118: { baseChance: 5, tier: "Masterful" },
+                119: { baseChance: 5, tier: "Masterful" },
+                120: { baseChance: 5, tier: "Masterful" },
+                
+                // WORLD 5: Dragon's Peak (Scales 121-150)
+                121: { baseChance: 5, tier: "Hatchling" },
+                122: { baseChance: 5, tier: "Hatchling" },
+                123: { baseChance: 5, tier: "Hatchling" },
+                124: { baseChance: 5, tier: "Hatchling" },
+                125: { baseChance: 5, tier: "Hatchling" },
+                126: { baseChance: 4, tier: "Hatchling" },
+                127: { baseChance: 4, tier: "Hatchling" },
+                128: { baseChance: 4, tier: "Hatchling" },
+                129: { baseChance: 4, tier: "Hatchling" },
+                130: { baseChance: 4, tier: "Hatchling" },
+                131: { baseChance: 4, tier: "Growing" },
+                132: { baseChance: 4, tier: "Growing" },
+                133: { baseChance: 4, tier: "Growing" },
+                134: { baseChance: 4, tier: "Growing" },
+                135: { baseChance: 4, tier: "Growing" },
+                136: { baseChance: 3, tier: "Growing" },
+                137: { baseChance: 3, tier: "Growing" },
+                138: { baseChance: 3, tier: "Growing" },
+                139: { baseChance: 3, tier: "Growing" },
+                140: { baseChance: 3, tier: "Growing" },
+                141: { baseChance: 3, tier: "Elder" },
+                142: { baseChance: 3, tier: "Elder" },
+                143: { baseChance: 3, tier: "Elder" },
+                144: { baseChance: 3, tier: "Elder" },
+                145: { baseChance: 3, tier: "Elder" },
+                146: { baseChance: 2, tier: "Elder" },
+                147: { baseChance: 2, tier: "Elder" },
+                148: { baseChance: 2, tier: "Elder" },
+                149: { baseChance: 2, tier: "Elder" },
+                150: { baseChance: 2, tier: "Elder" },
+                
+                // WORLD 6: Star Forge (Stars 151-180)
+                151: { baseChance: 2, tier: "Twinkling" },
+                152: { baseChance: 2, tier: "Twinkling" },
+                153: { baseChance: 2, tier: "Twinkling" },
+                154: { baseChance: 2, tier: "Twinkling" },
+                155: { baseChance: 2, tier: "Twinkling" },
+                156: { baseChance: 2, tier: "Twinkling" },
+                157: { baseChance: 2, tier: "Twinkling" },
+                158: { baseChance: 2, tier: "Twinkling" },
+                159: { baseChance: 2, tier: "Twinkling" },
+                160: { baseChance: 2, tier: "Twinkling" },
+                161: { baseChance: 1, tier: "Bright" },
+                162: { baseChance: 1, tier: "Bright" },
+                163: { baseChance: 1, tier: "Bright" },
+                164: { baseChance: 1, tier: "Bright" },
+                165: { baseChance: 1, tier: "Bright" },
+                166: { baseChance: 1, tier: "Bright" },
+                167: { baseChance: 1, tier: "Bright" },
+                168: { baseChance: 1, tier: "Bright" },
+                169: { baseChance: 1, tier: "Bright" },
+                170: { baseChance: 1, tier: "Bright" },
+                171: { baseChance: 1, tier: "Cosmic" },
+                172: { baseChance: 1, tier: "Cosmic" },
+                173: { baseChance: 1, tier: "Cosmic" },
+                174: { baseChance: 1, tier: "Cosmic" },
+                175: { baseChance: 1, tier: "Cosmic" },
+                176: { baseChance: 1, tier: "Cosmic" },
+                177: { baseChance: 1, tier: "Cosmic" },
+                178: { baseChance: 1, tier: "Cosmic" },
+                179: { baseChance: 1, tier: "Cosmic" },
+                180: { baseChance: 1, tier: "Cosmic" }
+            };
+
+            // ---------- PLAYER PERFORMANCE TRACKING ----------
+            let playerPerformance = {
+                currentStreak: 0,
+                bestStreak: 0,
+                lastAccuracy: 100,
+                lastAttemptFailed: false,
+                lastPlayedDate: new Date().toISOString(),
+                totalRiskBonus: 0,
+                ingotHistory: [],
+                worldProgress: {
+                    1: { completed: 0, failed: 0, bestTime: null },
+                    2: { completed: 0, failed: 0, bestTime: null },
+                    3: { completed: 0, failed: 0, bestTime: null },
+                    4: { completed: 0, failed: 0, bestTime: null },
+                    5: { completed: 0, failed: 0, bestTime: null },
+                    6: { completed: 0, failed: 0, bestTime: null }
+                }
+            };
+
             // ---------- WORLD DATA STRUCTURE ----------
             const worlds = {
                 1: {
@@ -1564,7 +2051,7 @@
                             name: unitData ? unitData.name : "???",
                             wordsCompleted: 0,
                             totalWords: 20,
-                            unlocked: unitId === 1 // Only first ingot unlocked initially
+                            unlocked: unitId === 1
                         };
                     })
                 },
@@ -1697,7 +2184,6 @@
                 words.forEach(entry => {
                     allChars.push(...entry.word.split(''));
                 });
-                // Shuffle
                 for (let i = allChars.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allChars[i], allChars[j]] = [allChars[j], allChars[i]];
@@ -1706,14 +2192,97 @@
             }
 
             function getCurrentUnitWords() {
-                // Get words from master bank based on current world and unit
                 try {
                     const unitWords = MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words;
                     return unitWords || [];
                 } catch (e) {
-                    console.log("No words for this unit yet, returning empty array");
                     return [];
                 }
+            }
+
+            function calculateSuccessChance(ingotId) {
+                // Get base chance from difficulty database
+                const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
+                let baseChance = difficulty.baseChance;
+                
+                // Calculate modifiers
+                let modifiers = 0;
+                let breakdown = {
+                    streak: 0,
+                    perfect: 0,
+                    mastery: 0,
+                    failure: 0,
+                    rusty: 0
+                };
+                
+                // Hot streak bonus (+5% per 3 consecutive completed)
+                const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
+                modifiers += streakBonus;
+                breakdown.streak = streakBonus;
+                
+                // Perfect accuracy bonus (+10% if last ingot was 100%)
+                if (playerPerformance.lastAccuracy === 100) {
+                    modifiers += 10;
+                    breakdown.perfect = 10;
+                }
+                
+                // World mastery bonus (+2% per ingot completed in current world)
+                const worldCompleted = playerPerformance.worldProgress[currentWorld].completed;
+                const masteryBonus = Math.floor(worldCompleted / 5) * 2;
+                modifiers += masteryBonus;
+                breakdown.mastery = masteryBonus;
+                
+                // Recent failure penalty (-10% if last ingot failed)
+                if (playerPerformance.lastAttemptFailed) {
+                    modifiers -= 10;
+                    breakdown.failure = -10;
+                }
+                
+                // Rusty penalty (-5% if inactive > 7 days)
+                const daysSinceLastPlay = Math.floor((new Date() - new Date(playerPerformance.lastPlayedDate)) / (1000 * 60 * 60 * 24));
+                if (daysSinceLastPlay > 7) {
+                    modifiers -= 5;
+                    breakdown.rusty = -5;
+                }
+                
+                // Cap modifiers
+                modifiers = Math.min(modifiers, 30);
+                modifiers = Math.max(modifiers, -20);
+                
+                // Calculate final chance
+                let finalChance = baseChance + modifiers;
+                
+                // Ensure within bounds
+                finalChance = Math.min(finalChance, 100);
+                finalChance = Math.max(finalChance, 1);
+                
+                return {
+                    base: baseChance,
+                    modifiers: modifiers,
+                    final: finalChance,
+                    breakdown: breakdown,
+                    tier: difficulty.tier
+                };
+            }
+
+            function calculateRiskBonus(baseChance, actualChance, success) {
+                if (!success) return 0;
+                
+                // The lower the chance, the higher the bonus
+                const riskFactor = 100 - actualChance;
+                
+                // Bonus formula: risk factor × 10
+                const bonus = riskFactor * 10;
+                
+                return Math.min(bonus, 1000); // Cap at 1000 bonus
+            }
+
+            function getDaysSince(dateString) {
+                const last = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - last);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
             }
 
             function updateWorldDisplay() {
@@ -1859,7 +2428,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // New: Ingot Complete Popup
+            // Ingot Complete Popup
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -1916,17 +2485,156 @@
                     // Check if this was the last ingot in the world
                     const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
                     if (allUnitsCompleted) {
-                        // World complete! Show world artifact
-                        setTimeout(() => {
-                            showWorldArtifactPopup();
-                        }, 300);
+                        showWorldArtifactPopup();
+                    } else {
+                        // Show next ingot preview
+                        showNextIngotPreview();
                     }
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // New: World Artifact Popup
+            // Next Ingot Preview Popup
+            function showNextIngotPreview() {
+                const nextIngotId = currentUnit + 1;
+                const world = worlds[currentWorld];
+                const nextUnitData = MASTER_WORDS[`world${currentWorld}`].units[nextIngotId];
+                
+                if (!nextUnitData) return; // No next ingot
+                
+                const chance = calculateSuccessChance(nextIngotId);
+                
+                // Determine chance color class
+                let chanceColorClass = 'chance-high';
+                if (chance.final < 50) chanceColorClass = 'chance-low';
+                else if (chance.final < 80) chanceColorClass = 'chance-medium';
+                
+                const overlay = document.getElementById('popupOverlay');
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'preview-card';
+                card.innerHTML = `
+                    <div class="preview-title">⚒️ NEXT INGOT</div>
+                    <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${nextUnitData.name}</div>
+                    
+                    <div class="chance-container">
+                        <div class="chance-label">CHANCE OF SUCCESS</div>
+                        <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
+                        <div class="chance-bar">
+                            <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+                        </div>
+                        
+                        <div class="modifiers-list">
+                            <div class="modifier-row">
+                                <span class="modifier-name">Base Chance (${chance.tier})</span>
+                                <span class="modifier-value">${chance.base}%</span>
+                            </div>
+                            ${chance.breakdown.streak > 0 ? `
+                            <div class="modifier-row">
+                                <span class="modifier-name">Hot Streak (${playerPerformance.currentStreak})</span>
+                                <span class="modifier-value positive">+${chance.breakdown.streak}%</span>
+                            </div>` : ''}
+                            ${chance.breakdown.perfect > 0 ? `
+                            <div class="modifier-row">
+                                <span class="modifier-name">Perfect Last Ingot</span>
+                                <span class="modifier-value positive">+${chance.breakdown.perfect}%</span>
+                            </div>` : ''}
+                            ${chance.breakdown.mastery > 0 ? `
+                            <div class="modifier-row">
+                                <span class="modifier-name">World Mastery</span>
+                                <span class="modifier-value positive">+${chance.breakdown.mastery}%</span>
+                            </div>` : ''}
+                            ${chance.breakdown.failure < 0 ? `
+                            <div class="modifier-row">
+                                <span class="modifier-name">Recent Failure</span>
+                                <span class="modifier-value negative">${chance.breakdown.failure}%</span>
+                            </div>` : ''}
+                            ${chance.breakdown.rusty < 0 ? `
+                            <div class="modifier-row">
+                                <span class="modifier-name">Rusty (${getDaysSince(playerPerformance.lastPlayedDate)} days)</span>
+                                <span class="modifier-value negative">${chance.breakdown.rusty}%</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="preview-buttons">
+                        <button class="preview-btn" id="forgeAheadBtn">⚒️ FORGE AHEAD</button>
+                        <button class="preview-btn secondary" id="practiceBtn">🔨 PRACTICE</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                document.getElementById('forgeAheadBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    currentUnit = nextIngotId;
+                    resetForNewUnit();
+                    updateWorldDisplay();
+                });
+                
+                document.getElementById('practiceBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    showPracticeMode();
+                });
+            }
+
+            // Practice Mode Popup
+            function showPracticeMode() {
+                const world = worlds[currentWorld];
+                const overlay = document.getElementById('popupOverlay');
+                
+                // Get completed ingots for practice
+                const completedIngots = world.units.filter(u => u.wordsCompleted === 20 && u.id !== currentUnit);
+                
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'practice-card';
+                card.innerHTML = `
+                    <div class="practice-title">🔨 PRACTICE MODE</div>
+                    <div class="practice-list" id="practiceList">
+                        ${completedIngots.map(unit => {
+                            const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                            return `
+                                <div class="practice-item" data-id="${unit.id}">
+                                    <div class="practice-item-left">
+                                        <span class="practice-icon">⚒️</span>
+                                        <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitData.name}</span>
+                                    </div>
+                                    <span class="practice-chance">${unit.wordsCompleted}/20</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="preview-buttons">
+                        <button class="preview-btn secondary" id="backBtn">← BACK</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                // Add click handlers to practice items
+                document.querySelectorAll('.practice-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const practiceId = parseInt(item.dataset.id);
+                        overlay.classList.add('hidden');
+                        currentUnit = practiceId;
+                        resetForNewUnit();
+                        updateWorldDisplay();
+                    });
+                });
+                
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    showNextIngotPreview();
+                });
+            }
+
+            // World Artifact Popup
             function showWorldArtifactPopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -1959,14 +2667,12 @@
                     e.stopPropagation();
                     overlay.classList.add('hidden');
                     
-                    // Unlock next world if available
                     if (currentWorld < 6) {
                         worlds[currentWorld + 1].unlocked = true;
                         setTimeout(() => {
                             showWorldUnlockPopup(currentWorld + 1);
                         }, 300);
                     } else {
-                        // All worlds complete! Show final celebration
                         showLeaderboardPopup();
                     }
                 });
@@ -2137,7 +2843,32 @@
                 // Check if unit is now complete
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                 if (unit && unit.wordsCompleted === unit.totalWords) {
-                    // Unit complete! Show ingot complete popup after a short delay
+                    // Update performance tracking
+                    const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
+                    
+                    playerPerformance.currentStreak++;
+                    playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
+                    playerPerformance.lastAccuracy = accuracy;
+                    playerPerformance.lastAttemptFailed = false;
+                    playerPerformance.lastPlayedDate = new Date().toISOString();
+                    playerPerformance.worldProgress[currentWorld].completed++;
+                    
+                    // Calculate risk bonus
+                    const chance = calculateSuccessChance(currentUnit);
+                    const riskBonus = calculateRiskBonus(chance.base, chance.final, true);
+                    playerPerformance.totalRiskBonus += riskBonus;
+                    
+                    // Add to history
+                    playerPerformance.ingotHistory.push({
+                        id: currentUnit,
+                        success: true,
+                        accuracy: accuracy,
+                        time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
+                        sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
+                        date: new Date().toISOString()
+                    });
+                    
+                    // Show ingot complete popup
                     setTimeout(() => {
                         showIngotCompletePopup();
                         
@@ -2220,7 +2951,6 @@
                             wordContainer.appendChild(chip);
                         });
                     } else {
-                        // Placeholder for units without words yet
                         const placeholder = document.createElement('div');
                         placeholder.className = 'word-chip';
                         placeholder.innerText = "Coming Soon";
