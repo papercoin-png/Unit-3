@@ -583,6 +583,146 @@
             box-shadow: 0 2px 0 #9e691f;
         }
 
+        /* ingot complete popup */
+        .ingot-card {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(165deg, #4a2e1e, #6b4a2e);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffd966;
+            text-align: center;
+            animation: glowPulse 2s infinite alternate;
+            border: 3px solid #ffb347;
+            margin: auto;
+        }
+
+        @keyframes glowPulse {
+            from { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffd966; }
+            to { box-shadow: 0 30px 60px #000000, 0 0 0 12px #ffaa33; }
+        }
+
+        .ingot-emoji {
+            font-size: 90px;
+            line-height: 1.2;
+            margin: 15px 0;
+            filter: drop-shadow(8px 15px 0 #3f2b16);
+        }
+
+        .ingot-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ffecb3;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 5px 5px 0 #7a4c1d;
+            margin: 5px 0;
+            line-height: 1.2;
+        }
+
+        .ingot-sub {
+            font-size: 28px;
+            color: #ffe39a;
+            background: #3d2b17;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin: 20px 0 15px;
+            border: 2px solid #e5a449;
+        }
+
+        .ingot-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .ingot-stat {
+            text-align: center;
+        }
+
+        .ingot-stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffdb8e;
+        }
+
+        .ingot-stat-label {
+            font-size: 14px;
+            color: #acccdd;
+        }
+
+        .ingot-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .ingot-btn {
+            flex: 1;
+            background: #f0b345;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 10px;
+            font-weight: 700;
+            font-size: 20px;
+            color: #1d332b;
+            box-shadow: 0 5px 0 #9e691f;
+            cursor: pointer;
+            border: 2px solid #ffe694;
+            transition: 0.08s;
+        }
+
+        .ingot-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #9e691f;
+        }
+
+        .ingot-btn.secondary {
+            background: #557a8b;
+            box-shadow: 0 5px 0 #2e4a57;
+            color: white;
+        }
+
+        /* world complete popup */
+        .world-card {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(165deg, #1e3b4a, #16323f);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #c9ae5b;
+            text-align: center;
+            animation: glowPulse 2s infinite alternate;
+            border: 3px solid #dbb45c;
+            margin: auto;
+        }
+
+        .world-emoji {
+            font-size: 90px;
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+
+        .world-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ffdfa0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 5px 5px 0 #4a2e1e;
+            margin: 5px 0;
+        }
+
+        .world-sub {
+            font-size: 28px;
+            color: #ffdcaa;
+            background: #0e2938;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin: 20px 0;
+            border: 2px solid #b8944a;
+        }
+
         /* artifact popup */
         .artifact-card {
             max-width: 420px;
@@ -1086,7 +1226,7 @@
                     icon: "⚒️",
                     unitType: "Ingot",
                     units: {
-                        1: { // Ingot 01: First Spark (your original 20 words)
+                        1: { // Ingot 01: First Spark
                             name: "First Spark",
                             words: [
                                 { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
@@ -1551,6 +1691,8 @@
             // ---------- HELPER FUNCTIONS ----------
             function generateInitialLetters() {
                 const words = getCurrentUnitWords();
+                if (!words || words.length === 0) return [];
+                
                 let allChars = [];
                 words.forEach(entry => {
                     allChars.push(...entry.word.split(''));
@@ -1566,7 +1708,8 @@
             function getCurrentUnitWords() {
                 // Get words from master bank based on current world and unit
                 try {
-                    return MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words;
+                    const unitWords = MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words;
+                    return unitWords || [];
                 } catch (e) {
                     console.log("No words for this unit yet, returning empty array");
                     return [];
@@ -1710,29 +1853,122 @@
                 document.getElementById('collectWordBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
                     showingWordCard = false;
-                    
-                    // Check if unit completed
-                    const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                    if (unit && unit.wordsCompleted === unit.totalWords) {
-                        // Unlock next unit
-                        const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
-                        if (nextUnit) {
-                            nextUnit.unlocked = true;
-                        }
-                        
-                        // Check if world completed
-                        const allUnitsCompleted = worlds[currentWorld].units.every(u => u.wordsCompleted === 20);
-                        if (allUnitsCompleted && currentWorld < 6) {
-                            worlds[currentWorld + 1].unlocked = true;
-                            // Show world unlock message
-                            setTimeout(() => {
-                                showWorldUnlockPopup(currentWorld + 1);
-                            }, 300);
-                        }
-                    }
-                    
-                    updateWorldDisplay();
                     processWordCardQueue();
+                });
+                
+                tg?.HapticFeedback?.notificationOccurred?.('success');
+            }
+
+            // New: Ingot Complete Popup
+            function showIngotCompletePopup() {
+                const overlay = document.getElementById('popupOverlay');
+                const world = worlds[currentWorld];
+                const unit = world.units.find(u => u.id === currentUnit);
+                const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
+                
+                // Calculate stats for this ingot
+                const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+                const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
+                const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
+                const playerRating = getRatingFromScore(playerSFR);
+                
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'ingot-card';
+                card.innerHTML = `
+                    <div class="ingot-emoji">⚒️</div>
+                    <div class="ingot-title">INGOT COMPLETE!</div>
+                    <div class="ingot-sub">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitData.name}</div>
+                    
+                    <div class="ingot-stats">
+                        <div class="ingot-stat">
+                            <div class="ingot-stat-value">${playerSFR}</div>
+                            <div class="ingot-stat-label">SFR</div>
+                        </div>
+                        <div class="ingot-stat">
+                            <div class="ingot-stat-value">${playerRating.emoji}</div>
+                            <div class="ingot-stat-label">${playerRating.title}</div>
+                        </div>
+                        <div class="ingot-stat">
+                            <div class="ingot-stat-value">${formatTime(timeElapsed)}</div>
+                            <div class="ingot-stat-label">TIME</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ingot-buttons">
+                        <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
+                        <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    showLeaderboardPopup();
+                });
+                
+                document.getElementById('continueBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    
+                    // Check if this was the last ingot in the world
+                    const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+                    if (allUnitsCompleted) {
+                        // World complete! Show world artifact
+                        setTimeout(() => {
+                            showWorldArtifactPopup();
+                        }, 300);
+                    }
+                });
+                
+                tg?.HapticFeedback?.notificationOccurred?.('success');
+            }
+
+            // New: World Artifact Popup
+            function showWorldArtifactPopup() {
+                const overlay = document.getElementById('popupOverlay');
+                const world = worlds[currentWorld];
+                
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'world-card';
+                card.innerHTML = `
+                    <div class="world-emoji">🏆</div>
+                    <div class="world-title">WORLD COMPLETE!</div>
+                    <div class="world-sub">${world.name}</div>
+                    <div class="ingot-stats">
+                        <div class="ingot-stat">
+                            <div class="ingot-stat-value">${world.totalWords}</div>
+                            <div class="ingot-stat-label">WORDS</div>
+                        </div>
+                        <div class="ingot-stat">
+                            <div class="ingot-stat-value">30</div>
+                            <div class="ingot-stat-label">INGOTS</div>
+                        </div>
+                    </div>
+                    <div class="artifact-tap">✨ All 30 ingots forged · tap for leaderboard ✨</div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    overlay.classList.add('hidden');
+                    
+                    // Unlock next world if available
+                    if (currentWorld < 6) {
+                        worlds[currentWorld + 1].unlocked = true;
+                        setTimeout(() => {
+                            showWorldUnlockPopup(currentWorld + 1);
+                        }, 300);
+                    } else {
+                        // All worlds complete! Show final celebration
+                        showLeaderboardPopup();
+                    }
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
@@ -1759,31 +1995,6 @@
                 card.addEventListener('click', () => {
                     overlay.classList.add('hidden');
                 });
-            }
-
-            function showArtifactPopup() {
-                const overlay = document.getElementById('popupOverlay');
-                overlay.innerHTML = '';
-                
-                const artifactCard = document.createElement('div');
-                artifactCard.className = 'artifact-card';
-                artifactCard.innerHTML = `
-                    <div class="artifact-emoji">🔮</div>
-                    <div class="artifact-title">ARTIFACT</div>
-                    <div class="artifact-title">UNLOCKED!</div>
-                    <div class="artifact-sub">WORD CRYSTAL</div>
-                    <div class="artifact-tap">✨ tap anywhere to continue ✨</div>
-                `;
-                
-                overlay.appendChild(artifactCard);
-                overlay.classList.remove('hidden');
-                
-                artifactCard.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showLeaderboardPopup();
-                });
-                
-                tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
             function showLeaderboardPopup() {
@@ -1835,7 +2046,7 @@
                 const leaderboardCard = document.createElement('div');
                 leaderboardCard.className = 'leaderboard-card';
                 leaderboardCard.innerHTML = `
-                    <div class="leaderboard-title">⚒️ ${worlds[currentWorld].name} COMPLETE</div>
+                    <div class="leaderboard-title">⚒️ ${worlds[currentWorld].name} · INGOT ${currentUnit}</div>
                     
                     <div class="score-highlight">
                         <div class="score-title">SPELLFORGE RATING (SFR)</div>
@@ -1891,7 +2102,7 @@
                 });
 
                 document.getElementById('shareBtn').addEventListener('click', () => {
-                    const text = `I completed ${worlds[currentWorld].name} in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
+                    const text = `I completed ${worlds[currentWorld].name} Ingot ${currentUnit} in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
                     if (tg) {
                         tg.shareToStory?.(text);
                     } else {
@@ -1912,14 +2123,31 @@
                     }
                     
                     const words = getCurrentUnitWords();
-                    const wordData = words[wordIndex];
-                    showWordCard(wordData);
+                    if (words && words.length > 0) {
+                        const wordData = words[wordIndex];
+                        showWordCard(wordData);
+                    }
                 }
 
                 activeWordIndex = null;
                 currentPosition = 0;
                 renderAll();
                 updateWorldDisplay();
+                
+                // Check if unit is now complete
+                const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
+                if (unit && unit.wordsCompleted === unit.totalWords) {
+                    // Unit complete! Show ingot complete popup after a short delay
+                    setTimeout(() => {
+                        showIngotCompletePopup();
+                        
+                        // Unlock next unit
+                        const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
+                        if (nextUnit) {
+                            nextUnit.unlocked = true;
+                        }
+                    }, 500);
+                }
             }
 
             function handleLetterTap(letter, indexInGrid) {
@@ -1940,6 +2168,8 @@
                 }
 
                 const words = getCurrentUnitWords();
+                if (!words || words.length === 0) return;
+                
                 const targetWord = words[activeWordIndex].word;
                 const neededLetter = targetWord[currentPosition];
 
@@ -2013,16 +2243,18 @@
                 // Letter grid
                 const gridContainer = document.getElementById('letterGridContainer');
                 gridContainer.innerHTML = '';
-                currentLetters.forEach((letter, idx) => {
-                    const tile = document.createElement('div');
-                    tile.className = 'letter-tile';
-                    tile.innerText = letter.toUpperCase();
-                    tile.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        handleLetterTap(letter, idx);
+                if (currentLetters.length > 0) {
+                    currentLetters.forEach((letter, idx) => {
+                        const tile = document.createElement('div');
+                        tile.className = 'letter-tile';
+                        tile.innerText = letter.toUpperCase();
+                        tile.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            handleLetterTap(letter, idx);
+                        });
+                        gridContainer.appendChild(tile);
                     });
-                    gridContainer.appendChild(tile);
-                });
+                }
 
                 // Artifact text
                 const artifactEl = document.getElementById('artifactText');
