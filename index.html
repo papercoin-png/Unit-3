@@ -442,8 +442,39 @@
             text-transform: uppercase;
         }
 
+        .score-highlight {
+            background: #f5b342;
+            border-radius: 60px;
+            padding: 15px;
+            margin: 5px 0 10px;
+            border: 3px solid gold;
+            box-shadow: 0 0 20px gold;
+            flex-shrink: 0;
+        }
+
+        .score-title {
+            font-size: 16px;
+            color: #1e3a4a;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .score-number {
+            font-size: 52px;
+            font-weight: 900;
+            color: #1f2e3a;
+            line-height: 1.1;
+            text-shadow: 2px 2px 0 #ffdb8e;
+        }
+
+        .score-rating {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f2e3a;
+        }
+
         .leaderboard-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: #ffdfa0;
             margin: 5px 0 10px;
@@ -461,7 +492,7 @@
             overflow-y: auto;
             flex-grow: 1;
             min-height: 200px;
-            max-height: 400px;
+            max-height: 350px;
             scrollbar-width: thin;
             scrollbar-color: #c9ae5b #1d3f4f;
         }
@@ -493,7 +524,7 @@
             margin: 4px 0;
             background: #1d3f4f;
             border-radius: 40px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: white;
             transition: all 0.1s;
@@ -512,26 +543,26 @@
         }
 
         .rank {
-            min-width: 40px;
-            font-size: 16px;
+            min-width: 35px;
+            font-size: 15px;
         }
 
         .player-name {
             flex: 1;
             text-align: left;
-            padding-left: 10px;
-            font-size: 16px;
+            padding-left: 8px;
+            font-size: 15px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 150px;
+            max-width: 130px;
         }
 
         .score {
             font-weight: 700;
             color: #ffd966;
-            font-size: 16px;
-            min-width: 45px;
+            font-size: 15px;
+            min-width: 55px;
             text-align: right;
         }
 
@@ -539,11 +570,18 @@
             color: #2d1905;
         }
 
-        .crown {
-            font-size: 18px;
+        .rating-badge {
+            font-size: 14px;
             margin-left: 6px;
-            min-width: 22px;
+            min-width: 55px;
             text-align: right;
+            padding: 3px 6px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .you .rating-badge {
+            background: rgba(255,215,0,0.3);
         }
 
         .leaderboard-footer {
@@ -633,9 +671,13 @@
                 font-size: 24px;
             }
             
+            .score-number {
+                font-size: 42px;
+            }
+            
             .leaderboard-row {
                 padding: 5px 12px;
-                font-size: 16px;
+                font-size: 14px;
             }
             
             .leaderboard-list {
@@ -738,67 +780,76 @@
         let wordCardQueue = [];
         let showingWordCard = false;
 
-        // Mock leaderboard data (50 players for scrolling demo)
+        // ---------- SPELLFORGE RATING (SFR) SYSTEM ----------
+        function calculateSFR(timeSeconds, accuracy, totalTapsCount, correctTapsCount) {
+            // Base score from accuracy (max 200)
+            const accuracyScore = Math.round(accuracy * 2);
+            
+            // Speed score: 100000 / time in seconds (faster = higher)
+            // Prevents division by zero
+            const speedScore = timeSeconds > 0 ? Math.round(100000 / timeSeconds) : 2000;
+            
+            // Perfection bonus for 100% accuracy AND no wrong taps
+            const perfectionBonus = (accuracy === 100 && totalTapsCount === correctTapsCount) ? 100 : 0;
+            
+            // Streak bonus placeholder (could be expanded later)
+            const streakBonus = 0;
+            
+            // Calculate total
+            let total = accuracyScore + speedScore + perfectionBonus + streakBonus;
+            
+            // Cap at reasonable max (world record pace: ~1:20 perfect = ~1450)
+            total = Math.min(total, 1600);
+            
+            return total;
+        }
+
+        function getRatingFromScore(score) {
+            if (score >= 1400) return { title: "LEGEND", emoji: "🔥", color: "#ffd700" };
+            if (score >= 1200) return { title: "MASTER", emoji: "👑", color: "#c0c0c0" };
+            if (score >= 1000) return { title: "EXPERT", emoji: "⚡", color: "#cd7f32" };
+            if (score >= 800) return { title: "ADVANCED", emoji: "🛡️", color: "#4a90e2" };
+            if (score >= 600) return { title: "INTERMEDIATE", emoji: "📘", color: "#50c878" };
+            return { title: "NOVICE", emoji: "🌱", color: "#ffffff" };
+        }
+
+        // ---------- MOCK LEADERBOARD WITH SFR ----------
         const mockLeaderboard = [
-            { name: "LIAM", time: "1:24", accuracy: 98, rank: 1 },
-            { name: "SOFIA", time: "1:28", accuracy: 99, rank: 2 },
-            { name: "NOAH", time: "1:32", accuracy: 97, rank: 3 },
-            { name: "EMMA", time: "1:35", accuracy: 98, rank: 4 },
-            { name: "OLIVER", time: "1:38", accuracy: 96, rank: 5 },
-            { name: "MIA", time: "1:42", accuracy: 97, rank: 6 },
-            { name: "LUCAS", time: "1:45", accuracy: 95, rank: 7 },
-            { name: "AMELIA", time: "1:47", accuracy: 96, rank: 8 },
-            { name: "ELIJAH", time: "1:49", accuracy: 94, rank: 9 },
-            { name: "HARPER", time: "1:51", accuracy: 95, rank: 10 },
-            { name: "JAMES", time: "1:53", accuracy: 93, rank: 11 },
-            { name: "EVELYN", time: "1:55", accuracy: 94, rank: 12 },
-            { name: "BENJAMIN", time: "1:57", accuracy: 92, rank: 13 },
-            { name: "ABIGAIL", time: "1:59", accuracy: 93, rank: 14 },
-            { name: "ALEXANDER", time: "2:01", accuracy: 91, rank: 15 },
-            { name: "ELIZABETH", time: "2:03", accuracy: 92, rank: 16 },
-            { name: "HENRY", time: "2:05", accuracy: 90, rank: 17 },
-            { name: "SOPHIA", time: "2:07", accuracy: 91, rank: 18 },
-            { name: "DANIEL", time: "2:09", accuracy: 89, rank: 19 },
-            { name: "CHARLOTTE", time: "2:11", accuracy: 90, rank: 20 },
-            { name: "MATTHEW", time: "2:13", accuracy: 88, rank: 21 },
-            { name: "AVA", time: "2:15", accuracy: 89, rank: 22 },
-            { name: "JACKSON", time: "2:17", accuracy: 87, rank: 23 },
-            { name: "SCARLETT", time: "2:19", accuracy: 88, rank: 24 },
-            { name: "SEBASTIAN", time: "2:21", accuracy: 86, rank: 25 },
-            { name: "GRACE", time: "2:23", accuracy: 87, rank: 26 },
-            { name: "DAVID", time: "2:25", accuracy: 85, rank: 27 },
-            { name: "CHLOE", time: "2:27", accuracy: 86, rank: 28 },
-            { name: "JOSEPH", time: "2:29", accuracy: 84, rank: 29 },
-            { name: "VICTORIA", time: "2:31", accuracy: 85, rank: 30 },
-            { name: "SAMUEL", time: "2:33", accuracy: 83, rank: 31 },
-            { name: "LILY", time: "2:35", accuracy: 84, rank: 32 },
-            { name: "CHRISTOPHER", time: "2:37", accuracy: 82, rank: 33 },
-            { name: "HANNAH", time: "2:39", accuracy: 83, rank: 34 },
-            { name: "ANDREW", time: "2:41", accuracy: 81, rank: 35 },
-            { name: "ZOE", time: "2:43", accuracy: 82, rank: 36 },
-            { name: "JOSHUA", time: "2:45", accuracy: 80, rank: 37 },
-            { name: "PENELOPE", time: "2:47", accuracy: 81, rank: 38 },
-            { name: "RYAN", time: "2:49", accuracy: 79, rank: 39 },
-            { name: "ELEANOR", time: "2:51", accuracy: 80, rank: 40 },
-            { name: "WILLIAM", time: "2:53", accuracy: 78, rank: 41 },
-            { name: "LUCY", time: "2:55", accuracy: 79, rank: 42 },
-            { name: "GABRIEL", time: "2:57", accuracy: 77, rank: 43 },
-            { name: "MAYA", time: "2:59", accuracy: 78, rank: 44 },
-            { name: "ANTHONY", time: "3:01", accuracy: 76, rank: 45 },
-            { name: "LAYLA", time: "3:03", accuracy: 77, rank: 46 },
-            { name: "DYLAN", time: "3:05", accuracy: 75, rank: 47 },
-            { name: "RILEY", time: "3:07", accuracy: 76, rank: 48 },
-            { name: "NATHAN", time: "3:09", accuracy: 74, rank: 49 },
-            { name: "AURORA", time: "3:11", accuracy: 75, rank: 50 }
+            { name: "LIAM", score: 1420, time: "1:24", accuracy: 98, rank: 1 },
+            { name: "ELENA", score: 1380, time: "1:28", accuracy: 99, rank: 2 },
+            { name: "NOAH", score: 1350, time: "1:31", accuracy: 97, rank: 3 },
+            { name: "SOFIA", score: 1310, time: "1:35", accuracy: 98, rank: 4 },
+            { name: "OLIVER", score: 1280, time: "1:38", accuracy: 96, rank: 5 },
+            { name: "MIA", score: 1240, time: "1:42", accuracy: 97, rank: 6 },
+            { name: "LUCAS", score: 1210, time: "1:45", accuracy: 95, rank: 7 },
+            { name: "AMELIA", score: 1180, time: "1:48", accuracy: 96, rank: 8 },
+            { name: "ELIJAH", score: 1150, time: "1:51", accuracy: 94, rank: 9 },
+            { name: "HARPER", score: 1120, time: "1:54", accuracy: 95, rank: 10 },
+            { name: "JAMES", score: 1090, time: "1:57", accuracy: 93, rank: 11 },
+            { name: "EVELYN", score: 1060, time: "2:00", accuracy: 94, rank: 12 },
+            { name: "BENJAMIN", score: 1030, time: "2:03", accuracy: 92, rank: 13 },
+            { name: "ABIGAIL", score: 1000, time: "2:06", accuracy: 93, rank: 14 },
+            { name: "ALEXANDER", score: 970, time: "2:09", accuracy: 91, rank: 15 },
+            { name: "ELIZABETH", score: 940, time: "2:12", accuracy: 92, rank: 16 },
+            { name: "HENRY", score: 910, time: "2:15", accuracy: 90, rank: 17 },
+            { name: "SOPHIA", score: 880, time: "2:18", accuracy: 91, rank: 18 },
+            { name: "DANIEL", score: 850, time: "2:21", accuracy: 89, rank: 19 },
+            { name: "CHARLOTTE", score: 820, time: "2:24", accuracy: 90, rank: 20 },
+            { name: "MATTHEW", score: 790, time: "2:27", accuracy: 88, rank: 21 },
+            { name: "AVA", score: 760, time: "2:30", accuracy: 89, rank: 22 },
+            { name: "JACKSON", score: 730, time: "2:33", accuracy: 87, rank: 23 },
+            { name: "SCARLETT", score: 700, time: "2:36", accuracy: 88, rank: 24 },
+            { name: "SEBASTIAN", score: 670, time: "2:39", accuracy: 86, rank: 25 },
+            { name: "GRACE", score: 640, time: "2:42", accuracy: 87, rank: 26 },
+            { name: "DAVID", score: 610, time: "2:45", accuracy: 85, rank: 27 },
+            { name: "CHLOE", score: 580, time: "2:48", accuracy: 86, rank: 28 },
+            { name: "JOSEPH", score: 550, time: "2:51", accuracy: 84, rank: 29 },
+            { name: "VICTORIA", score: 520, time: "2:54", accuracy: 85, rank: 30 },
+            { name: "SAMUEL", score: 490, time: "2:57", accuracy: 83, rank: 31 },
+            { name: "LILY", score: 460, time: "3:00", accuracy: 84, rank: 32 }
         ];
 
-        // Insert YOU at position 15
-        mockLeaderboard.splice(14, 0, { name: "YOU", time: "1:47", accuracy: 100, rank: 15 });
-
-        // Re-number ranks
-        mockLeaderboard.forEach((entry, index) => {
-            entry.rank = index + 1;
-        });
+        // We'll insert YOU dynamically with actual score later
 
         // ---------- HELPER FUNCTIONS ----------
         function generateInitialLetters() {
@@ -907,13 +958,41 @@
         function showLeaderboardPopup() {
             const overlay = document.getElementById('popupOverlay');
             
-            // Update stats
+            // Calculate player's SFR
             const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+            const accuracy = calculateAccuracy();
+            const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
+            const playerRating = getRatingFromScore(playerSFR);
+            
+            // Create a fresh leaderboard with player inserted
+            const leaderboardWithPlayer = [...mockLeaderboard];
+            
+            // Find where to insert YOU based on score
+            const yourEntry = {
+                name: "YOU",
+                score: playerSFR,
+                time: formatTime(timeElapsed),
+                accuracy: accuracy,
+                rank: 0 // Will set after sorting
+            };
+            
+            // Add YOU to leaderboard
+            leaderboardWithPlayer.push(yourEntry);
+            
+            // Sort by score (highest first)
+            leaderboardWithPlayer.sort((a, b) => b.score - a.score);
+            
+            // Re-assign ranks
+            leaderboardWithPlayer.forEach((entry, index) => {
+                entry.rank = index + 1;
+            });
             
             // Build leaderboard HTML
             let leaderboardHtml = '';
-            mockLeaderboard.forEach(entry => {
+            leaderboardWithPlayer.forEach(entry => {
                 const youClass = entry.name === 'YOU' ? ' you' : '';
+                const rating = entry.name === 'YOU' ? playerRating : getRatingFromScore(entry.score);
+                
                 let crownEmoji = '';
                 if (entry.rank === 1) crownEmoji = '👑';
                 else if (entry.rank === 2) crownEmoji = '⚡';
@@ -923,19 +1002,26 @@
                     <div class="leaderboard-row${youClass}" data-rank="${entry.rank}">
                         <span class="rank">${entry.rank}.</span>
                         <span class="player-name">${entry.name}</span>
-                        <span class="score">${entry.time}</span>
+                        <span class="score">${entry.score}</span>
+                        <span class="rating-badge">${rating.emoji} ${rating.title}</span>
                         <span class="crown">${crownEmoji}</span>
                     </div>
                 `;
             });
 
-            // Find your rank
-            const yourEntry = mockLeaderboard.find(e => e.name === 'YOU');
+            // Get your rank
+            const yourRank = leaderboardWithPlayer.find(e => e.name === 'YOU').rank;
             
             const leaderboardCard = document.createElement('div');
             leaderboardCard.className = 'leaderboard-card';
             leaderboardCard.innerHTML = `
                 <div class="leaderboard-title">⚒️ FORGE COMPLETE</div>
+                
+                <div class="score-highlight">
+                    <div class="score-title">SPELLFORGE RATING (SFR)</div>
+                    <div class="score-number">${playerSFR}</div>
+                    <div class="score-rating">${playerRating.emoji} ${playerRating.title}</div>
+                </div>
                 
                 <div class="stats-row">
                     <div class="stat-item">
@@ -943,22 +1029,23 @@
                         <div class="stat-label">TIME</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${calculateAccuracy()}%</div>
+                        <div class="stat-value">${accuracy}%</div>
                         <div class="stat-label">ACCURACY</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${completedWords.length}</div>
-                        <div class="stat-label">WORDS</div>
+                        <div class="stat-value">${correctTaps}/${totalTaps}</div>
+                        <div class="stat-label">TAPS</div>
                     </div>
                 </div>
 
-                <div class="leaderboard-title">🏆 LEADERBOARD · ${mockLeaderboard.length} PLAYERS</div>
+                <div class="leaderboard-title">🏆 SFR LEADERBOARD · ${leaderboardWithPlayer.length} PLAYERS</div>
                 <div class="leaderboard-list" id="leaderboardList">
                     ${leaderboardHtml}
                 </div>
 
                 <div class="leaderboard-footer">
-                    ${yourEntry ? `You're #${yourEntry.rank} of ${mockLeaderboard.length}!` : ''}
+                    You're #${yourRank} of ${leaderboardWithPlayer.length}!
+                    ${yourRank === 1 ? ' 🏆 CHAMPION!' : yourRank <= 3 ? ' ⚡ PODIUM FINISH!' : ''}
                 </div>
 
                 <div class="button-group">
@@ -989,9 +1076,7 @@
             });
 
             document.getElementById('shareBtn').addEventListener('click', () => {
-                const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-                const yourEntry = mockLeaderboard.find(e => e.name === 'YOU');
-                const text = `I forged all 20 words in Spellforge in ${formatTime(timeElapsed)} with ${calculateAccuracy()}% accuracy! Rank #${yourEntry?.rank} of ${mockLeaderboard.length}! 🔮⚒️`;
+                const text = `I forged all 20 words in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
                 
                 if (tg) {
                     tg.shareToStory?.(text);
