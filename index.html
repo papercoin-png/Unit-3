@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Quest · Telegram Mini App</title>
+    <title>Spellforge · Telegram Mini App</title>
     <style>
         * {
             margin: 0;
@@ -244,12 +244,12 @@
             box-shadow: 0 3px 0 #1c2f3b, 0 6px 10px black;
         }
 
-        /* popup card modal */
+        /* popup overlay base */
         .popup-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -257,68 +257,218 @@
             transition: all 0.3s;
         }
 
-        .reward-card {
-            max-width: 380px;
+        /* artifact popup */
+        .artifact-card {
+            max-width: 420px;
             width: 90%;
-            background: linear-gradient(165deg, #fff8e7, #ffffff);
-            border-radius: 58px;
-            padding: 30px 20px 30px;
-            box-shadow: 0 30px 50px #00000080, 0 0 0 6px #fad87c;
+            background: linear-gradient(165deg, #4a2e1e, #6b4a2e);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffd966;
             text-align: center;
-            animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
-            border: 3px solid #ffcd7e;
+            animation: glowPulse 2s infinite alternate;
+            border: 3px solid #ffb347;
+        }
+
+        @keyframes glowPulse {
+            from { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffd966; }
+            to { box-shadow: 0 30px 60px #000000, 0 0 0 12px #ffaa33; }
+        }
+
+        .artifact-emoji {
+            font-size: 120px;
+            line-height: 1.2;
+            margin: 15px 0;
+            filter: drop-shadow(8px 15px 0 #3f2b16);
+            transform: scale(1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .artifact-title {
+            font-size: 58px;
+            font-weight: 900;
+            color: #ffecb3;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 5px 5px 0 #7a4c1d;
+            margin: 10px 0;
+        }
+
+        .artifact-sub {
+            font-size: 24px;
+            color: #ffe39a;
+            background: #3d2b17;
+            padding: 15px 20px;
+            border-radius: 60px;
+            margin: 25px 0 15px;
+            border: 2px solid #e5a449;
+        }
+
+        .artifact-tap {
+            font-size: 20px;
+            color: #ffdb9f;
+            margin-top: 30px;
+            opacity: 0.9;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* leaderboard popup */
+        .leaderboard-card {
+            max-width: 480px;
+            width: 90%;
+            background: linear-gradient(165deg, #1e3b4a, #16323f);
+            border-radius: 60px;
+            padding: 30px 20px 30px;
+            box-shadow: 0 30px 50px #000000, 0 0 0 6px #c9ae5b;
+            text-align: center;
+            border: 3px solid #dbb45c;
+            animation: pop 0.3s ease-out;
         }
 
         @keyframes pop {
-            0% { transform: scale(0.7); opacity: 0; }
+            0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .card-emoji {
-            font-size: 110px;
-            line-height: 1.2;
-            margin: 5px 0 10px;
-            filter: drop-shadow(8px 12px 0 rgba(0,0,0,0.2));
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            background: #0e2938;
+            border-radius: 50px;
+            padding: 18px 12px;
+            margin: 15px 0 20px;
+            border: 2px solid #b8944a;
         }
 
-        .card-word {
-            font-size: 58px;
-            font-weight: 900;
-            color: #1f4a5c;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 3px 5px 0 #ffcd7e;
-            margin: 5px 0;
+        .stat-item {
+            text-align: center;
+            color: white;
         }
 
-        .card-sentence {
-            font-size: 22px;
-            background: #ebcba0;
-            padding: 20px 18px;
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffdb8e;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #acccdd;
+        }
+
+        .leaderboard-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffdfa0;
+            margin: 10px 0 15px;
+            letter-spacing: 2px;
+        }
+
+        .leaderboard-list {
+            background: #0c202b;
             border-radius: 40px;
-            color: #1f3a47;
-            font-weight: 500;
-            margin: 20px 0 18px;
-            border: 2px dashed #a5723b;
-            line-height: 1.4;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #aa873f;
         }
 
-        .card-btn {
-            background: #f5b342;
-            border: none;
-            border-radius: 60px;
-            padding: 18px 25px;
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 18px;
+            margin: 5px 0;
+            background: #1d3f4f;
+            border-radius: 50px;
+            font-size: 22px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .leaderboard-row.you {
+            background: #c9a34b;
+            color: #0a1f29;
+            font-weight: 800;
+            border: 2px solid gold;
+            box-shadow: 0 0 15px gold;
+        }
+
+        .rank {
+            min-width: 45px;
+        }
+
+        .player-name {
+            flex: 1;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .score {
             font-weight: 700;
-            font-size: 26px;
-            color: #1f3826;
-            box-shadow: 0 7px 0 #9e691f;
+            color: #ffd966;
+        }
+
+        .you .score {
+            color: #2d1905;
+        }
+
+        .crown {
+            font-size: 24px;
+            margin-left: 5px;
+        }
+
+        .leaderboard-footer {
+            font-size: 18px;
+            color: #ffdcaa;
+            margin: 15px 0 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: #f0b345;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 10px;
+            font-weight: 700;
+            font-size: 22px;
+            color: #1d332b;
+            box-shadow: 0 6px 0 #9e691f;
             cursor: pointer;
-            width: 100%;
-            border: 2px solid #ffe39b;
+            border: 2px solid #ffe694;
+            transition: 0.08s;
+        }
+
+        .action-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #9e691f;
+        }
+
+        .action-btn.secondary {
+            background: #557a8b;
+            box-shadow: 0 6px 0 #2e4a57;
+            color: white;
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         /* artifact area */
@@ -353,13 +503,13 @@
 <div class="game-container" id="gameContainer">
     <!-- header -->
     <div class="header">
-        <span class="title">✨ WORD QUEST</span>
+        <span class="title">⚒️ SPELLFORGE</span>
         <span class="progress-badge" id="progressDisplay">0/20</span>
     </div>
 
     <!-- word list -->
     <div class="word-section">
-        <div class="section-label">📋 WORDS TO COLLECT · tap any to start</div>
+        <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
         <div class="word-grid" id="wordListContainer"></div>
     </div>
 
@@ -371,7 +521,7 @@
 
     <!-- letter grid -->
     <div class="letter-section">
-        <div class="section-label">🔤 LETTER BANK · tap in order</div>
+        <div class="section-label">🔤 LETTER FORGE · tap in order</div>
         <div class="letter-grid" id="letterGridContainer"></div>
     </div>
 
@@ -379,21 +529,57 @@
     <div class="artifact-box" id="artifactBox">
         <span class="artifact-icon">🏆</span>
         <span id="artifactText">LOCKED</span>
-        <span>⚡</span>
+        <span>⚒️</span>
     </div>
 
     <!-- reset button -->
-    <button class="reset-btn" id="resetButton">🔄 RESET ADVENTURE</button>
-    <div class="telegram-footer">Telegram Mini App · spell to unlock</div>
+    <button class="reset-btn" id="resetButton">🔄 FORGE AGAIN</button>
+    <div class="telegram-footer">Telegram Mini App · forge words to unlock</div>
 </div>
 
-<!-- popup card modal (hidden by default) -->
+<!-- popup overlay (handles both artifact and leaderboard) -->
 <div id="popupOverlay" class="popup-overlay hidden">
-    <div class="reward-card" id="rewardCard">
-        <div class="card-emoji" id="cardEmoji">🎴</div>
-        <div class="card-word" id="cardWord">WORD</div>
-        <div class="card-sentence" id="cardSentence">Amazing sentence here.</div>
-        <button class="card-btn" id="closePopupBtn">✨ COLLECT</button>
+    <!-- artifact unlocked popup (stage 1) -->
+    <div id="artifactPopup" class="artifact-card">
+        <div class="artifact-emoji">🔮</div>
+        <div class="artifact-title">ARTIFACT</div>
+        <div class="artifact-title">UNLOCKED!</div>
+        <div class="artifact-sub">WORD CRYSTAL</div>
+        <div class="artifact-tap">✨ tap anywhere to continue ✨</div>
+    </div>
+
+    <!-- leaderboard popup (stage 2) -->
+    <div id="leaderboardPopup" class="leaderboard-card hidden">
+        <div class="leaderboard-title">⚒️ FORGE COMPLETE</div>
+        
+        <div class="stats-row" id="playerStats">
+            <div class="stat-item">
+                <div class="stat-value" id="statTime">1:47</div>
+                <div class="stat-label">TIME</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="statAccuracy">100%</div>
+                <div class="stat-label">ACCURACY</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="statWords">20</div>
+                <div class="stat-label">WORDS</div>
+            </div>
+        </div>
+
+        <div class="leaderboard-title">🏆 LEADERBOARD</div>
+        <div class="leaderboard-list" id="leaderboardList">
+            <!-- filled by js -->
+        </div>
+
+        <div class="leaderboard-footer" id="leaderboardMessage">
+            You're 2nd place! 23s behind #1
+        </div>
+
+        <div class="button-group">
+            <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
+            <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
+        </div>
     </div>
 </div>
 
@@ -402,12 +588,12 @@
         // ---------- TELEGRAM WEB APP INTEGRATION ----------
         let tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.expand();          // expand to full height
-            tg.enableClosingConfirmation?.(); 
-            tg.setHeaderColor?.(bgColor || '#1a2f3f');
+            tg.expand();
+            tg.enableClosingConfirmation?.();
+            tg.setHeaderColor?.('#1a2f3f');
         }
 
-        // ---------- WORD DATABASE with images/emojis + sentences ----------
+        // ---------- WORD DATABASE ----------
         const wordsDatabase = [
             { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
             { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
@@ -431,7 +617,32 @@
             { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
         ];
 
-        // initial letter bank generation (scrambled from all words)
+        // ---------- GAME STATE ----------
+        let currentLetters = [];
+        let completedWords = [];
+        let activeWordIndex = null;
+        let currentPosition = 0;
+        let allWords = wordsDatabase.map(w => w.word);
+        
+        // Stats tracking
+        let gameStartTime = null;
+        let totalTaps = 0;
+        let correctTaps = 0;
+        let gameCompleted = false;
+
+        // Mock leaderboard data (would come from server in real app)
+        const mockLeaderboard = [
+            { name: "LIAM", time: "1:24", accuracy: 98, rank: 1 },
+            { name: "YOU", time: "1:47", accuracy: 100, rank: 2 },
+            { name: "SOFIA", time: "1:52", accuracy: 97, rank: 3 },
+            { name: "NOAH", time: "2:01", accuracy: 95, rank: 4 },
+            { name: "EMMA", time: "2:15", accuracy: 96, rank: 5 },
+            { name: "OLIVER", time: "2:32", accuracy: 92, rank: 6 },
+            { name: "MIA", time: "2:48", accuracy: 94, rank: 7 },
+            { name: "LUCAS", time: "3:04", accuracy: 90, rank: 8 }
+        ];
+
+        // ---------- HELPER FUNCTIONS ----------
         function generateInitialLetters() {
             let allChars = [];
             wordsDatabase.forEach(entry => {
@@ -445,81 +656,224 @@
             return allChars;
         }
 
-        // Game state
-        let currentLetters = [];                // array of available letters (strings)
-        let completedWords = [];                 // indexes of completed words
-        let activeWordIndex = null;               // which word is selected (index)
-        let currentPosition = 0;                   // next letter index to find (0..len-1)
-        let allWords = wordsDatabase.map(w => w.word);
-        
-        // Initialize or reset state
+        function getWordData(idx) {
+            return wordsDatabase[idx];
+        }
+
+        function isGameComplete() {
+            return completedWords.length === allWords.length;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function calculateAccuracy() {
+            if (totalTaps === 0) return 100;
+            return Math.round((correctTaps / totalTaps) * 100);
+        }
+
+        // ---------- POPUP CONTROL (TWO-STAGE) ----------
+        function showArtifactPopup() {
+            document.getElementById('popupOverlay').classList.remove('hidden');
+            document.getElementById('artifactPopup').classList.remove('hidden');
+            document.getElementById('leaderboardPopup').classList.add('hidden');
+            tg?.HapticFeedback?.notificationOccurred?.('success');
+        }
+
+        function showLeaderboardPopup() {
+            // Update stats
+            const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+            document.getElementById('statTime').innerText = formatTime(timeElapsed);
+            document.getElementById('statAccuracy').innerText = calculateAccuracy() + '%';
+            document.getElementById('statWords').innerText = completedWords.length;
+
+            // Build leaderboard
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+            
+            mockLeaderboard.forEach(entry => {
+                const row = document.createElement('div');
+                row.className = 'leaderboard-row' + (entry.name === 'YOU' ? ' you' : '');
+                
+                let crownEmoji = '';
+                if (entry.rank === 1) crownEmoji = '👑';
+                else if (entry.rank === 2) crownEmoji = '⚡';
+                
+                row.innerHTML = `
+                    <span class="rank">${entry.rank}.</span>
+                    <span class="player-name">${entry.name}</span>
+                    <span class="score">${entry.time}</span>
+                    <span class="crown">${crownEmoji}</span>
+                `;
+                leaderboardList.appendChild(row);
+            });
+
+            // Set message
+            const yourEntry = mockLeaderboard.find(e => e.name === 'YOU');
+            if (yourEntry && yourEntry.rank === 1) {
+                document.getElementById('leaderboardMessage').innerText = '🏆 You\'re the champion!';
+            } else if (yourEntry) {
+                const leader = mockLeaderboard[0];
+                document.getElementById('leaderboardMessage').innerText = 
+                    `You're #${yourEntry.rank}! ${yourEntry.rank === 2 ? 'So close to the top!' : 'Keep forging!'}`;
+            }
+
+            document.getElementById('artifactPopup').classList.add('hidden');
+            document.getElementById('leaderboardPopup').classList.remove('hidden');
+        }
+
+        function hidePopup() {
+            document.getElementById('popupOverlay').classList.add('hidden');
+        }
+
+        // ---------- GAME MECHANICS ----------
         function resetGame() {
             currentLetters = generateInitialLetters();
             completedWords = [];
             activeWordIndex = null;
             currentPosition = 0;
-            renderAll();
+            gameStartTime = Date.now();
+            totalTaps = 0;
+            correctTaps = 0;
+            gameCompleted = false;
             hidePopup();
+            renderAll();
         }
 
-        // helper: get word object by index
-        function getWordData(idx) {
-            return wordsDatabase[idx];
-        }
-
-        // Check if all words completed -> unlock artifact
-        function isGameComplete() {
-            return completedWords.length === allWords.length;
-        }
-
-        // complete active word (called when word spelled correctly)
-        function completeActiveWord() {
-            if (activeWordIndex === null) return;
-            if (completedWords.includes(activeWordIndex)) return; // already done
-
-            // mark completed
-            completedWords.push(activeWordIndex);
-            // remove active selection
-            activeWordIndex = null;
-            currentPosition = 0;
-
-            // show popup for that word
-            const wordIdx = activeWordIndex; // but active set null already, so store before null?
-            // Actually we need index before setting null
-            // let's re-fetch: last active index before null
-            const lastWordIdx = activeWordIndex; // but we set null after? let's do differently.
-        }
-
-        // We'll call this after a word is fully spelled
         function handleWordCompletion(completedIdx) {
-            // add to completed list (if not already)
             if (!completedWords.includes(completedIdx)) {
                 completedWords.push(completedIdx);
             }
-            // get card data
+
+            // Show word card popup (existing mechanic)
             const wordData = getWordData(completedIdx);
-            // show popup
-            showPopup(wordData);
-            // deactivate word
+            showWordCard(wordData); // Using the existing word card function
+
+            // Deactivate word
             activeWordIndex = null;
             currentPosition = 0;
 
-            renderAll();  // re-render word list & letters
-            if (isGameComplete()) {
-                document.getElementById('artifactText').innerText = 'UNLOCKED! 🎉';
+            renderAll();
+
+            // Check if game is now complete
+            if (isGameComplete() && !gameCompleted) {
+                gameCompleted = true;
+                // Show artifact popup after a short delay (so word card shows first)
+                setTimeout(() => {
+                    showArtifactPopup();
+                }, 500);
             }
         }
 
-        // attempt to tap letter
+        // Original word card popup (unchanged)
+        function showWordCard(wordData) {
+            // Create temporary word card popup
+            const overlay = document.getElementById('popupOverlay');
+            const artifactPopup = document.getElementById('artifactPopup');
+            const leaderboardPopup = document.getElementById('leaderboardPopup');
+            
+            // Hide both popups first
+            artifactPopup.classList.add('hidden');
+            leaderboardPopup.classList.add('hidden');
+            
+            // Create and show temporary word card
+            const wordCard = document.createElement('div');
+            wordCard.className = 'reward-card';
+            wordCard.style.cssText = `
+                max-width: 380px;
+                width: 90%;
+                background: linear-gradient(165deg, #fff8e7, #ffffff);
+                border-radius: 58px;
+                padding: 30px 20px;
+                box-shadow: 0 30px 50px #00000080, 0 0 0 6px #fad87c;
+                text-align: center;
+                animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+                border: 3px solid #ffcd7e;
+            `;
+            wordCard.innerHTML = `
+                <div style="font-size: 110px; line-height: 1.2; margin: 5px 0;">${wordData.emoji}</div>
+                <div style="font-size: 58px; font-weight: 900; color: #1f4a5c; text-transform: uppercase;">${wordData.word}</div>
+                <div style="font-size: 22px; background: #ebcba0; padding: 20px; border-radius: 40px; margin: 20px 0;">${wordData.sentence}</div>
+                <button class="card-btn" id="tempWordClose" style="background: #f5b342; border: none; border-radius: 60px; padding: 18px; font-weight: 700; font-size: 26px; width: 100%;">✨ COLLECT</button>
+            `;
+            
+            // Clear and show
+            overlay.innerHTML = '';
+            overlay.appendChild(wordCard);
+            overlay.classList.remove('hidden');
+            
+            document.getElementById('tempWordClose').addEventListener('click', () => {
+                overlay.classList.add('hidden');
+                // Restore original popup structure
+                overlay.innerHTML = `
+                    <div id="artifactPopup" class="artifact-card">
+                        <div class="artifact-emoji">🔮</div>
+                        <div class="artifact-title">ARTIFACT</div>
+                        <div class="artifact-title">UNLOCKED!</div>
+                        <div class="artifact-sub">WORD CRYSTAL</div>
+                        <div class="artifact-tap">✨ tap anywhere to continue ✨</div>
+                    </div>
+                    <div id="leaderboardPopup" class="leaderboard-card hidden">
+                        <div class="leaderboard-title">⚒️ FORGE COMPLETE</div>
+                        <div class="stats-row" id="playerStats">
+                            <div class="stat-item"><div class="stat-value" id="statTime">0:00</div><div class="stat-label">TIME</div></div>
+                            <div class="stat-item"><div class="stat-value" id="statAccuracy">0%</div><div class="stat-label">ACCURACY</div></div>
+                            <div class="stat-item"><div class="stat-value" id="statWords">0</div><div class="stat-label">WORDS</div></div>
+                        </div>
+                        <div class="leaderboard-title">🏆 LEADERBOARD</div>
+                        <div class="leaderboard-list" id="leaderboardList"></div>
+                        <div class="leaderboard-footer" id="leaderboardMessage"></div>
+                        <div class="button-group">
+                            <button class="action-btn" id="playAgainBtn">⚒️ FORGE AGAIN</button>
+                            <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
+                        </div>
+                    </div>
+                `;
+                // Reattach event listeners
+                attachPopupListeners();
+            });
+            
+            tg?.HapticFeedback?.notificationOccurred?.('success');
+        }
+
+        function attachPopupListeners() {
+            // Artifact popup tap anywhere to continue
+            document.getElementById('artifactPopup').addEventListener('click', (e) => {
+                if (e.target.closest('.artifact-card')) {
+                    showLeaderboardPopup();
+                }
+            });
+
+            // Leaderboard buttons
+            document.getElementById('playAgainBtn').addEventListener('click', () => {
+                resetGame();
+            });
+
+            document.getElementById('shareBtn').addEventListener('click', () => {
+                const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+                const text = `I forged all 20 words in Spellforge in ${formatTime(timeElapsed)} with ${calculateAccuracy()}% accuracy! 🔮⚒️`;
+                if (tg) {
+                    tg.shareToStory?.(text);
+                } else {
+                    alert('Share: ' + text);
+                }
+            });
+        }
+
         function handleLetterTap(letter, indexInGrid) {
-            // valid only if an active word is selected and not completed
+            if (gameCompleted) return;
+            
+            totalTaps++;
+            
             if (activeWordIndex === null) {
-                // maybe show hint: select a word first
                 tg?.HapticFeedback?.notificationOccurred?.('warning');
                 return;
             }
+            
             if (completedWords.includes(activeWordIndex)) {
-                // word already completed: deactivate or ignore
                 activeWordIndex = null;
                 currentPosition = 0;
                 renderAll();
@@ -529,46 +883,28 @@
             const targetWord = allWords[activeWordIndex];
             const neededLetter = targetWord[currentPosition];
 
-            // must match case (lowercase)
             if (letter.toLowerCase() !== neededLetter.toLowerCase()) {
-                // wrong letter
                 tg?.HapticFeedback?.notificationOccurred?.('error');
+                renderAll();
                 return;
             }
 
-            // correct! remove letter from currentLetters
-            const removed = currentLetters.splice(indexInGrid, 1)[0];
-            // move position forward
+            // Correct tap
+            correctTaps++;
+            currentLetters.splice(indexInGrid, 1);
             currentPosition++;
-
+            
             tg?.HapticFeedback?.impactOccurred?.('light');
+            renderAll();
 
-            // check if whole word completed
             if (currentPosition === targetWord.length) {
-                // word finished!
                 handleWordCompletion(activeWordIndex);
-            } else {
-                // word still in progress: just re-render
-                renderAll();
             }
         }
 
-        // show popup with word data
-        function showPopup(wordData) {
-            document.getElementById('cardEmoji').innerText = wordData.emoji || '🔤';
-            document.getElementById('cardWord').innerText = wordData.word.toUpperCase();
-            document.getElementById('cardSentence').innerText = wordData.sentence;
-            document.getElementById('popupOverlay').classList.remove('hidden');
-            tg?.HapticFeedback?.notificationOccurred?.('success');
-        }
-
-        function hidePopup() {
-            document.getElementById('popupOverlay').classList.add('hidden');
-        }
-
-        // render entire UI
+        // ---------- RENDER UI ----------
         function renderAll() {
-            // word list
+            // Word list
             const wordContainer = document.getElementById('wordListContainer');
             wordContainer.innerHTML = '';
             allWords.forEach((w, idx) => {
@@ -582,22 +918,17 @@
                 chip.innerText = w;
                 chip.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (completedWords.includes(idx)) return; // can't select completed
-                    // set active word
-                    if (activeWordIndex === idx) {
-                        // if already active, maybe just keep
-                    } else {
-                        activeWordIndex = idx;
-                        currentPosition = 0; // reset progress on new word
-                    }
+                    if (completedWords.includes(idx) || gameCompleted) return;
+                    activeWordIndex = idx;
+                    currentPosition = 0;
                     renderAll();
                     tg?.HapticFeedback?.selectionChanged?.();
                 });
                 wordContainer.appendChild(chip);
             });
 
-            // active hint area
-            if (activeWordIndex !== null && !completedWords.includes(activeWordIndex)) {
+            // Active hint
+            if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted) {
                 const w = allWords[activeWordIndex];
                 const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
                 document.getElementById('activeWordDisplay').innerText = progressWord || '—';
@@ -608,7 +939,7 @@
                 document.getElementById('nextLetterDisplay').innerText = '?';
             }
 
-            // letter grid
+            // Letter grid
             const gridContainer = document.getElementById('letterGridContainer');
             gridContainer.innerHTML = '';
             currentLetters.forEach((letter, idx) => {
@@ -622,9 +953,10 @@
                 gridContainer.appendChild(tile);
             });
 
-            // progress
+            // Progress
             document.getElementById('progressDisplay').innerText = `${completedWords.length}/${allWords.length}`;
-            // artifact text
+            
+            // Artifact text
             const artifactEl = document.getElementById('artifactText');
             if (completedWords.length === allWords.length) {
                 artifactEl.innerText = '🌟 ARTIFACT UNLOCKED! 🌟';
@@ -633,7 +965,7 @@
             }
         }
 
-        // reset with confirmation
+        // ---------- RESET WITH CONFIRMATION ----------
         function confirmReset() {
             if (tg) {
                 tg.showConfirm('Restart from beginning? All progress will be lost.', (ok) => {
@@ -649,20 +981,26 @@
             }
         }
 
-        // event listeners
+        // ---------- INITIALIZATION ----------
         document.getElementById('resetButton').addEventListener('click', confirmReset);
-        document.getElementById('closePopupBtn').addEventListener('click', () => {
-            hidePopup();
-            renderAll(); // ensure fresh
-        });
+        
+        // Attach popup listeners initially
+        attachPopupListeners();
+
+        // Handle overlay click for artifact popup
         document.getElementById('popupOverlay').addEventListener('click', (e) => {
-            if (e.target.classList.contains('popup-overlay')) hidePopup();
+            if (e.target.classList.contains('popup-overlay')) {
+                // If artifact popup is visible, advance to leaderboard
+                if (!document.getElementById('artifactPopup').classList.contains('hidden')) {
+                    showLeaderboardPopup();
+                }
+            }
         });
 
-        // initial reset / start
+        // Start game
         resetGame();
 
-        // Telegram back button handling
+        // Telegram back button
         if (tg) {
             tg.onEvent('backButtonClicked', () => {
                 tg.close();
