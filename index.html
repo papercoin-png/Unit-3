@@ -966,7 +966,7 @@
             <div class="unit-grid" id="unitGrid"></div>
         </div>
 
-        <!-- word list area - with original words -->
+        <!-- word list area -->
         <div class="word-section">
             <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
             <div class="word-grid" id="wordListContainer"></div>
@@ -1078,29 +1078,333 @@
 
             window.addEventListener('load', simulateLoading);
 
-            // ---------- ORIGINAL WORD DATABASE (RESTORED) ----------
-            const wordsDatabase = [
-                { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
-                { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
-                { word: "chart", emoji: "📊", sentence: "We made a chart of everyone's favorite pizza." },
-                { word: "cloud", emoji: "☁️", sentence: "That cloud looks exactly like a dragon." },
-                { word: "comprehend", emoji: "🧠", sentence: "It's hard to comprehend how big the universe is." },
-                { word: "describe", emoji: "🗣️", sentence: "Can you describe your perfect day?" },
-                { word: "ever", emoji: "🌟", sentence: "This is the most beautiful sunset ever." },
-                { word: "fail", emoji: "😤", sentence: "It's okay to fail when you're learning something new." },
-                { word: "friendly", emoji: "🐕", sentence: "The friendly dog wagged its tail at everyone." },
-                { word: "grade", emoji: "📝", sentence: "She got an A+ on her spelling grade." },
-                { word: "instead", emoji: "🔄", sentence: "Let's play outside instead of watching TV." },
-                { word: "library", emoji: "📚", sentence: "The library has a story hour every Tuesday." },
-                { word: "planet", emoji: "🪐", sentence: "Which planet has the most beautiful rings?" },
-                { word: "report", emoji: "📰", sentence: "I need to write a report about frogs." },
-                { word: "several", emoji: "🧮", sentence: "I've read several books by that author." },
-                { word: "solve", emoji: "🧩", sentence: "Together we can solve any puzzle." },
-                { word: "suddenly", emoji: "⚡", sentence: "Suddenly, the room filled with colorful light." },
-                { word: "suppose", emoji: "🤔", sentence: "I suppose we could share the last cookie." },
-                { word: "universe", emoji: "🌌", sentence: "How many stars are in the universe?" },
-                { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
-            ];
+            // ---------- MASTER WORD BANK · 3,600 WORDS ----------
+            const MASTER_WORDS = {
+                // WORLD 1: GRAND FORGE (600 words)
+                world1: {
+                    name: "Grand Forge",
+                    icon: "⚒️",
+                    unitType: "Ingot",
+                    units: {
+                        1: { // Ingot 01: First Spark (your original 20 words)
+                            name: "First Spark",
+                            words: [
+                                { word: "alien", emoji: "👽", sentence: "The friendly alien played guitar with astronauts." },
+                                { word: "among", emoji: "🕵️", sentence: "A red mushroom stood among the green ferns." },
+                                { word: "chart", emoji: "📊", sentence: "We made a chart of everyone's favorite pizza." },
+                                { word: "cloud", emoji: "☁️", sentence: "That cloud looks exactly like a dragon." },
+                                { word: "comprehend", emoji: "🧠", sentence: "It's hard to comprehend how big the universe is." },
+                                { word: "describe", emoji: "🗣️", sentence: "Can you describe your perfect day?" },
+                                { word: "ever", emoji: "🌟", sentence: "This is the most beautiful sunset ever." },
+                                { word: "fail", emoji: "😤", sentence: "It's okay to fail when you're learning something new." },
+                                { word: "friendly", emoji: "🐕", sentence: "The friendly dog wagged its tail at everyone." },
+                                { word: "grade", emoji: "📝", sentence: "She got an A+ on her spelling grade." },
+                                { word: "instead", emoji: "🔄", sentence: "Let's play outside instead of watching TV." },
+                                { word: "library", emoji: "📚", sentence: "The library has a story hour every Tuesday." },
+                                { word: "planet", emoji: "🪐", sentence: "Which planet has the most beautiful rings?" },
+                                { word: "report", emoji: "📰", sentence: "I need to write a report about frogs." },
+                                { word: "several", emoji: "🧮", sentence: "I've read several books by that author." },
+                                { word: "solve", emoji: "🧩", sentence: "Together we can solve any puzzle." },
+                                { word: "suddenly", emoji: "⚡", sentence: "Suddenly, the room filled with colorful light." },
+                                { word: "suppose", emoji: "🤔", sentence: "I suppose we could share the last cookie." },
+                                { word: "universe", emoji: "🌌", sentence: "How many stars are in the universe?" },
+                                { word: "view", emoji: "🏞️", sentence: "The view from the mountain was incredible." }
+                            ]
+                        },
+                        2: { // Ingot 02: Kindling
+                            name: "Kindling",
+                            words: [
+                                { word: "afraid", emoji: "😨", sentence: "The mouse was afraid of the cat." },
+                                { word: "agree", emoji: "🤝", sentence: "We all agree that pizza is delicious." },
+                                { word: "angry", emoji: "😠", sentence: "He was angry when his ice cream fell." },
+                                { word: "arrive", emoji: "🚪", sentence: "We will arrive at the party soon." },
+                                { word: "attack", emoji: "⚔️", sentence: "The knight prepared to attack." },
+                                { word: "bottom", emoji: "⬇️", sentence: "The treasure was at the bottom of the sea." },
+                                { word: "clever", emoji: "🦊", sentence: "The clever fox solved the puzzle." },
+                                { word: "cruel", emoji: "👿", sentence: "The cruel witch cast a spell." },
+                                { word: "finally", emoji: "🎉", sentence: "Finally, summer vacation arrived!" },
+                                { word: "hide", emoji: "🙈", sentence: "Let's hide behind the big tree." },
+                                { word: "hunt", emoji: "🏹", sentence: "They hunt for hidden treasure." },
+                                { word: "lot", emoji: "📦", sentence: "I have a lot of homework today." },
+                                { word: "middle", emoji: "🎯", sentence: "She sat in the middle of the row." },
+                                { word: "moment", emoji: "⏰", sentence: "Wait a moment, I'm almost ready." },
+                                { word: "pleased", emoji: "😊", sentence: "Mother was pleased with the gift." },
+                                { word: "promise", emoji: "🤞", sentence: "I promise to share my cookies." },
+                                { word: "reply", emoji: "💬", sentence: "Please reply to my message." },
+                                { word: "safe", emoji: "🛡️", sentence: "We are safe inside the castle." },
+                                { word: "trick", emoji: "🎩", sentence: "The magician performed a clever trick." },
+                                { word: "well", emoji: "💧", sentence: "The water from the well is cold." }
+                            ]
+                        },
+                        3: { // Ingot 03: Ember
+                            name: "Ember",
+                            words: [
+                                { word: "adventure", emoji: "🗺️", sentence: "The adventure through the forest was exciting." },
+                                { word: "approach", emoji: "🚶", sentence: "We watched the lion approach slowly." },
+                                { word: "carefully", emoji: "👣", sentence: "She carefully placed the eggs in the basket." },
+                                { word: "chemical", emoji: "🧪", sentence: "The chemical turned blue when mixed." },
+                                { word: "create", emoji: "🎨", sentence: "Let's create a beautiful painting." },
+                                { word: "evil", emoji: "😈", sentence: "The evil villain laughed loudly." },
+                                { word: "experiment", emoji: "🔬", sentence: "Our science experiment bubbled and fizzed." },
+                                { word: "kill", emoji: "💀", sentence: "The knight did not want to kill the dragon." },
+                                { word: "laboratory", emoji: "🥼", sentence: "The laboratory was full of strange equipment." },
+                                { word: "laugh", emoji: "😂", sentence: "The joke made everyone laugh." },
+                                { word: "loud", emoji: "🔊", sentence: "The thunder was so loud it shook the house." },
+                                { word: "nervous", emoji: "😰", sentence: "She felt nervous before her speech." },
+                                { word: "noise", emoji: "📢", sentence: "The noise from the construction was distracting." },
+                                { word: "project", emoji: "📋", sentence: "Our school project is about volcanoes." },
+                                { word: "scare", emoji: "👻", sentence: "The loud noise might scare the cat." },
+                                { word: "secret", emoji: "🤫", sentence: "They shared a secret whispered in the dark." },
+                                { word: "shout", emoji: "📣", sentence: "Don't shout in the library." },
+                                { word: "smell", emoji: "👃", sentence: "I can smell fresh bread baking." },
+                                { word: "terrible", emoji: "💔", sentence: "The news was terrible and made us sad." },
+                                { word: "worse", emoji: "⬇️", sentence: "The storm got worse as the night went on." }
+                            ]
+                        },
+                        4: { // Ingot 04: Bellows
+                            name: "Bellows",
+                            words: [
+                                { word: "appropriate", emoji: "✅", sentence: "Wear appropriate clothes for cold weather." },
+                                { word: "avoid", emoji: "🚫", sentence: "Try to avoid walking in puddles." },
+                                { word: "behave", emoji: "🐕", sentence: "The dog learned to behave at the park." },
+                                { word: "calm", emoji: "😌", sentence: "Take deep breaths to stay calm." },
+                                { word: "concern", emoji: "🤔", sentence: "My concern is that we might be late." },
+                                { word: "content", emoji: "😊", sentence: "The cat was content in the sunny spot." },
+                                { word: "expect", emoji: "🔮", sentence: "I expect you to finish your homework." },
+                                { word: "frequently", emoji: "⏱️", sentence: "We frequently visit grandma on Sundays." },
+                                { word: "habit", emoji: "🔄", sentence: "Brushing teeth is a good habit." },
+                                { word: "instruct", emoji: "📝", sentence: "The coach will instruct us on the rules." },
+                                { word: "issue", emoji: "⚠️", sentence: "There was an issue with the computer." },
+                                { word: "none", emoji: "0️⃣", sentence: "None of the cookies were left." },
+                                { word: "patient", emoji: "🧘", sentence: "Be patient, your turn will come." },
+                                { word: "positive", emoji: "➕", sentence: "Stay positive even when things are hard." },
+                                { word: "punish", emoji: "⛔", sentence: "Parents should not punish too harshly." },
+                                { word: "represent", emoji: "🏛️", sentence: "The flag represents our country." },
+                                { word: "shake", emoji: "👋", sentence: "Shake hands when you meet someone new." },
+                                { word: "spread", emoji: "🦋", sentence: "Butterflies spread their wings to fly." },
+                                { word: "stroll", emoji: "🚶", sentence: "Let's stroll through the park together." },
+                                { word: "village", emoji: "🏘️", sentence: "The village had one small store." }
+                            ]
+                        },
+                        5: { name: "Tongs", words: [] },
+                        6: { name: "Hammer", words: [] },
+                        7: { name: "Anvil", words: [] },
+                        8: { name: "Quench", words: [] },
+                        9: { name: "Temper", words: [] },
+                        10: { name: "Forgefire", words: [] },
+                        11: { name: "Raw Iron", words: [] },
+                        12: { name: "Steel Blend", words: [] },
+                        13: { name: "Fold", words: [] },
+                        14: { name: "Shape", words: [] },
+                        15: { name: "Edge", words: [] },
+                        16: { name: "Curve", words: [] },
+                        17: { name: "Point", words: [] },
+                        18: { name: "Balance", words: [] },
+                        19: { name: "Polish", words: [] },
+                        20: { name: "Gleam", words: [] },
+                        21: { name: "Pattern", words: [] },
+                        22: { name: "Inlay", words: [] },
+                        23: { name: "Filigree", words: [] },
+                        24: { name: "Engrave", words: [] },
+                        25: { name: "Harden", words: [] },
+                        26: { name: "Resilience", words: [] },
+                        27: { name: "Legacy", words: [] },
+                        28: { name: "Masterpiece", words: [] },
+                        29: { name: "Legendary", words: [] },
+                        30: { name: "Soulforge", words: [] }
+                    }
+                },
+                // WORLD 2: ENCHANTED FOREST (600 words)
+                world2: {
+                    name: "Enchanted Forest",
+                    icon: "🌳",
+                    unitType: "Seed",
+                    units: {
+                        31: { name: "First Rain", words: [] },
+                        32: { name: "Sunlight", words: [] },
+                        33: { name: "Rich Soil", words: [] },
+                        34: { name: "Tiny Sprout", words: [] },
+                        35: { name: "New Leaf", words: [] },
+                        36: { name: "Morning Dew", words: [] },
+                        37: { name: "Gentle Breeze", words: [] },
+                        38: { name: "Deep Roots", words: [] },
+                        39: { name: "Growing Stem", words: [] },
+                        40: { name: "Forest Floor", words: [] },
+                        41: { name: "Forest Flowers", words: [] },
+                        42: { name: "Bee's Visit", words: [] },
+                        43: { name: "Woodland Song", words: [] },
+                        44: { name: "Mushroom Ring", words: [] },
+                        45: { name: "Fern Unfurling", words: [] },
+                        46: { name: "Mossy Stone", words: [] },
+                        47: { name: "Wild Berry", words: [] },
+                        48: { name: "Falling Petal", words: [] },
+                        49: { name: "Forest Pool", words: [] },
+                        50: { name: "Firefly Light", words: [] },
+                        51: { name: "Whispering Pine", words: [] },
+                        52: { name: "Oak's Strength", words: [] },
+                        53: { name: "Willow's Grace", words: [] },
+                        54: { name: "Hidden Glade", words: [] },
+                        55: { name: "Spirit Tree", words: [] },
+                        56: { name: "Autumn Gold", words: [] },
+                        57: { name: "Winter Rest", words: [] },
+                        58: { name: "Spring Thaw", words: [] },
+                        59: { name: "Eternal Grove", words: [] },
+                        60: { name: "Heartwood", words: [] }
+                    }
+                },
+                // WORLD 3: CRYSTAL CAVERNS (600 words)
+                world3: {
+                    name: "Crystal Caverns",
+                    icon: "💎",
+                    unitType: "Geode",
+                    units: {
+                        61: { name: "Hidden Treasure", words: [] },
+                        62: { name: "Rough Exterior", words: [] },
+                        63: { name: "First Crack", words: [] },
+                        64: { name: "Glimpse Inside", words: [] },
+                        65: { name: "Sparkling Facet", words: [] },
+                        66: { name: "Crystal Heart", words: [] },
+                        67: { name: "Underground", words: [] },
+                        68: { name: "Cave Echo", words: [] },
+                        69: { name: "Stalactite", words: [] },
+                        70: { name: "Stalagmite", words: [] },
+                        71: { name: "Amethyst Dream", words: [] },
+                        72: { name: "Quartz Clarity", words: [] },
+                        73: { name: "Citrine Spark", words: [] },
+                        74: { name: "Geode Chamber", words: [] },
+                        75: { name: "Crystal Garden", words: [] },
+                        76: { name: "Underground River", words: [] },
+                        77: { name: "Mineral Vein", words: [] },
+                        78: { name: "Fossil Memory", words: [] },
+                        79: { name: "Cave Painting", words: [] },
+                        80: { name: "Bioluminescence", words: [] },
+                        81: { name: "Rainbow Geode", words: [] },
+                        82: { name: "Crystal Heart", words: [] },
+                        83: { name: "Cave of Voices", words: [] },
+                        84: { name: "Gemstone Crown", words: [] },
+                        85: { name: "Underground Sea", words: [] },
+                        86: { name: "Crystal Lattice", words: [] },
+                        87: { name: "Light Prism", words: [] },
+                        88: { name: "Geode Throne", words: [] },
+                        89: { name: "Deep Earth", words: [] },
+                        90: { name: "Living Crystal", words: [] }
+                    }
+                },
+                // WORLD 4: SKY CITADEL (600 words)
+                world4: {
+                    name: "Sky Citadel",
+                    icon: "☁️",
+                    unitType: "Cloud",
+                    units: {
+                        91: { name: "Morning Mist", words: [] },
+                        92: { name: "Gentle Breeze", words: [] },
+                        93: { name: "Floating High", words: [] },
+                        94: { name: "Golden Sunrise", words: [] },
+                        95: { name: "Silver Lining", words: [] },
+                        96: { name: "Cotton Drift", words: [] },
+                        97: { name: "Sky Painting", words: [] },
+                        98: { name: "First Star", words: [] },
+                        99: { name: "Twilight Glow", words: [] },
+                        100: { name: "Wisp", words: [] },
+                        101: { name: "Cumulus Pile", words: [] },
+                        102: { name: "Cirrus Whisper", words: [] },
+                        103: { name: "Stratus Blanket", words: [] },
+                        104: { name: "Rainbow Arch", words: [] },
+                        105: { name: "Distant Thunder", words: [] },
+                        106: { name: "Lightning Flash", words: [] },
+                        107: { name: "Storm Cloud", words: [] },
+                        108: { name: "Rain Fall", words: [] },
+                        109: { name: "Rainbow's End", words: [] },
+                        110: { name: "Double Rainbow", words: [] },
+                        111: { name: "Thunderhead", words: [] },
+                        112: { name: "Eye of Storm", words: [] },
+                        113: { name: "Sky Castle", words: [] },
+                        114: { name: "Sundog", words: [] },
+                        115: { name: "Aurora Veil", words: [] },
+                        116: { name: "Cloud Throne", words: [] },
+                        117: { name: "Celestial Path", words: [] },
+                        118: { name: "Eternal Sunset", words: [] },
+                        119: { name: "Sky Crown", words: [] },
+                        120: { name: "Infinite Sky", words: [] }
+                    }
+                },
+                // WORLD 5: DRAGON'S PEAK (600 words)
+                world5: {
+                    name: "Dragon's Peak",
+                    icon: "🐉",
+                    unitType: "Scale",
+                    units: {
+                        121: { name: "First Scale", words: [] },
+                        122: { name: "Hatchling Warmth", words: [] },
+                        123: { name: "Claw's Edge", words: [] },
+                        124: { name: "Smoke Breath", words: [] },
+                        125: { name: "Fledgling Wing", words: [] },
+                        126: { name: "Nest Fire", words: [] },
+                        127: { name: "Small Roar", words: [] },
+                        128: { name: "Treasure Glint", words: [] },
+                        129: { name: "Cave Warmth", words: [] },
+                        130: { name: "Dragon's Eye", words: [] },
+                        131: { name: "Ember Scale", words: [] },
+                        132: { name: "Iron Scale", words: [] },
+                        133: { name: "Flame Tongue", words: [] },
+                        134: { name: "Wing Stretch", words: [] },
+                        135: { name: "Mountain Claw", words: [] },
+                        136: { name: "Gold Hoard", words: [] },
+                        137: { name: "Lava Vein", words: [] },
+                        138: { name: "Storm Flight", words: [] },
+                        139: { name: "Roaring Voice", words: [] },
+                        140: { name: "Ancient Pattern", words: [] },
+                        141: { name: "Dragonfire", words: [] },
+                        142: { name: "Thunder Scale", words: [] },
+                        143: { name: "Elder's Wisdom", words: [] },
+                        144: { name: "Sky Sovereign", words: [] },
+                        145: { name: "Volcanic Heart", words: [] },
+                        146: { name: "Diamond Scale", words: [] },
+                        147: { name: "Wyrm's Legacy", words: [] },
+                        148: { name: "Crown of Claws", words: [] },
+                        149: { name: "Eternal Flame", words: [] },
+                        150: { name: "Ascendant Dragon", words: [] }
+                    }
+                },
+                // WORLD 6: STAR FORGE (600 words)
+                world6: {
+                    name: "Star Forge",
+                    icon: "⭐",
+                    unitType: "Star",
+                    units: {
+                        151: { name: "First Light", words: [] },
+                        152: { name: "Twinkling Hope", words: [] },
+                        153: { name: "Distant Glow", words: [] },
+                        154: { name: "Guiding North", words: [] },
+                        155: { name: "Falling Wish", words: [] },
+                        156: { name: "Evening Star", words: [] },
+                        157: { name: "Constellation", words: [] },
+                        158: { name: "Starlight Path", words: [] },
+                        159: { name: "Moon's Companion", words: [] },
+                        160: { name: "Dawn's Last Stand", words: [] },
+                        161: { name: "Binary System", words: [] },
+                        162: { name: "Pulsar Rhythm", words: [] },
+                        163: { name: "Nebula Heart", words: [] },
+                        164: { name: "Solar Flare", words: [] },
+                        165: { name: "Orbiting Planet", words: [] },
+                        166: { name: "Galaxy Spiral", words: [] },
+                        167: { name: "Supergiant", words: [] },
+                        168: { name: "Star Cluster", words: [] },
+                        169: { name: "Light Year", words: [] },
+                        170: { name: "Solar Wind", words: [] },
+                        171: { name: "Supernova", words: [] },
+                        172: { name: "Black Hole Wisdom", words: [] },
+                        173: { name: "Quasar Power", words: [] },
+                        174: { name: "Cosmic Web", words: [] },
+                        175: { name: "Milky Way", words: [] },
+                        176: { name: "Andromeda", words: [] },
+                        177: { name: "Universal Truth", words: [] },
+                        178: { name: "Celestial Crown", words: [] },
+                        179: { name: "Eternal Glow", words: [] },
+                        180: { name: "Star Forge Heart", words: [] }
+                    }
+                }
+            };
 
             // ---------- WORLD DATA STRUCTURE ----------
             const worlds = {
@@ -1112,41 +1416,17 @@
                     unlocked: true,
                     completed: false,
                     totalWords: 600,
-                    units: [
-                        // Tier 1: Foundation (1-10)
-                        { id: 1, name: "First Spark", wordsCompleted: 0, totalWords: 20, unlocked: true },
-                        { id: 2, name: "Kindling", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 3, name: "Ember", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 4, name: "Bellows", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 5, name: "Tongs", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 6, name: "Hammer", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 7, name: "Anvil", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 8, name: "Quench", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 9, name: "Temper", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 10, name: "Forgefire", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        // Tier 2: Crafting (11-20)
-                        { id: 11, name: "Raw Iron", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 12, name: "Steel Blend", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 13, name: "Fold", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 14, name: "Shape", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 15, name: "Edge", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 16, name: "Curve", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 17, name: "Point", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 18, name: "Balance", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 19, name: "Polish", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 20, name: "Gleam", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        // Tier 3: Masterwork (21-30)
-                        { id: 21, name: "Pattern", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 22, name: "Inlay", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 23, name: "Filigree", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 24, name: "Engrave", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 25, name: "Harden", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 26, name: "Resilience", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 27, name: "Legacy", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 28, name: "Masterpiece", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 29, name: "Legendary", wordsCompleted: 0, totalWords: 20, unlocked: false },
-                        { id: 30, name: "Soulforge", wordsCompleted: 0, totalWords: 20, unlocked: false }
-                    ]
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 1;
+                        const unitData = MASTER_WORDS.world1.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: unitId === 1 // Only first ingot unlocked initially
+                        };
+                    })
                 },
                 2: {
                     id: 2,
@@ -1156,13 +1436,17 @@
                     unlocked: false,
                     completed: false,
                     totalWords: 600,
-                    units: Array.from({ length: 30 }, (_, i) => ({
-                        id: i + 31,
-                        name: "???",
-                        wordsCompleted: 0,
-                        totalWords: 20,
-                        unlocked: false
-                    }))
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 31;
+                        const unitData = MASTER_WORDS.world2.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: false
+                        };
+                    })
                 },
                 3: {
                     id: 3,
@@ -1172,13 +1456,17 @@
                     unlocked: false,
                     completed: false,
                     totalWords: 600,
-                    units: Array.from({ length: 30 }, (_, i) => ({
-                        id: i + 61,
-                        name: "???",
-                        wordsCompleted: 0,
-                        totalWords: 20,
-                        unlocked: false
-                    }))
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 61;
+                        const unitData = MASTER_WORDS.world3.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: false
+                        };
+                    })
                 },
                 4: {
                     id: 4,
@@ -1188,13 +1476,17 @@
                     unlocked: false,
                     completed: false,
                     totalWords: 600,
-                    units: Array.from({ length: 30 }, (_, i) => ({
-                        id: i + 91,
-                        name: "???",
-                        wordsCompleted: 0,
-                        totalWords: 20,
-                        unlocked: false
-                    }))
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 91;
+                        const unitData = MASTER_WORDS.world4.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: false
+                        };
+                    })
                 },
                 5: {
                     id: 5,
@@ -1204,13 +1496,17 @@
                     unlocked: false,
                     completed: false,
                     totalWords: 600,
-                    units: Array.from({ length: 30 }, (_, i) => ({
-                        id: i + 121,
-                        name: "???",
-                        wordsCompleted: 0,
-                        totalWords: 20,
-                        unlocked: false
-                    }))
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 121;
+                        const unitData = MASTER_WORDS.world5.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: false
+                        };
+                    })
                 },
                 6: {
                     id: 6,
@@ -1220,13 +1516,17 @@
                     unlocked: false,
                     completed: false,
                     totalWords: 600,
-                    units: Array.from({ length: 30 }, (_, i) => ({
-                        id: i + 151,
-                        name: "???",
-                        wordsCompleted: 0,
-                        totalWords: 20,
-                        unlocked: false
-                    }))
+                    units: Array.from({ length: 30 }, (_, i) => {
+                        const unitId = i + 151;
+                        const unitData = MASTER_WORDS.world6.units[unitId];
+                        return {
+                            id: unitId,
+                            name: unitData ? unitData.name : "???",
+                            wordsCompleted: 0,
+                            totalWords: 20,
+                            unlocked: false
+                        };
+                    })
                 }
             };
 
@@ -1250,8 +1550,9 @@
 
             // ---------- HELPER FUNCTIONS ----------
             function generateInitialLetters() {
+                const words = getCurrentUnitWords();
                 let allChars = [];
-                wordsDatabase.forEach(entry => {
+                words.forEach(entry => {
                     allChars.push(...entry.word.split(''));
                 });
                 // Shuffle
@@ -1263,7 +1564,13 @@
             }
 
             function getCurrentUnitWords() {
-                return wordsDatabase; // Your original 20 words
+                // Get words from master bank based on current world and unit
+                try {
+                    return MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words;
+                } catch (e) {
+                    console.log("No words for this unit yet, returning empty array");
+                    return [];
+                }
             }
 
             function updateWorldDisplay() {
@@ -1275,11 +1582,13 @@
                 // Update unit selector dropdown
                 const selector = document.getElementById('unitSelector');
                 selector.innerHTML = '';
-                world.units.forEach((unit, index) => {
+                world.units.forEach((unit) => {
                     if (unit.unlocked) {
                         const option = document.createElement('option');
                         option.value = unit.id;
-                        option.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unit.name}`;
+                        const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                        const unitName = unitData ? unitData.name : "???";
+                        option.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}`;
                         if (unit.id === currentUnit) option.selected = true;
                         selector.appendChild(option);
                     }
@@ -1290,11 +1599,13 @@
                 grid.innerHTML = '';
                 world.units.forEach(unit => {
                     if (unit.unlocked) {
+                        const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                        const unitName = unitData ? unitData.name : "???";
                         const card = document.createElement('div');
                         card.className = `unit-card ${unit.id === currentUnit ? 'active-unit' : ''} ${unit.wordsCompleted === 20 ? 'completed' : ''}`;
                         card.innerHTML = `
                             <div class="unit-number">${world.unitName} ${unit.id.toString().padStart(2, '0')}</div>
-                            <div class="unit-name">${unit.name}</div>
+                            <div class="unit-name">${unitName}</div>
                             <div class="unit-progress">${unit.wordsCompleted}/20</div>
                             <div class="unit-progress-bar">
                                 <div class="unit-progress-fill" style="width: ${(unit.wordsCompleted/20)*100}%"></div>
@@ -1600,7 +1911,8 @@
                         unit.wordsCompleted = completedWords.length;
                     }
                     
-                    const wordData = wordsDatabase[wordIndex];
+                    const words = getCurrentUnitWords();
+                    const wordData = words[wordIndex];
                     showWordCard(wordData);
                 }
 
@@ -1653,33 +1965,41 @@
             function renderAll() {
                 const words = getCurrentUnitWords();
                 
-                // Word list with original words
+                // Word list
                 const wordContainer = document.getElementById('wordListContainer');
                 if (wordContainer) {
                     wordContainer.innerHTML = '';
-                    words.forEach((w, idx) => {
-                        const chip = document.createElement('div');
-                        chip.className = 'word-chip';
-                        if (completedWords.includes(idx)) {
-                            chip.classList.add('completed');
-                        } else if (activeWordIndex === idx) {
-                            chip.classList.add('active-word');
-                        }
-                        chip.innerText = w.word;
-                        chip.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (completedWords.includes(idx) || gameCompleted) return;
-                            activeWordIndex = idx;
-                            currentPosition = 0;
-                            renderAll();
-                            tg?.HapticFeedback?.selectionChanged?.();
+                    if (words && words.length > 0) {
+                        words.forEach((w, idx) => {
+                            const chip = document.createElement('div');
+                            chip.className = 'word-chip';
+                            if (completedWords.includes(idx)) {
+                                chip.classList.add('completed');
+                            } else if (activeWordIndex === idx) {
+                                chip.classList.add('active-word');
+                            }
+                            chip.innerText = w.word;
+                            chip.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                if (completedWords.includes(idx) || gameCompleted) return;
+                                activeWordIndex = idx;
+                                currentPosition = 0;
+                                renderAll();
+                                tg?.HapticFeedback?.selectionChanged?.();
+                            });
+                            wordContainer.appendChild(chip);
                         });
-                        wordContainer.appendChild(chip);
-                    });
+                    } else {
+                        // Placeholder for units without words yet
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'word-chip';
+                        placeholder.innerText = "Coming Soon";
+                        wordContainer.appendChild(placeholder);
+                    }
                 }
 
                 // Active hint
-                if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted) {
+                if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted && words && words.length > 0) {
                     const w = words[activeWordIndex].word;
                     const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
                     document.getElementById('activeWordDisplay').innerText = progressWord || '—';
