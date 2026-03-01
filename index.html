@@ -170,6 +170,29 @@
             backdrop-filter: blur(4px);
         }
 
+        /* save indicator */
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ffd966;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #c9ae5b;
+            backdrop-filter: blur(5px);
+            z-index: 1001;
+            transition: opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
         /* word list area */
         .word-section {
             background: rgba(10, 25, 35, 0.7);
@@ -1254,6 +1277,9 @@
         </div>
     </div>
 
+    <!-- Save Indicator -->
+    <div id="saveIndicator" class="save-indicator">💾 Saving...</div>
+
     <div class="game-container" id="gameContainer">
         <!-- header with world info -->
         <div class="header">
@@ -1386,6 +1412,198 @@
             }, 2000);
 
             window.addEventListener('load', simulateLoading);
+
+            // ---------- SAVE SYSTEM ----------
+            const saveIndicator = document.getElementById('saveIndicator');
+            let autoSaveTimer = null;
+            let saveTimeout = null;
+
+            function showSaveIndicator(text = '💾 Saving...', duration = 1500) {
+                saveIndicator.innerText = text;
+                saveIndicator.classList.add('show');
+                
+                if (saveTimeout) clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    saveIndicator.classList.remove('show');
+                }, duration);
+            }
+
+            function saveProgress() {
+                if (!tg?.CloudStorage) {
+                    // Fallback to localStorage
+                    try {
+                        const saveData = {
+                            version: "1.0",
+                            lastUpdated: new Date().toISOString(),
+                            currentWorld: currentWorld,
+                            currentUnit: currentUnit,
+                            completedWords: completedWords,
+                            playerPerformance: playerPerformance,
+                            worlds: worlds
+                        };
+                        localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
+                        showSaveIndicator('💾 Saved locally', 1000);
+                    } catch (e) {
+                        console.error('Failed to save:', e);
+                    }
+                    return;
+                }
+
+                // Prepare save data
+                const saveData = {
+                    version: "1.0",
+                    lastUpdated: new Date().toISOString(),
+                    currentWorld: currentWorld,
+                    currentUnit: currentUnit,
+                    completedWords: completedWords,
+                    playerPerformance: {
+                        currentStreak: playerPerformance.currentStreak,
+                        bestStreak: playerPerformance.bestStreak,
+                        lastAccuracy: playerPerformance.lastAccuracy,
+                        lastAttemptFailed: playerPerformance.lastAttemptFailed,
+                        lastPlayedDate: playerPerformance.lastPlayedDate,
+                        totalRiskBonus: playerPerformance.totalRiskBonus,
+                        worldProgress: playerPerformance.worldProgress
+                    },
+                    worlds: Object.keys(worlds).reduce((acc, key) => {
+                        const world = worlds[key];
+                        acc[key] = {
+                            id: world.id,
+                            unlocked: world.unlocked,
+                            completed: world.completed,
+                            units: world.units.map(u => ({
+                                id: u.id,
+                                wordsCompleted: u.wordsCompleted,
+                                unlocked: u.unlocked
+                            }))
+                        };
+                        return acc;
+                    }, {})
+                };
+
+                // Save to Telegram CloudStorage
+                tg.CloudStorage.setItem(
+                    'spellforge_save',
+                    JSON.stringify(saveData),
+                    function(err, success) {
+                        if (success) {
+                            showSaveIndicator('💾 Saved to cloud', 1000);
+                        } else {
+                            // Fallback to localStorage
+                            try {
+                                localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
+                                showSaveIndicator('💾 Saved locally', 1000);
+                            } catch (e) {
+                                console.error('Save failed:', err);
+                                showSaveIndicator('❌ Save failed', 1500);
+                            }
+                        }
+                    }
+                );
+            }
+
+            function loadProgress(callback) {
+                if (!tg?.CloudStorage) {
+                    // Try localStorage fallback
+                    try {
+                        const saved = localStorage.getItem('spellforge_backup');
+                        if (saved) {
+                            const data = JSON.parse(saved);
+                            applyLoadedData(data);
+                            showSaveIndicator('✅ Loaded from backup', 1500);
+                        }
+                    } catch (e) {
+                        console.error('Failed to load from localStorage:', e);
+                    }
+                    if (callback) callback();
+                    return;
+                }
+
+                tg.CloudStorage.getItem('spellforge_save', function(err, data) {
+                    if (data) {
+                        try {
+                            const saveData = JSON.parse(data);
+                            applyLoadedData(saveData);
+                            showSaveIndicator('✅ Progress loaded', 1500);
+                        } catch (e) {
+                            console.error('Failed to parse save data:', e);
+                        }
+                    } else {
+                        // Try localStorage as fallback
+                        try {
+                            const saved = localStorage.getItem('spellforge_backup');
+                            if (saved) {
+                                const data = JSON.parse(saved);
+                                applyLoadedData(data);
+                                showSaveIndicator('✅ Loaded from backup', 1500);
+                            }
+                        } catch (e) {
+                            console.error('No save data found');
+                        }
+                    }
+                    if (callback) callback();
+                });
+            }
+
+            function applyLoadedData(saveData) {
+                try {
+                    // Restore world states
+                    if (saveData.worlds) {
+                        Object.keys(saveData.worlds).forEach(key => {
+                            if (worlds[key]) {
+                                const savedWorld = saveData.worlds[key];
+                                worlds[key].unlocked = savedWorld.unlocked;
+                                worlds[key].completed = savedWorld.completed;
+                                
+                                savedWorld.units.forEach(savedUnit => {
+                                    const unit = worlds[key].units.find(u => u.id === savedUnit.id);
+                                    if (unit) {
+                                        unit.wordsCompleted = savedUnit.wordsCompleted;
+                                        unit.unlocked = savedUnit.unlocked;
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    // Restore current position
+                    if (saveData.currentWorld) currentWorld = saveData.currentWorld;
+                    if (saveData.currentUnit) currentUnit = saveData.currentUnit;
+                    if (saveData.completedWords) completedWords = saveData.completedWords;
+
+                    // Restore player performance
+                    if (saveData.playerPerformance) {
+                        playerPerformance = {
+                            ...playerPerformance,
+                            ...saveData.playerPerformance
+                        };
+                    }
+
+                    // Update displays
+                    updateWorldDisplay();
+                    resetForNewUnit();
+                } catch (e) {
+                    console.error('Error applying save data:', e);
+                }
+            }
+
+            function clearSavedProgress() {
+                if (tg?.CloudStorage) {
+                    tg.CloudStorage.removeItem('spellforge_save', function(err, success) {
+                        if (success) {
+                            showSaveIndicator('🗑️ Save cleared', 1500);
+                        }
+                    });
+                }
+                localStorage.removeItem('spellforge_backup');
+            }
+
+            function startAutoSave() {
+                if (autoSaveTimer) clearInterval(autoSaveTimer);
+                autoSaveTimer = setInterval(() => {
+                    saveProgress();
+                }, 60000); // Auto-save every 60 seconds
+            }
 
             // ---------- MASTER WORD BANK · 3,600 WORDS ----------
             const MASTER_WORDS = {
@@ -2103,7 +2321,6 @@
                     
                     let modifiers = 0;
                     
-                    // Simple modifier calculation
                     const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
                     modifiers += streakBonus;
                     
@@ -2198,6 +2415,7 @@
                                 currentUnit = unit.id;
                                 resetForNewUnit();
                                 updateWorldDisplay();
+                                saveProgress();
                             }
                         });
                         grid.appendChild(card);
@@ -2220,6 +2438,7 @@
                 wordCardQueue = [];
                 showingWordCard = false;
                 renderAll();
+                saveProgress();
             }
 
             // ---------- SFR SYSTEM ----------
@@ -2292,12 +2511,13 @@
                     overlay.classList.add('hidden');
                     showingWordCard = false;
                     processWordCardQueue();
+                    saveProgress();
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // FIXED: Ingot Complete Popup with delay for leaderboard
+            // Ingot Complete Popup
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -2342,10 +2562,8 @@
                 overlay.appendChild(card);
                 overlay.classList.remove('hidden');
                 
-                // FIXED: Leaderboard button with delay
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    // Small delay to ensure first popup is gone
                     setTimeout(() => {
                         showLeaderboardPopup(true);
                     }, 100);
@@ -2369,6 +2587,7 @@
                             }, 100);
                         }
                     }
+                    saveProgress();
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
@@ -2391,7 +2610,6 @@
                     return;
                 }
                 
-                // Calculate chance safely
                 let chance;
                 try {
                     chance = calculateSuccessChance(nextIngotId);
@@ -2400,7 +2618,6 @@
                     chance = { final: 50, base: 50, tier: "Unknown" };
                 }
                 
-                // Determine color class
                 let chanceColorClass = 'chance-medium';
                 if (chance.final >= 80) {
                     chanceColorClass = 'chance-high';
@@ -2441,6 +2658,7 @@
                     currentUnit = nextIngotId;
                     resetForNewUnit();
                     updateWorldDisplay();
+                    saveProgress();
                 });
                 
                 document.getElementById('practiceBtn').addEventListener('click', () => {
@@ -2494,6 +2712,7 @@
                         currentUnit = practiceId;
                         resetForNewUnit();
                         updateWorldDisplay();
+                        saveProgress();
                     });
                 });
                 
@@ -2544,6 +2763,7 @@
                     } else {
                         showLeaderboardPopup();
                     }
+                    saveProgress();
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
@@ -2572,7 +2792,7 @@
                 });
             }
 
-            // FIXED: Leaderboard Popup with proper back navigation
+            // Leaderboard Popup
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
@@ -2674,7 +2894,6 @@
                     }
                 }, 100);
                 
-                // FIXED: Back button with proper navigation
                 document.getElementById('backFromLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
                     
@@ -2767,6 +2986,8 @@
                             nextUnit.unlocked = true;
                         }
                     }, 500);
+                    
+                    saveProgress();
                 }
             }
 
@@ -2905,14 +3126,23 @@
                 currentUnit = parseInt(e.target.value);
                 resetForNewUnit();
                 updateWorldDisplay();
+                saveProgress();
             });
 
-            updateWorldDisplay();
-            resetForNewUnit();
+            // Load saved progress and start
+            loadProgress(() => {
+                startAutoSave();
+                updateWorldDisplay();
+                resetForNewUnit();
+            });
 
+            // Save before closing
             if (tg) {
                 tg.onEvent('backButtonClicked', () => {
-                    tg.close();
+                    saveProgress();
+                    setTimeout(() => {
+                        tg.close();
+                    }, 100);
                 });
                 tg.BackButton?.show();
                 tg.ready();
