@@ -20,6 +20,7 @@
             align-items: center;
             padding: 12px;
             margin: 0;
+            transition: background-color 0.3s ease;
         }
 
         /* Loading Screen */
@@ -700,6 +701,80 @@
         }
 
         .ingot-btn.secondary {
+            background: #557a8b;
+            box-shadow: 0 5px 0 #2e4a57;
+            color: white;
+        }
+
+        /* failure popup */
+        .failure-card {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(165deg, #4a1e1e, #6b2e2e);
+            border-radius: 70px;
+            padding: 40px 25px 45px;
+            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ff6666;
+            text-align: center;
+            animation: shake 0.3s;
+            border: 3px solid #ff4747;
+            margin: auto;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .failure-emoji {
+            font-size: 90px;
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+
+        .failure-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ffb3b3;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 5px 5px 0 #7a1d1d;
+            margin: 5px 0;
+        }
+
+        .failure-sub {
+            font-size: 24px;
+            color: #ffb3b3;
+            margin: 20px 0;
+        }
+
+        .failure-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .failure-btn {
+            flex: 1;
+            background: #f0b345;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 10px;
+            font-weight: 700;
+            font-size: 20px;
+            color: #1d332b;
+            box-shadow: 0 5px 0 #9e691f;
+            cursor: pointer;
+            border: 2px solid #ffe694;
+            transition: 0.08s;
+        }
+
+        .failure-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #9e691f;
+        }
+
+        .failure-btn.secondary {
             background: #557a8b;
             box-shadow: 0 5px 0 #2e4a57;
             color: white;
@@ -2239,19 +2314,34 @@
             let showingWordCard = false;
 
             // ---------- HELPER FUNCTIONS ----------
+            // FIXED: Letter bank with correct letter frequency
             function generateInitialLetters() {
                 const words = getCurrentUnitWords();
                 if (!words || words.length === 0) return [];
                 
-                let allChars = [];
+                // Count frequency of each letter across all words
+                const letterCounts = {};
                 words.forEach(entry => {
-                    allChars.push(...entry.word.split(''));
+                    entry.word.split('').forEach(letter => {
+                        letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+                    });
                 });
-                for (let i = allChars.length - 1; i > 0; i--) {
+                
+                // Create bank with correct multiplicity
+                const letterBank = [];
+                Object.keys(letterCounts).forEach(letter => {
+                    for (let i = 0; i < letterCounts[letter]; i++) {
+                        letterBank.push(letter);
+                    }
+                });
+                
+                // Shuffle
+                for (let i = letterBank.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [allChars[i], allChars[j]] = [allChars[j], allChars[i]];
+                    [letterBank[i], letterBank[j]] = [letterBank[j], letterBank[i]];
                 }
-                return allChars;
+                
+                return letterBank;
             }
 
             function getCurrentUnitWords() {
@@ -2320,14 +2410,6 @@
                 const riskFactor = 100 - actualChance;
                 const bonus = riskFactor * 10;
                 return Math.min(bonus, 1000);
-            }
-
-            function getDaysSince(dateString) {
-                const last = new Date(dateString);
-                const now = new Date();
-                const diffTime = Math.abs(now - last);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays;
             }
 
             function updateWorldDisplay() {
@@ -2610,6 +2692,43 @@
                 });
                 
                 tg?.HapticFeedback?.notificationOccurred?.('success');
+            }
+
+            // NEW: Failure Popup
+            function showFailurePopup() {
+                const overlay = document.getElementById('popupOverlay');
+                
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'failure-card';
+                card.innerHTML = `
+                    <div class="failure-emoji">💔</div>
+                    <div class="failure-title">INGOT CRACKED</div>
+                    <div class="failure-sub">The forge was not kind today</div>
+                    
+                    <div class="failure-buttons">
+                        <button class="failure-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
+                        <button class="failure-btn secondary" id="tryAgainBtn">🔄 TRY AGAIN</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    setTimeout(() => {
+                        showLeaderboardPopup(true);
+                    }, 100);
+                });
+                
+                document.getElementById('tryAgainBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    resetForNewUnit();
+                });
+                
+                tg?.HapticFeedback?.notificationOccurred?.('error');
             }
 
             function showIngotCompletePopup() {
@@ -3042,40 +3161,71 @@
                 renderAll();
                 updateWorldDisplay();
                 
+                // Check if all words completed
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                if (unit && unit.wordsCompleted === unit.totalWords) {
+                if (unit && unit.wordsCompleted === 20) {
                     const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
                     
-                    playerPerformance.currentStreak++;
-                    playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
-                    playerPerformance.lastAccuracy = accuracy;
-                    playerPerformance.lastAttemptFailed = false;
-                    playerPerformance.lastPlayedDate = new Date().toISOString();
-                    playerPerformance.worldProgress[currentWorld].completed++;
-                    
+                    // Determine success/failure based on chance
                     const chance = calculateSuccessChance(currentUnit);
-                    const riskBonus = calculateRiskBonus(chance.base, chance.final, true);
-                    playerPerformance.totalRiskBonus += riskBonus;
+                    const roll = Math.random() * 100;
+                    const success = roll <= chance.final;
                     
-                    playerPerformance.ingotHistory.push({
-                        id: currentUnit,
-                        success: true,
-                        accuracy: accuracy,
-                        time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
-                        sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
-                        date: new Date().toISOString()
-                    });
+                    // Visual feedback - flash
+                    document.body.style.transition = 'background-color 0.3s';
+                    document.body.style.backgroundColor = success ? '#4ade80' : '#f87171';
                     
                     setTimeout(() => {
-                        showIngotCompletePopup();
+                        document.body.style.backgroundColor = '';
                         
-                        const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
-                        if (nextUnit) {
-                            nextUnit.unlocked = true;
+                        if (success) {
+                            // SUCCESS: Update performance and show complete popup
+                            playerPerformance.currentStreak++;
+                            playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
+                            playerPerformance.lastAccuracy = accuracy;
+                            playerPerformance.lastAttemptFailed = false;
+                            playerPerformance.lastPlayedDate = new Date().toISOString();
+                            playerPerformance.worldProgress[currentWorld].completed++;
+                            
+                            const riskBonus = calculateRiskBonus(chance.base, chance.final, true);
+                            playerPerformance.totalRiskBonus += riskBonus;
+                            
+                            playerPerformance.ingotHistory.push({
+                                id: currentUnit,
+                                success: true,
+                                accuracy: accuracy,
+                                time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
+                                sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
+                                date: new Date().toISOString()
+                            });
+                            
+                            showIngotCompletePopup();
+                            
+                            const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
+                            if (nextUnit) {
+                                nextUnit.unlocked = true;
+                            }
+                            
+                            saveProgress();
+                        } else {
+                            // FAILURE: Show failure popup, reset current ingot
+                            playerPerformance.lastAttemptFailed = true;
+                            playerPerformance.lastPlayedDate = new Date().toISOString();
+                            playerPerformance.worldProgress[currentWorld].failed++;
+                            
+                            playerPerformance.ingotHistory.push({
+                                id: currentUnit,
+                                success: false,
+                                accuracy: accuracy,
+                                time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
+                                sfr: 0,
+                                date: new Date().toISOString()
+                            });
+                            
+                            showFailurePopup();
+                            // resetForNewUnit will be called from the popup when they click Try Again
                         }
-                    }, 500);
-                    
-                    saveProgress();
+                    }, 300);
                 }
             }
 
