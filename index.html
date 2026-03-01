@@ -113,7 +113,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 42px;
-            padding: 20px 12px 30px; /* Reduced horizontal padding */
+            padding: 20px 12px 30px;
             box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.5);
             transition: all 0.2s;
         }
@@ -317,7 +317,7 @@
         .word-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
-            padding: 18px 10px; /* Reduced horizontal padding */
+            padding: 18px 10px;
             margin-bottom: 22px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
@@ -335,7 +335,7 @@
         .word-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px; /* Slightly reduced gap */
+            gap: 8px;
             justify-content: center;
             max-height: 200px;
             overflow-y: auto;
@@ -361,7 +361,7 @@
         .word-chip {
             background: #2c4556;
             border-radius: 40px;
-            padding: 10px 18px; /* Slightly smaller padding */
+            padding: 10px 18px;
             font-weight: 600;
             font-size: 18px;
             color: #c9e9ff;
@@ -370,7 +370,7 @@
             border: 1px solid #598baa;
             user-select: none;
             cursor: pointer;
-            min-width: 80px; /* Slightly smaller min-width */
+            min-width: 80px;
             text-align: center;
             position: relative;
         }
@@ -383,7 +383,7 @@
             opacity: 0.9;
             cursor: default;
             pointer-events: none;
-            padding-right: 32px; /* Make room for checkmark */
+            padding-right: 32px;
         }
 
         .word-chip.completed::after {
@@ -445,7 +445,7 @@
         .letter-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
-            padding: 18px 10px; /* Reduced horizontal padding */
+            padding: 18px 10px;
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
@@ -454,21 +454,21 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px; /* Slightly reduced gap */
+            gap: 8px;
         }
 
         .letter-tile {
-            width: 58px; /* Slightly smaller tiles */
+            width: 58px;
             height: 58px;
             background: linear-gradient(145deg, #ffcf8a, #febf6e);
-            border-radius: 16px; /* Slightly smaller radius */
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 30px; /* Slightly smaller font */
+            font-size: 30px;
             color: #1f3b4a;
-            box-shadow: 0 7px 0 #b2752e, 0 8px 12px rgba(0, 0, 0, 0.4); /* Smaller shadow */
+            box-shadow: 0 7px 0 #b2752e, 0 8px 12px rgba(0, 0, 0, 0.4);
             transition: all 0.08s linear;
             cursor: pointer;
             border: 2px solid #ffdcaa;
@@ -705,7 +705,7 @@
             color: white;
         }
 
-        /* simplified next ingot preview popup */
+        /* simplified next ingot preview popup - no modifiers */
         .preview-card {
             max-width: 440px;
             width: 100%;
@@ -735,7 +735,7 @@
         .chance-container {
             background: #0e2938;
             border-radius: 50px;
-            padding: 20px;
+            padding: 30px 20px;
             margin: 20px 0;
             border: 2px solid #b8944a;
         }
@@ -1518,12 +1518,156 @@
                                 { word: "village", emoji: "🏘️", sentence: "The village had one small store." }
                             ]
                         },
-                        5: { name: "Tongs", words: [] },
-                        6: { name: "Hammer", words: [] },
-                        7: { name: "Anvil", words: [] },
-                        8: { name: "Quench", words: [] },
-                        9: { name: "Temper", words: [] },
-                        10: { name: "Forgefire", words: [] },
+                        5: { // Ingot 05: Tongs
+                            name: "Tongs",
+                            words: [
+                                { word: "aware", emoji: "👀", sentence: "Be aware of the slippery floor." },
+                                { word: "badly", emoji: "💔", sentence: "The car was badly damaged in the accident." },
+                                { word: "belong", emoji: "🏠", sentence: "This book belongs on the top shelf." },
+                                { word: "continue", emoji: "⏩", sentence: "Please continue with your story." },
+                                { word: "error", emoji: "⚠️", sentence: "There was an error in the calculation." },
+                                { word: "experience", emoji: "🧠", sentence: "Traveling gives you new experiences." },
+                                { word: "field", emoji: "🌾", sentence: "The cows grazed in the green field." },
+                                { word: "hurt", emoji: "🤕", sentence: "My knee hurts from falling." },
+                                { word: "judgment", emoji: "⚖️", sentence: "Use good judgment when crossing the street." },
+                                { word: "likely", emoji: "📊", sentence: "It will likely rain tomorrow." },
+                                { word: "normal", emoji: "✅", sentence: "It's normal to feel nervous." },
+                                { word: "rare", emoji: "🦄", sentence: "Seeing a rainbow at night is rare." },
+                                { word: "relax", emoji: "😌", sentence: "I like to relax in a warm bath." },
+                                { word: "request", emoji: "🙏", sentence: "She made a request for more information." },
+                                { word: "reside", emoji: "🏡", sentence: "They reside in a small cottage." },
+                                { word: "result", emoji: "📋", sentence: "The result of the test was positive." },
+                                { word: "roll", emoji: "🥖", sentence: "Watch the ball roll down the hill." },
+                                { word: "since", emoji: "⏰", sentence: "I've been waiting since morning." },
+                                { word: "visible", emoji: "👁️", sentence: "The stars are visible tonight." },
+                                { word: "wild", emoji: "🐺", sentence: "Wild animals live in the forest." }
+                            ]
+                        },
+                        6: { // Ingot 06: Hammer
+                            name: "Hammer",
+                            words: [
+                                { word: "advantage", emoji: "🎯", sentence: "Being tall is an advantage in basketball." },
+                                { word: "cause", emoji: "🔍", sentence: "What caused the accident?" },
+                                { word: "choice", emoji: "🤔", sentence: "You have a choice between two options." },
+                                { word: "community", emoji: "🏘️", sentence: "Our community helps each other." },
+                                { word: "dead", emoji: "💀", sentence: "The batteries are dead." },
+                                { word: "distance", emoji: "📏", sentence: "Measure the distance between the two trees." },
+                                { word: "escape", emoji: "🏃", sentence: "The prisoner tried to escape." },
+                                { word: "face", emoji: "😊", sentence: "She has a friendly face." },
+                                { word: "follow", emoji: "👣", sentence: "Follow me, I know the way." },
+                                { word: "fright", emoji: "😱", sentence: "The loud noise gave me a fright." },
+                                { word: "ghost", emoji: "👻", sentence: "Do you believe in ghosts?" },
+                                { word: "individual", emoji: "🧑", sentence: "Each individual has unique talents." },
+                                { word: "pet", emoji: "🐶", sentence: "My pet dog loves to play." },
+                                { word: "reach", emoji: "🤚", sentence: "Can you reach the top shelf?" },
+                                { word: "return", emoji: "↩️", sentence: "Please return your library books on time." },
+                                { word: "survive", emoji: "🛡️", sentence: "We need water to survive." },
+                                { word: "upset", emoji: "😟", sentence: "She was upset about losing her toy." },
+                                { word: "voice", emoji: "🗣️", sentence: "He has a loud, deep voice." },
+                                { word: "weather", emoji: "☀️", sentence: "The weather today is sunny and warm." },
+                                { word: "wise", emoji: "🦉", sentence: "My grandmother is very wise." }
+                            ]
+                        },
+                        7: { // Ingot 07: Anvil
+                            name: "Anvil",
+                            words: [
+                                { word: "allow", emoji: "✅", sentence: "Parents allow their children to play outside." },
+                                { word: "announce", emoji: "📢", sentence: "They will announce the winner tomorrow." },
+                                { word: "beside", emoji: "👈", sentence: "Come sit beside me." },
+                                { word: "challenge", emoji: "🏆", sentence: "Climbing the mountain was a big challenge." },
+                                { word: "claim", emoji: "📝", sentence: "She claimed the prize as her own." },
+                                { word: "condition", emoji: "🏥", sentence: "The car is in excellent condition." },
+                                { word: "contribute", emoji: "🤝", sentence: "Everyone should contribute to the project." },
+                                { word: "difference", emoji: "🔄", sentence: "What's the difference between these two?" },
+                                { word: "divide", emoji: "➗", sentence: "Divide the pizza into equal slices." },
+                                { word: "expert", emoji: "🎓", sentence: "She is an expert in ancient history." },
+                                { word: "famous", emoji: "⭐", sentence: "The famous actor waved to fans." },
+                                { word: "force", emoji: "💪", sentence: "The wind forced the door open." },
+                                { word: "harm", emoji: "⚠️", sentence: "Too much sun can harm your skin." },
+                                { word: "lay", emoji: "😴", sentence: "Lay the blanket on the grass." },
+                                { word: "peace", emoji: "🕊️", sentence: "Everyone wants world peace." },
+                                { word: "prince", emoji: "👑", sentence: "The prince lived in a castle." },
+                                { word: "protect", emoji: "🛡️", sentence: "Sunscreen protects your skin." },
+                                { word: "sense", emoji: "🧠", sentence: "It makes sense to study for the test." },
+                                { word: "sudden", emoji: "⚡", sentence: "There was a sudden change in weather." },
+                                { word: "therefore", emoji: "➡️", sentence: "I think, therefore I am." }
+                            ]
+                        },
+                        8: { // Ingot 08: Quench
+                            name: "Quench",
+                            words: [
+                                { word: "accept", emoji: "👍", sentence: "Please accept this gift." },
+                                { word: "arrange", emoji: "📅", sentence: "Let's arrange a meeting for Monday." },
+                                { word: "attend", emoji: "📋", sentence: "Will you attend the party?" },
+                                { word: "balance", emoji: "⚖️", sentence: "Try to balance on one foot." },
+                                { word: "contrast", emoji: "🌓", sentence: "The contrast between light and dark." },
+                                { word: "encourage", emoji: "🎉", sentence: "Parents encourage their children to try new things." },
+                                { word: "familiar", emoji: "👋", sentence: "Your face looks familiar." },
+                                { word: "grab", emoji: "✊", sentence: "Grab my hand before you fall." },
+                                { word: "hang", emoji: "🖼️", sentence: "Hang your coat on the hook." },
+                                { word: "huge", emoji: "🐳", sentence: "The whale was huge." },
+                                { word: "necessary", emoji: "❗", sentence: "Water is necessary for life." },
+                                { word: "pattern", emoji: "🔷", sentence: "The pattern on the wallpaper is pretty." },
+                                { word: "propose", emoji: "💍", sentence: "He plans to propose marriage." },
+                                { word: "purpose", emoji: "🎯", sentence: "What is the purpose of this tool?" },
+                                { word: "release", emoji: "🕊️", sentence: "Release the bird from its cage." },
+                                { word: "require", emoji: "📝", sentence: "All students require a pencil." },
+                                { word: "single", emoji: "1️⃣", sentence: "She found a single coin on the ground." },
+                                { word: "success", emoji: "🏆", sentence: "Hard work leads to success." },
+                                { word: "tear", emoji: "😢", sentence: "A tear rolled down her cheek." },
+                                { word: "theory", emoji: "📚", sentence: "Einstein's theory of relativity." }
+                            ]
+                        },
+                        9: { // Ingot 09: Temper
+                            name: "Temper",
+                            words: [
+                                { word: "against", emoji: "🚫", sentence: "Lean the ladder against the wall." },
+                                { word: "beach", emoji: "🏖️", sentence: "Let's build a sandcastle at the beach." },
+                                { word: "damage", emoji: "💥", sentence: "The storm caused damage to the roof." },
+                                { word: "discover", emoji: "🔍", sentence: "Explorers discover new lands." },
+                                { word: "emotion", emoji: "😊", sentence: "Happiness is a positive emotion." },
+                                { word: "fix", emoji: "🔧", sentence: "Can you fix my broken toy?" },
+                                { word: "frank", emoji: "💬", sentence: "Be frank and tell me the truth." },
+                                { word: "identify", emoji: "🔎", sentence: "Can you identify this bird?" },
+                                { word: "island", emoji: "🏝️", sentence: "They live on a remote island." },
+                                { word: "ocean", emoji: "🌊", sentence: "The ocean is vast and deep." },
+                                { word: "perhaps", emoji: "🤔", sentence: "Perhaps we'll go to the park tomorrow." },
+                                { word: "pleasant", emoji: "😊", sentence: "We had a pleasant conversation." },
+                                { word: "prevent", emoji: "🛑", sentence: "Washing hands prevents illness." },
+                                { word: "rock", emoji: "🪨", sentence: "He skipped a rock across the water." },
+                                { word: "save", emoji: "💰", sentence: "Save your money for something special." },
+                                { word: "step", emoji: "👣", sentence: "Watch your step on the stairs." },
+                                { word: "still", emoji: "🤫", sentence: "Sit still during the movie." },
+                                { word: "taste", emoji: "👅", sentence: "The soup has a salty taste." },
+                                { word: "throw", emoji: "⚾", sentence: "Throw the ball to me." },
+                                { word: "wave", emoji: "🌊", sentence: "Watch the wave crash on the shore." }
+                            ]
+                        },
+                        10: { // Ingot 10: Forgefire
+                            name: "Forgefire",
+                            words: [
+                                { word: "benefit", emoji: "💪", sentence: "Exercise has many health benefits." },
+                                { word: "certain", emoji: "✅", sentence: "I am certain I locked the door." },
+                                { word: "chance", emoji: "🎲", sentence: "Take a chance and try something new." },
+                                { word: "effect", emoji: "✨", sentence: "The medicine had an immediate effect." },
+                                { word: "essential", emoji: "❗", sentence: "Food is essential for life." },
+                                { word: "far", emoji: "📏", sentence: "How far is the store from here?" },
+                                { word: "focus", emoji: "🎯", sentence: "Focus on your homework." },
+                                { word: "function", emoji: "⚙️", sentence: "The function of a heart is to pump blood." },
+                                { word: "grass", emoji: "🌱", sentence: "The grass is soft under your feet." },
+                                { word: "guard", emoji: "🛡️", sentence: "The guard protects the castle." },
+                                { word: "image", emoji: "🖼️", sentence: "The image in the mirror is clear." },
+                                { word: "immediate", emoji: "⏱️", sentence: "Call for immediate help." },
+                                { word: "primary", emoji: "🥇", sentence: "His primary goal is to graduate." },
+                                { word: "proud", emoji: "😊", sentence: "She was proud of her artwork." },
+                                { word: "remain", emoji: "⏳", sentence: "Please remain in your seats." },
+                                { word: "rest", emoji: "😴", sentence: "You need to rest after working hard." },
+                                { word: "separate", emoji: "🔀", sentence: "Separate the laundry into piles." },
+                                { word: "site", emoji: "📍", sentence: "This is the site of the new school." },
+                                { word: "tail", emoji: "🐕", sentence: "The dog wagged its tail." },
+                                { word: "trouble", emoji: "⚠️", sentence: "Stay out of trouble." }
+                            ]
+                        },
                         11: { name: "Raw Iron", words: [] },
                         12: { name: "Steel Blend", words: [] },
                         13: { name: "Fold", words: [] },
@@ -2125,7 +2269,6 @@
                     if (currentUnit <= 20) return "Crafting";
                     return "Masterwork";
                 }
-                // Add other worlds later
                 return "";
             }
 
@@ -2135,10 +2278,9 @@
                 const unitName = unitData ? unitData.name : "Unknown";
                 const progress = `${completedWords.length}/20`;
                 
-                // During gameplay, show unit info in header
                 document.getElementById('worldIcon').innerText = world.icon;
                 document.getElementById('worldName').innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitName}`;
-                document.getElementById('tierBadge').style.display = 'none'; // Hide tier during gameplay
+                document.getElementById('tierBadge').style.display = 'none';
                 document.getElementById('progressDisplay').innerText = progress;
             }
 
@@ -2147,7 +2289,6 @@
                 const tier = getWorldTier();
                 const totalProgress = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
                 
-                // During selection, show world info with tier
                 document.getElementById('worldIcon').innerText = world.icon;
                 document.getElementById('worldName').innerText = world.name;
                 document.getElementById('tierBadge').style.display = 'inline-block';
@@ -2164,49 +2305,14 @@
                 }
             }
 
+            // SIMPLIFIED: Chance of Success - pure base chance, no modifiers
             function calculateSuccessChance(ingotId) {
-                try {
-                    const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
-                    let baseChance = difficulty.baseChance;
-                    
-                    let modifiers = 0;
-                    
-                    const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
-                    modifiers += streakBonus;
-                    
-                    if (playerPerformance.lastAccuracy === 100) {
-                        modifiers += 10;
-                    }
-                    
-                    const worldCompleted = playerPerformance.worldProgress[currentWorld].completed;
-                    const masteryBonus = Math.floor(worldCompleted / 5) * 2;
-                    modifiers += masteryBonus;
-                    
-                    if (playerPerformance.lastAttemptFailed) {
-                        modifiers -= 10;
-                    }
-                    
-                    const daysSinceLastPlay = Math.floor((new Date() - new Date(playerPerformance.lastPlayedDate)) / (1000 * 60 * 60 * 24));
-                    if (daysSinceLastPlay > 7) {
-                        modifiers -= 5;
-                    }
-                    
-                    modifiers = Math.min(modifiers, 30);
-                    modifiers = Math.max(modifiers, -20);
-                    
-                    let finalChance = baseChance + modifiers;
-                    finalChance = Math.min(finalChance, 100);
-                    finalChance = Math.max(finalChance, 1);
-                    
-                    return {
-                        final: finalChance,
-                        base: baseChance,
-                        tier: difficulty.tier
-                    };
-                } catch (e) {
-                    console.error("Error calculating chance:", e);
-                    return { final: 50, base: 50, tier: "Unknown" };
-                }
+                const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
+                return {
+                    final: difficulty.baseChance,
+                    base: difficulty.baseChance,
+                    tier: difficulty.tier
+                };
             }
 
             function calculateRiskBonus(baseChance, actualChance, success) {
@@ -2227,7 +2333,6 @@
             function updateWorldDisplay() {
                 const world = worlds[currentWorld];
                 
-                // Update unit selector dropdown
                 const selector = document.getElementById('unitSelector');
                 selector.innerHTML = '';
                 world.units.forEach((unit) => {
@@ -2242,7 +2347,6 @@
                     }
                 });
 
-                // Update unit grid
                 const grid = document.getElementById('unitGrid');
                 grid.innerHTML = '';
                 world.units.forEach(unit => {
@@ -2271,7 +2375,6 @@
                     }
                 });
 
-                // Update header based on whether a word is active
                 if (activeWordIndex !== null) {
                     updateHeaderForGameplay();
                 } else {
@@ -2293,7 +2396,6 @@
                 renderAll();
                 saveProgress();
                 
-                // Show unit section and update header for selection
                 setUnitSectionVisibility(true);
                 updateHeaderForSelection();
             }
@@ -2340,7 +2442,6 @@
             // ---------- SAVE SYSTEM (Silent) ----------
             function saveProgress() {
                 if (!tg?.CloudStorage) {
-                    // Fallback to localStorage
                     try {
                         const saveData = {
                             version: "1.0",
@@ -2352,13 +2453,10 @@
                             worlds: worlds
                         };
                         localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
-                    } catch (e) {
-                        console.error('Failed to save:', e);
-                    }
+                    } catch (e) {}
                     return;
                 }
 
-                // Prepare save data
                 const saveData = {
                     version: "1.0",
                     lastUpdated: new Date().toISOString(),
@@ -2390,13 +2488,11 @@
                     }, {})
                 };
 
-                // Save to Telegram CloudStorage (silent)
                 tg.CloudStorage.setItem(
                     'spellforge_save',
                     JSON.stringify(saveData),
                     function(err, success) {
                         if (!success) {
-                            // Fallback to localStorage silently
                             try {
                                 localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
                             } catch (e) {}
@@ -2407,7 +2503,6 @@
 
             function loadProgress(callback) {
                 if (!tg?.CloudStorage) {
-                    // Try localStorage fallback
                     try {
                         const saved = localStorage.getItem('spellforge_backup');
                         if (saved) {
@@ -2426,7 +2521,6 @@
                             applyLoadedData(saveData);
                         } catch (e) {}
                     } else {
-                        // Try localStorage as fallback
                         try {
                             const saved = localStorage.getItem('spellforge_backup');
                             if (saved) {
@@ -2441,7 +2535,6 @@
 
             function applyLoadedData(saveData) {
                 try {
-                    // Restore world states
                     if (saveData.worlds) {
                         Object.keys(saveData.worlds).forEach(key => {
                             if (worlds[key]) {
@@ -2460,12 +2553,10 @@
                         });
                     }
 
-                    // Restore current position
                     if (saveData.currentWorld) currentWorld = saveData.currentWorld;
                     if (saveData.currentUnit) currentUnit = saveData.currentUnit;
                     if (saveData.completedWords) completedWords = saveData.completedWords;
 
-                    // Restore player performance
                     if (saveData.playerPerformance) {
                         playerPerformance = {
                             ...playerPerformance,
@@ -2473,7 +2564,6 @@
                         };
                     }
 
-                    // Update displays
                     updateWorldDisplay();
                     resetForNewUnit();
                 } catch (e) {}
@@ -2482,7 +2572,7 @@
             function startAutoSave() {
                 setInterval(() => {
                     saveProgress();
-                }, 60000); // Auto-save every 60 seconds
+                }, 60000);
             }
 
             // ---------- POPUP FUNCTIONS ----------
@@ -2522,7 +2612,6 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Ingot Complete Popup
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -2598,30 +2687,17 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Simplified Next Ingot Preview Popup
+            // SIMPLIFIED: Next Ingot Preview - no modifiers
             function showNextIngotPreview() {
                 const nextIngotId = currentUnit + 1;
                 const world = worlds[currentWorld];
                 
-                if (!world) {
-                    console.error("World not found");
-                    return;
-                }
+                if (!world) return;
                 
                 const nextUnitData = MASTER_WORDS[`world${currentWorld}`].units[nextIngotId];
+                if (!nextUnitData) return;
                 
-                if (!nextUnitData) {
-                    console.error("Next unit data not found");
-                    return;
-                }
-                
-                let chance;
-                try {
-                    chance = calculateSuccessChance(nextIngotId);
-                } catch (e) {
-                    console.error("Error calculating chance:", e);
-                    chance = { final: 50, base: 50, tier: "Unknown" };
-                }
+                const chance = calculateSuccessChance(nextIngotId);
                 
                 let chanceColorClass = 'chance-medium';
                 if (chance.final >= 80) {
@@ -2674,7 +2750,6 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Practice Mode Popup
             function showPracticeMode() {
                 const world = worlds[currentWorld];
                 const overlay = document.getElementById('popupOverlay');
@@ -2727,7 +2802,6 @@
                 });
             }
 
-            // World Artifact Popup
             function showWorldArtifactPopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -2797,7 +2871,6 @@
                 });
             }
 
-            // Leaderboard Popup
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
@@ -2961,7 +3034,6 @@
                 activeWordIndex = null;
                 currentPosition = 0;
                 
-                // After completing a word, if no word is active, show unit section
                 if (activeWordIndex === null) {
                     setUnitSectionVisibility(true);
                     updateHeaderForSelection();
@@ -3069,11 +3141,9 @@
                                 e.stopPropagation();
                                 if (completedWords.includes(idx) || gameCompleted) return;
                                 
-                                // Set active word and update UI for gameplay
                                 activeWordIndex = idx;
                                 currentPosition = 0;
                                 
-                                // Hide unit section and update header for gameplay
                                 setUnitSectionVisibility(false);
                                 updateHeaderForGameplay();
                                 
@@ -3152,9 +3222,7 @@
                 saveProgress();
             });
 
-            // Click outside to deselect word (optional)
             document.addEventListener('click', (e) => {
-                // If clicking on the game container but not on a word chip or letter tile
                 if (activeWordIndex !== null && 
                     !e.target.closest('.word-chip') && 
                     !e.target.closest('.letter-tile')) {
@@ -3162,7 +3230,6 @@
                     activeWordIndex = null;
                     currentPosition = 0;
                     
-                    // Show unit section and update header for selection
                     setUnitSectionVisibility(true);
                     updateHeaderForSelection();
                     
@@ -3170,13 +3237,11 @@
                 }
             });
 
-            // Load saved progress and start
             loadProgress(() => {
                 startAutoSave();
                 updateWorldDisplay();
                 resetForNewUnit();
                 
-                // Ensure correct header state
                 if (activeWordIndex !== null) {
                     setUnitSectionVisibility(false);
                     updateHeaderForGameplay();
@@ -3186,7 +3251,6 @@
                 }
             });
 
-            // Save before closing
             if (tg) {
                 tg.onEvent('backButtonClicked', () => {
                     saveProgress();
