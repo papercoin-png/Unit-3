@@ -683,7 +683,7 @@
             color: white;
         }
 
-        /* next ingot preview popup */
+        /* simplified next ingot preview popup */
         .preview-card {
             max-width: 440px;
             width: 100%;
@@ -725,10 +725,10 @@
         }
 
         .chance-value {
-            font-size: 64px;
+            font-size: 72px;
             font-weight: 900;
             line-height: 1;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .chance-high { color: #4ade80; }
@@ -750,37 +750,6 @@
             border-radius: 30px;
             transition: width 0.3s;
         }
-
-        .modifiers-list {
-            text-align: left;
-            background: #0c202b;
-            border-radius: 30px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #aa873f;
-        }
-
-        .modifier-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #1d3f4f;
-        }
-
-        .modifier-row:last-child {
-            border-bottom: none;
-        }
-
-        .modifier-name {
-            color: #ffdcaa;
-        }
-
-        .modifier-value {
-            font-weight: 700;
-        }
-
-        .modifier-value.positive { color: #4ade80; }
-        .modifier-value.negative { color: #f87171; }
 
         .preview-buttons {
             display: flex;
@@ -886,79 +855,6 @@
             padding: 4px 10px;
             border-radius: 30px;
             background: rgba(0,0,0,0.3);
-        }
-
-        /* failure popup */
-        .failure-card {
-            max-width: 420px;
-            width: 100%;
-            background: linear-gradient(165deg, #4a1e1e, #6b2e2e);
-            border-radius: 70px;
-            padding: 40px 25px 45px;
-            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ff6666;
-            text-align: center;
-            animation: shake 0.5s;
-            border: 3px solid #ff4747;
-            margin: auto;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
-        }
-
-        .failure-emoji {
-            font-size: 90px;
-            line-height: 1.2;
-            margin: 15px 0;
-        }
-
-        .failure-title {
-            font-size: 48px;
-            font-weight: 900;
-            color: #ffb3b3;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 5px 5px 0 #7a1d1d;
-            margin: 5px 0;
-        }
-
-        /* legendary success popup */
-        .legendary-card {
-            max-width: 420px;
-            width: 100%;
-            background: linear-gradient(165deg, #4a2e6b, #6b4a9e);
-            border-radius: 70px;
-            padding: 40px 25px 45px;
-            box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33;
-            text-align: center;
-            animation: legendaryPulse 2s infinite;
-            border: 3px solid gold;
-            margin: auto;
-        }
-
-        @keyframes legendaryPulse {
-            0% { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33; }
-            50% { box-shadow: 0 30px 50px #000000cc, 0 0 0 12px #ffd966, 0 0 60px #ffd966; }
-            100% { box-shadow: 0 30px 50px #000000cc, 0 0 0 8px #ffaa33, 0 0 30px #ffaa33; }
-        }
-
-        .legendary-emoji {
-            font-size: 90px;
-            line-height: 1.2;
-            margin: 15px 0;
-            filter: drop-shadow(0 0 20px gold);
-        }
-
-        .legendary-title {
-            font-size: 42px;
-            font-weight: 900;
-            color: gold;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px #ffaa33;
-            margin: 10px 0;
         }
 
         /* world complete popup */
@@ -2201,57 +2097,49 @@
             }
 
             function calculateSuccessChance(ingotId) {
-                const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
-                let baseChance = difficulty.baseChance;
-                
-                let modifiers = 0;
-                let breakdown = {
-                    streak: 0,
-                    perfect: 0,
-                    mastery: 0,
-                    failure: 0,
-                    rusty: 0
-                };
-                
-                const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
-                modifiers += streakBonus;
-                breakdown.streak = streakBonus;
-                
-                if (playerPerformance.lastAccuracy === 100) {
-                    modifiers += 10;
-                    breakdown.perfect = 10;
+                try {
+                    const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
+                    let baseChance = difficulty.baseChance;
+                    
+                    let modifiers = 0;
+                    
+                    // Simple modifier calculation
+                    const streakBonus = Math.floor(playerPerformance.currentStreak / 3) * 5;
+                    modifiers += streakBonus;
+                    
+                    if (playerPerformance.lastAccuracy === 100) {
+                        modifiers += 10;
+                    }
+                    
+                    const worldCompleted = playerPerformance.worldProgress[currentWorld].completed;
+                    const masteryBonus = Math.floor(worldCompleted / 5) * 2;
+                    modifiers += masteryBonus;
+                    
+                    if (playerPerformance.lastAttemptFailed) {
+                        modifiers -= 10;
+                    }
+                    
+                    const daysSinceLastPlay = Math.floor((new Date() - new Date(playerPerformance.lastPlayedDate)) / (1000 * 60 * 60 * 24));
+                    if (daysSinceLastPlay > 7) {
+                        modifiers -= 5;
+                    }
+                    
+                    modifiers = Math.min(modifiers, 30);
+                    modifiers = Math.max(modifiers, -20);
+                    
+                    let finalChance = baseChance + modifiers;
+                    finalChance = Math.min(finalChance, 100);
+                    finalChance = Math.max(finalChance, 1);
+                    
+                    return {
+                        final: finalChance,
+                        base: baseChance,
+                        tier: difficulty.tier
+                    };
+                } catch (e) {
+                    console.error("Error calculating chance:", e);
+                    return { final: 50, base: 50, tier: "Unknown" };
                 }
-                
-                const worldCompleted = playerPerformance.worldProgress[currentWorld].completed;
-                const masteryBonus = Math.floor(worldCompleted / 5) * 2;
-                modifiers += masteryBonus;
-                breakdown.mastery = masteryBonus;
-                
-                if (playerPerformance.lastAttemptFailed) {
-                    modifiers -= 10;
-                    breakdown.failure = -10;
-                }
-                
-                const daysSinceLastPlay = Math.floor((new Date() - new Date(playerPerformance.lastPlayedDate)) / (1000 * 60 * 60 * 24));
-                if (daysSinceLastPlay > 7) {
-                    modifiers -= 5;
-                    breakdown.rusty = -5;
-                }
-                
-                modifiers = Math.min(modifiers, 30);
-                modifiers = Math.max(modifiers, -20);
-                
-                let finalChance = baseChance + modifiers;
-                finalChance = Math.min(finalChance, 100);
-                finalChance = Math.max(finalChance, 1);
-                
-                return {
-                    base: baseChance,
-                    modifiers: modifiers,
-                    final: finalChance,
-                    breakdown: breakdown,
-                    tier: difficulty.tier
-                };
             }
 
             function calculateRiskBonus(baseChance, actualChance, success) {
@@ -2478,19 +2366,41 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Next Ingot Preview Popup
+            // Simplified Next Ingot Preview Popup
             function showNextIngotPreview() {
                 const nextIngotId = currentUnit + 1;
                 const world = worlds[currentWorld];
+                
+                if (!world) {
+                    console.error("World not found");
+                    return;
+                }
+                
                 const nextUnitData = MASTER_WORDS[`world${currentWorld}`].units[nextIngotId];
                 
-                if (!nextUnitData) return;
+                if (!nextUnitData) {
+                    console.error("Next unit data not found");
+                    return;
+                }
                 
-                const chance = calculateSuccessChance(nextIngotId);
+                // Calculate chance safely
+                let chance;
+                try {
+                    chance = calculateSuccessChance(nextIngotId);
+                } catch (e) {
+                    console.error("Error calculating chance:", e);
+                    chance = { final: 50, base: 50, tier: "Unknown" };
+                }
                 
-                let chanceColorClass = 'chance-high';
-                if (chance.final < 50) chanceColorClass = 'chance-low';
-                else if (chance.final < 80) chanceColorClass = 'chance-medium';
+                // Determine color class
+                let chanceColorClass = 'chance-medium';
+                if (chance.final >= 80) {
+                    chanceColorClass = 'chance-high';
+                } else if (chance.final < 50) {
+                    chanceColorClass = 'chance-low';
+                }
+                
+                const unitName = nextUnitData.name || "Unknown";
                 
                 const overlay = document.getElementById('popupOverlay');
                 overlay.innerHTML = '';
@@ -2499,45 +2409,13 @@
                 card.className = 'preview-card';
                 card.innerHTML = `
                     <div class="preview-title">⚒️ NEXT INGOT</div>
-                    <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${nextUnitData.name}</div>
+                    <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${unitName}</div>
                     
                     <div class="chance-container">
                         <div class="chance-label">CHANCE OF SUCCESS</div>
                         <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
                         <div class="chance-bar">
                             <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
-                        </div>
-                        
-                        <div class="modifiers-list">
-                            <div class="modifier-row">
-                                <span class="modifier-name">Base Chance (${chance.tier})</span>
-                                <span class="modifier-value">${chance.base}%</span>
-                            </div>
-                            ${chance.breakdown.streak > 0 ? `
-                            <div class="modifier-row">
-                                <span class="modifier-name">Hot Streak (${playerPerformance.currentStreak})</span>
-                                <span class="modifier-value positive">+${chance.breakdown.streak}%</span>
-                            </div>` : ''}
-                            ${chance.breakdown.perfect > 0 ? `
-                            <div class="modifier-row">
-                                <span class="modifier-name">Perfect Last Ingot</span>
-                                <span class="modifier-value positive">+${chance.breakdown.perfect}%</span>
-                            </div>` : ''}
-                            ${chance.breakdown.mastery > 0 ? `
-                            <div class="modifier-row">
-                                <span class="modifier-name">World Mastery</span>
-                                <span class="modifier-value positive">+${chance.breakdown.mastery}%</span>
-                            </div>` : ''}
-                            ${chance.breakdown.failure < 0 ? `
-                            <div class="modifier-row">
-                                <span class="modifier-name">Recent Failure</span>
-                                <span class="modifier-value negative">${chance.breakdown.failure}%</span>
-                            </div>` : ''}
-                            ${chance.breakdown.rusty < 0 ? `
-                            <div class="modifier-row">
-                                <span class="modifier-name">Rusty (${getDaysSince(playerPerformance.lastPlayedDate)} days)</span>
-                                <span class="modifier-value negative">${chance.breakdown.rusty}%</span>
-                            </div>` : ''}
                         </div>
                     </div>
                     
@@ -2561,6 +2439,8 @@
                     overlay.classList.add('hidden');
                     showPracticeMode();
                 });
+                
+                tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
             // Practice Mode Popup
@@ -2579,11 +2459,12 @@
                     <div class="practice-list" id="practiceList">
                         ${completedIngots.map(unit => {
                             const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                            const unitName = unitData ? unitData.name : "Unknown";
                             return `
                                 <div class="practice-item" data-id="${unit.id}">
                                     <div class="practice-item-left">
                                         <span class="practice-icon">⚒️</span>
-                                        <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitData.name}</span>
+                                        <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}</span>
                                     </div>
                                     <span class="practice-chance">${unit.wordsCompleted}/20</span>
                                 </div>
@@ -2828,7 +2709,7 @@
                     }
                     
                     const words = getCurrentUnitWords();
-                    if (words && words.length > 0) {
+                    if (words && words.length > 0 && words[wordIndex]) {
                         const wordData = words[wordIndex];
                         showWordCard(wordData);
                     }
