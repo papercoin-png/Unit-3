@@ -2297,7 +2297,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Ingot Complete Popup
+            // FIXED: Ingot Complete Popup with delay for leaderboard
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -2342,9 +2342,13 @@
                 overlay.appendChild(card);
                 overlay.classList.remove('hidden');
                 
+                // FIXED: Leaderboard button with delay
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    showLeaderboardPopup(true);
+                    // Small delay to ensure first popup is gone
+                    setTimeout(() => {
+                        showLeaderboardPopup(true);
+                    }, 100);
                 });
                 
                 document.getElementById('continueBtn').addEventListener('click', () => {
@@ -2352,13 +2356,17 @@
                     
                     const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
                     if (allUnitsCompleted) {
-                        showWorldArtifactPopup();
+                        setTimeout(() => {
+                            showWorldArtifactPopup();
+                        }, 100);
                     } else {
                         const nextIngotId = currentUnit + 1;
                         const nextUnit = world.units.find(u => u.id === nextIngotId);
                         if (nextUnit) {
                             nextUnit.unlocked = true;
-                            showNextIngotPreview();
+                            setTimeout(() => {
+                                showNextIngotPreview();
+                            }, 100);
                         }
                     }
                 });
@@ -2532,7 +2540,7 @@
                         worlds[currentWorld + 1].unlocked = true;
                         setTimeout(() => {
                             showWorldUnlockPopup(currentWorld + 1);
-                        }, 300);
+                        }, 100);
                     } else {
                         showLeaderboardPopup();
                     }
@@ -2564,7 +2572,7 @@
                 });
             }
 
-            // Leaderboard Popup
+            // FIXED: Leaderboard Popup with proper back navigation
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
@@ -2611,6 +2619,8 @@
 
                 const yourRank = leaderboardWithPlayer.find(e => e.name === 'YOU').rank;
                 
+                overlay.innerHTML = '';
+                
                 const leaderboardCard = document.createElement('div');
                 leaderboardCard.className = 'leaderboard-card';
                 leaderboardCard.innerHTML = `
@@ -2653,17 +2663,18 @@
                     </div>
                 `;
                 
-                overlay.innerHTML = '';
                 overlay.appendChild(leaderboardCard);
+                overlay.classList.remove('hidden');
                 
                 setTimeout(() => {
                     const leaderboardList = document.getElementById('leaderboardList');
-                    const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
+                    const yourRow = leaderboardList?.querySelector('.leaderboard-row.you');
                     if (yourRow) {
                         yourRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 100);
                 
+                // FIXED: Back button with proper navigation
                 document.getElementById('backFromLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
                     
@@ -2672,13 +2683,17 @@
                         const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
                         
                         if (allUnitsCompleted) {
-                            showWorldArtifactPopup();
+                            setTimeout(() => {
+                                showWorldArtifactPopup();
+                            }, 100);
                         } else {
                             const nextIngotId = currentUnit + 1;
                             const nextUnit = world.units.find(u => u.id === nextIngotId);
                             
                             if (nextUnit && nextUnit.unlocked) {
-                                showNextIngotPreview();
+                                setTimeout(() => {
+                                    showNextIngotPreview();
+                                }, 100);
                             } else {
                                 renderAll();
                             }
