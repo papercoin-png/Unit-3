@@ -1543,7 +1543,7 @@
                                 }, 500);
                             }, 300);
                         }
-                        clearInterval(progressInterval);
+                        clearInterval(interval);
                     } else {
                         loadingBar.style.width = progress + '%';
                         loadingText.innerText = `Loading forge... ${Math.floor(progress)}%`;
@@ -2412,6 +2412,9 @@
             let activeWordIndex = null;
             let currentPosition = 0;
             
+            // NEW: Track letters used for current word to allow return on deselect
+            let tempUsedLetters = [];
+            
             // Stats tracking
             let gameStartTime = null;
             let totalTaps = 0;
@@ -2504,6 +2507,18 @@
                 }
             }
 
+            // FIXED: Return letters to pool when deselecting word
+            function returnTempLetters() {
+                if (tempUsedLetters.length > 0) {
+                    // Add all temporarily used letters back to the pool
+                    currentLetters.push(...tempUsedLetters);
+                    // Clear temp storage
+                    tempUsedLetters = [];
+                    // Reset progress on current word
+                    currentPosition = 0;
+                }
+            }
+
             // SIMPLIFIED: Chance of Success - pure base chance, no modifiers
             function calculateSuccessChance(ingotId) {
                 const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
@@ -2578,6 +2593,7 @@
                 completedWords = [];
                 activeWordIndex = null;
                 currentPosition = 0;
+                tempUsedLetters = [];
                 gameStartTime = Date.now();
                 totalTaps = 0;
                 correctTaps = 0;
@@ -3261,6 +3277,7 @@
 
                 activeWordIndex = null;
                 currentPosition = 0;
+                tempUsedLetters = []; // Clear temp storage on successful completion
                 
                 if (activeWordIndex === null) {
                     setUnitSectionVisibility(true);
@@ -3384,8 +3401,10 @@
                     return;
                 }
 
+                // Correct tap - remove letter from pool and store in temp
                 correctTaps++;
-                currentLetters.splice(indexInGrid, 1);
+                const removed = currentLetters.splice(indexInGrid, 1)[0];
+                tempUsedLetters.push(removed);
                 currentPosition++;
                 
                 tg?.HapticFeedback?.impactOccurred?.('light');
@@ -3416,6 +3435,11 @@
                             chip.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 if (completedWords.includes(idx) || gameCompleted) return;
+                                
+                                // If switching to a new word while one is active, return temp letters first
+                                if (activeWordIndex !== null && activeWordIndex !== idx) {
+                                    returnTempLetters();
+                                }
                                 
                                 activeWordIndex = idx;
                                 currentPosition = 0;
@@ -3498,10 +3522,14 @@
                 saveProgress();
             });
 
+            // FIXED: Click outside to deselect word - return letters to pool
             document.addEventListener('click', (e) => {
                 if (activeWordIndex !== null && 
                     !e.target.closest('.word-chip') && 
                     !e.target.closest('.letter-tile')) {
+                    
+                    // Return any temporarily used letters to the pool
+                    returnTempLetters();
                     
                     activeWordIndex = null;
                     currentPosition = 0;
