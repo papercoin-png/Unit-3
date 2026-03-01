@@ -113,7 +113,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 42px;
-            padding: 24px 20px 30px;
+            padding: 20px 12px 30px; /* Reduced horizontal padding */
             box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.5);
             transition: all 0.2s;
         }
@@ -148,15 +148,14 @@
             color: #ffefc0;
         }
 
-        .title {
-            font-weight: 700;
-            font-size: 26px;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #ffe99c, #ffd78c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        .tier-badge {
+            font-size: 12px;
+            background: #f5c542;
+            color: #1e2f3a;
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
         .progress-badge {
@@ -170,111 +169,7 @@
             backdrop-filter: blur(4px);
         }
 
-        /* save indicator */
-        .save-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: #ffd966;
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 500;
-            border: 1px solid #c9ae5b;
-            backdrop-filter: blur(5px);
-            z-index: 1001;
-            transition: opacity 0.3s;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .save-indicator.show {
-            opacity: 1;
-        }
-
-        /* word list area */
-        .word-section {
-            background: rgba(10, 25, 35, 0.7);
-            border-radius: 38px;
-            padding: 18px 15px;
-            margin-bottom: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
-        }
-
-        .section-label {
-            color: #b6d8e6;
-            font-size: 15px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            padding-left: 8px;
-        }
-
-        .word-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 5px;
-            scrollbar-width: thin;
-            scrollbar-color: #c9ae5b #1d3f4f;
-        }
-
-        .word-grid::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .word-grid::-webkit-scrollbar-track {
-            background: #1d3f4f;
-            border-radius: 10px;
-        }
-
-        .word-grid::-webkit-scrollbar-thumb {
-            background: #c9ae5b;
-            border-radius: 10px;
-        }
-
-        .word-chip {
-            background: #2c4556;
-            border-radius: 40px;
-            padding: 12px 22px;
-            font-weight: 600;
-            font-size: 18px;
-            color: #c9e9ff;
-            box-shadow: 0 6px 0 #0f1f29, 0 8px 10px rgba(0,0,0,0.3);
-            transition: all 0.1s ease;
-            border: 1px solid #598baa;
-            user-select: none;
-            cursor: pointer;
-            min-width: 90px;
-            text-align: center;
-        }
-
-        .word-chip.completed {
-            background: #3f6a4a;
-            color: #d9ffd9;
-            border-color: #a5d6a5;
-            box-shadow: 0 4px 0 #1b3b24, 0 6px 8px rgba(0,0,0,0.3);
-            text-decoration: line-through 2px rgba(255,255,255,0.4);
-            opacity: 0.8;
-            cursor: default;
-            pointer-events: none;
-        }
-
-        .word-chip.active-word {
-            background: #f5c542;
-            color: #1e2f3a;
-            border-color: #ffea9e;
-            box-shadow: 0 0 0 3px #fce49c, 0 6px 0 #a07d2b;
-            transform: scale(1.02);
-            font-weight: 800;
-        }
-
-        /* unit selector */
+        /* unit selector section - hidden during gameplay */
         .unit-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
@@ -282,6 +177,16 @@
             margin-bottom: 22px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
+            transition: opacity 0.3s ease, max-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .unit-section.hidden {
+            opacity: 0;
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            pointer-events: none;
         }
 
         .unit-header {
@@ -408,6 +313,100 @@
             transition: width 0.3s;
         }
 
+        /* word list area - reduced padding */
+        .word-section {
+            background: rgba(10, 25, 35, 0.7);
+            border-radius: 38px;
+            padding: 18px 10px; /* Reduced horizontal padding */
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .section-label {
+            color: #b6d8e6;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .word-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* Slightly reduced gap */
+            justify-content: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #c9ae5b #1d3f4f;
+        }
+
+        .word-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .word-grid::-webkit-scrollbar-track {
+            background: #1d3f4f;
+            border-radius: 10px;
+        }
+
+        .word-grid::-webkit-scrollbar-thumb {
+            background: #c9ae5b;
+            border-radius: 10px;
+        }
+
+        .word-chip {
+            background: #2c4556;
+            border-radius: 40px;
+            padding: 10px 18px; /* Slightly smaller padding */
+            font-weight: 600;
+            font-size: 18px;
+            color: #c9e9ff;
+            box-shadow: 0 6px 0 #0f1f29, 0 8px 10px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+            border: 1px solid #598baa;
+            user-select: none;
+            cursor: pointer;
+            min-width: 80px; /* Slightly smaller min-width */
+            text-align: center;
+            position: relative;
+        }
+
+        .word-chip.completed {
+            background: #3f6a4a;
+            color: #d9ffd9;
+            border-color: #a5d6a5;
+            box-shadow: 0 4px 0 #1b3b24, 0 6px 8px rgba(0,0,0,0.3);
+            opacity: 0.9;
+            cursor: default;
+            pointer-events: none;
+            padding-right: 32px; /* Make room for checkmark */
+        }
+
+        .word-chip.completed::after {
+            content: "✓";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 2px 0 #1b3b24;
+        }
+
+        .word-chip.active-word {
+            background: #f5c542;
+            color: #1e2f3a;
+            border-color: #ffea9e;
+            box-shadow: 0 0 0 3px #fce49c, 0 6px 0 #a07d2b;
+            transform: scale(1.02);
+            font-weight: 800;
+        }
+
         /* active word hint */
         .active-hint {
             background: #244454;
@@ -442,11 +441,11 @@
             box-shadow: 0 4px 0 #946f2c;
         }
 
-        /* letter bank */
+        /* letter bank - reduced padding */
         .letter-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
-            padding: 18px 12px;
+            padding: 18px 10px; /* Reduced horizontal padding */
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
@@ -455,21 +454,21 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
+            gap: 8px; /* Slightly reduced gap */
         }
 
         .letter-tile {
-            width: 62px;
-            height: 62px;
+            width: 58px; /* Slightly smaller tiles */
+            height: 58px;
             background: linear-gradient(145deg, #ffcf8a, #febf6e);
-            border-radius: 18px;
+            border-radius: 16px; /* Slightly smaller radius */
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 34px;
+            font-size: 30px; /* Slightly smaller font */
             color: #1f3b4a;
-            box-shadow: 0 9px 0 #b2752e, 0 10px 18px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 7px 0 #b2752e, 0 8px 12px rgba(0, 0, 0, 0.4); /* Smaller shadow */
             transition: all 0.08s linear;
             cursor: pointer;
             border: 2px solid #ffdcaa;
@@ -478,8 +477,8 @@
         }
 
         .letter-tile:active {
-            transform: translateY(6px);
-            box-shadow: 0 3px 0 #b2752e, 0 8px 12px rgba(0,0,0,0.4);
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #b2752e, 0 8px 12px rgba(0,0,0,0.4);
         }
 
         .letter-tile.used {
@@ -488,7 +487,7 @@
             border-color: #5b7485;
             color: #a1b9cc;
             cursor: not-allowed;
-            transform: translateY(5px);
+            transform: translateY(3px);
             pointer-events: none;
             opacity: 0.5;
         }
@@ -1277,21 +1276,19 @@
         </div>
     </div>
 
-    <!-- Save Indicator -->
-    <div id="saveIndicator" class="save-indicator">💾 Saving...</div>
-
     <div class="game-container" id="gameContainer">
-        <!-- header with world info -->
+        <!-- header with world info - dynamically updated -->
         <div class="header">
             <div class="world-info" id="worldInfo">
                 <span class="world-icon" id="worldIcon">⚒️</span>
                 <span class="world-name" id="worldName">Grand Forge</span>
+                <span class="tier-badge" id="tierBadge">Foundation</span>
             </div>
             <span class="progress-badge" id="progressDisplay">0/600</span>
         </div>
 
-        <!-- unit selector section -->
-        <div class="unit-section">
+        <!-- unit selector section - hidden during gameplay -->
+        <div class="unit-section" id="unitSection">
             <div class="unit-header">
                 <span class="unit-label" id="unitLabel">INGOTS</span>
                 <select class="unit-selector" id="unitSelector">
@@ -1301,7 +1298,7 @@
             <div class="unit-grid" id="unitGrid"></div>
         </div>
 
-        <!-- word list area -->
+        <!-- word list area - reduced padding -->
         <div class="word-section">
             <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
             <div class="word-grid" id="wordListContainer"></div>
@@ -1313,7 +1310,7 @@
             <span class="next-letter" id="nextLetterDisplay">?</span>
         </div>
 
-        <!-- letter grid -->
+        <!-- letter grid - reduced padding -->
         <div class="letter-section">
             <div class="section-label">🔤 LETTER FORGE · tap in order</div>
             <div class="letter-grid" id="letterGridContainer"></div>
@@ -1412,198 +1409,6 @@
             }, 2000);
 
             window.addEventListener('load', simulateLoading);
-
-            // ---------- SAVE SYSTEM ----------
-            const saveIndicator = document.getElementById('saveIndicator');
-            let autoSaveTimer = null;
-            let saveTimeout = null;
-
-            function showSaveIndicator(text = '💾 Saving...', duration = 1500) {
-                saveIndicator.innerText = text;
-                saveIndicator.classList.add('show');
-                
-                if (saveTimeout) clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    saveIndicator.classList.remove('show');
-                }, duration);
-            }
-
-            function saveProgress() {
-                if (!tg?.CloudStorage) {
-                    // Fallback to localStorage
-                    try {
-                        const saveData = {
-                            version: "1.0",
-                            lastUpdated: new Date().toISOString(),
-                            currentWorld: currentWorld,
-                            currentUnit: currentUnit,
-                            completedWords: completedWords,
-                            playerPerformance: playerPerformance,
-                            worlds: worlds
-                        };
-                        localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
-                        showSaveIndicator('💾 Saved locally', 1000);
-                    } catch (e) {
-                        console.error('Failed to save:', e);
-                    }
-                    return;
-                }
-
-                // Prepare save data
-                const saveData = {
-                    version: "1.0",
-                    lastUpdated: new Date().toISOString(),
-                    currentWorld: currentWorld,
-                    currentUnit: currentUnit,
-                    completedWords: completedWords,
-                    playerPerformance: {
-                        currentStreak: playerPerformance.currentStreak,
-                        bestStreak: playerPerformance.bestStreak,
-                        lastAccuracy: playerPerformance.lastAccuracy,
-                        lastAttemptFailed: playerPerformance.lastAttemptFailed,
-                        lastPlayedDate: playerPerformance.lastPlayedDate,
-                        totalRiskBonus: playerPerformance.totalRiskBonus,
-                        worldProgress: playerPerformance.worldProgress
-                    },
-                    worlds: Object.keys(worlds).reduce((acc, key) => {
-                        const world = worlds[key];
-                        acc[key] = {
-                            id: world.id,
-                            unlocked: world.unlocked,
-                            completed: world.completed,
-                            units: world.units.map(u => ({
-                                id: u.id,
-                                wordsCompleted: u.wordsCompleted,
-                                unlocked: u.unlocked
-                            }))
-                        };
-                        return acc;
-                    }, {})
-                };
-
-                // Save to Telegram CloudStorage
-                tg.CloudStorage.setItem(
-                    'spellforge_save',
-                    JSON.stringify(saveData),
-                    function(err, success) {
-                        if (success) {
-                            showSaveIndicator('💾 Saved to cloud', 1000);
-                        } else {
-                            // Fallback to localStorage
-                            try {
-                                localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
-                                showSaveIndicator('💾 Saved locally', 1000);
-                            } catch (e) {
-                                console.error('Save failed:', err);
-                                showSaveIndicator('❌ Save failed', 1500);
-                            }
-                        }
-                    }
-                );
-            }
-
-            function loadProgress(callback) {
-                if (!tg?.CloudStorage) {
-                    // Try localStorage fallback
-                    try {
-                        const saved = localStorage.getItem('spellforge_backup');
-                        if (saved) {
-                            const data = JSON.parse(saved);
-                            applyLoadedData(data);
-                            showSaveIndicator('✅ Loaded from backup', 1500);
-                        }
-                    } catch (e) {
-                        console.error('Failed to load from localStorage:', e);
-                    }
-                    if (callback) callback();
-                    return;
-                }
-
-                tg.CloudStorage.getItem('spellforge_save', function(err, data) {
-                    if (data) {
-                        try {
-                            const saveData = JSON.parse(data);
-                            applyLoadedData(saveData);
-                            showSaveIndicator('✅ Progress loaded', 1500);
-                        } catch (e) {
-                            console.error('Failed to parse save data:', e);
-                        }
-                    } else {
-                        // Try localStorage as fallback
-                        try {
-                            const saved = localStorage.getItem('spellforge_backup');
-                            if (saved) {
-                                const data = JSON.parse(saved);
-                                applyLoadedData(data);
-                                showSaveIndicator('✅ Loaded from backup', 1500);
-                            }
-                        } catch (e) {
-                            console.error('No save data found');
-                        }
-                    }
-                    if (callback) callback();
-                });
-            }
-
-            function applyLoadedData(saveData) {
-                try {
-                    // Restore world states
-                    if (saveData.worlds) {
-                        Object.keys(saveData.worlds).forEach(key => {
-                            if (worlds[key]) {
-                                const savedWorld = saveData.worlds[key];
-                                worlds[key].unlocked = savedWorld.unlocked;
-                                worlds[key].completed = savedWorld.completed;
-                                
-                                savedWorld.units.forEach(savedUnit => {
-                                    const unit = worlds[key].units.find(u => u.id === savedUnit.id);
-                                    if (unit) {
-                                        unit.wordsCompleted = savedUnit.wordsCompleted;
-                                        unit.unlocked = savedUnit.unlocked;
-                                    }
-                                });
-                            }
-                        });
-                    }
-
-                    // Restore current position
-                    if (saveData.currentWorld) currentWorld = saveData.currentWorld;
-                    if (saveData.currentUnit) currentUnit = saveData.currentUnit;
-                    if (saveData.completedWords) completedWords = saveData.completedWords;
-
-                    // Restore player performance
-                    if (saveData.playerPerformance) {
-                        playerPerformance = {
-                            ...playerPerformance,
-                            ...saveData.playerPerformance
-                        };
-                    }
-
-                    // Update displays
-                    updateWorldDisplay();
-                    resetForNewUnit();
-                } catch (e) {
-                    console.error('Error applying save data:', e);
-                }
-            }
-
-            function clearSavedProgress() {
-                if (tg?.CloudStorage) {
-                    tg.CloudStorage.removeItem('spellforge_save', function(err, success) {
-                        if (success) {
-                            showSaveIndicator('🗑️ Save cleared', 1500);
-                        }
-                    });
-                }
-                localStorage.removeItem('spellforge_backup');
-            }
-
-            function startAutoSave() {
-                if (autoSaveTimer) clearInterval(autoSaveTimer);
-                autoSaveTimer = setInterval(() => {
-                    saveProgress();
-                }, 60000); // Auto-save every 60 seconds
-            }
 
             // ---------- MASTER WORD BANK · 3,600 WORDS ----------
             const MASTER_WORDS = {
@@ -2314,6 +2119,51 @@
                 }
             }
 
+            function getWorldTier() {
+                if (currentWorld === 1) { // Grand Forge
+                    if (currentUnit <= 10) return "Foundation";
+                    if (currentUnit <= 20) return "Crafting";
+                    return "Masterwork";
+                }
+                // Add other worlds later
+                return "";
+            }
+
+            function updateHeaderForGameplay() {
+                const world = worlds[currentWorld];
+                const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
+                const unitName = unitData ? unitData.name : "Unknown";
+                const progress = `${completedWords.length}/20`;
+                
+                // During gameplay, show unit info in header
+                document.getElementById('worldIcon').innerText = world.icon;
+                document.getElementById('worldName').innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitName}`;
+                document.getElementById('tierBadge').style.display = 'none'; // Hide tier during gameplay
+                document.getElementById('progressDisplay').innerText = progress;
+            }
+
+            function updateHeaderForSelection() {
+                const world = worlds[currentWorld];
+                const tier = getWorldTier();
+                const totalProgress = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+                
+                // During selection, show world info with tier
+                document.getElementById('worldIcon').innerText = world.icon;
+                document.getElementById('worldName').innerText = world.name;
+                document.getElementById('tierBadge').style.display = 'inline-block';
+                document.getElementById('tierBadge').innerText = tier;
+                document.getElementById('progressDisplay').innerText = `${totalProgress}/${world.totalWords}`;
+            }
+
+            function setUnitSectionVisibility(visible) {
+                const unitSection = document.getElementById('unitSection');
+                if (visible) {
+                    unitSection.classList.remove('hidden');
+                } else {
+                    unitSection.classList.add('hidden');
+                }
+            }
+
             function calculateSuccessChance(ingotId) {
                 try {
                     const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
@@ -2376,10 +2226,8 @@
 
             function updateWorldDisplay() {
                 const world = worlds[currentWorld];
-                document.getElementById('worldIcon').innerText = world.icon;
-                document.getElementById('worldName').innerText = world.name;
-                document.getElementById('unitLabel').innerText = world.unitName + 'S';
                 
+                // Update unit selector dropdown
                 const selector = document.getElementById('unitSelector');
                 selector.innerHTML = '';
                 world.units.forEach((unit) => {
@@ -2394,6 +2242,7 @@
                     }
                 });
 
+                // Update unit grid
                 const grid = document.getElementById('unitGrid');
                 grid.innerHTML = '';
                 world.units.forEach(unit => {
@@ -2422,8 +2271,12 @@
                     }
                 });
 
-                const totalCompleted = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-                document.getElementById('progressDisplay').innerText = `${totalCompleted}/${world.totalWords}`;
+                // Update header based on whether a word is active
+                if (activeWordIndex !== null) {
+                    updateHeaderForGameplay();
+                } else {
+                    updateHeaderForSelection();
+                }
             }
 
             function resetForNewUnit() {
@@ -2439,6 +2292,10 @@
                 showingWordCard = false;
                 renderAll();
                 saveProgress();
+                
+                // Show unit section and update header for selection
+                setUnitSectionVisibility(true);
+                updateHeaderForSelection();
             }
 
             // ---------- SFR SYSTEM ----------
@@ -2479,6 +2336,154 @@
                 { name: "ELIJAH", score: 1150, time: "1:51", accuracy: 94, rank: 9 },
                 { name: "HARPER", score: 1120, time: "1:54", accuracy: 95, rank: 10 }
             ];
+
+            // ---------- SAVE SYSTEM (Silent) ----------
+            function saveProgress() {
+                if (!tg?.CloudStorage) {
+                    // Fallback to localStorage
+                    try {
+                        const saveData = {
+                            version: "1.0",
+                            lastUpdated: new Date().toISOString(),
+                            currentWorld: currentWorld,
+                            currentUnit: currentUnit,
+                            completedWords: completedWords,
+                            playerPerformance: playerPerformance,
+                            worlds: worlds
+                        };
+                        localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
+                    } catch (e) {
+                        console.error('Failed to save:', e);
+                    }
+                    return;
+                }
+
+                // Prepare save data
+                const saveData = {
+                    version: "1.0",
+                    lastUpdated: new Date().toISOString(),
+                    currentWorld: currentWorld,
+                    currentUnit: currentUnit,
+                    completedWords: completedWords,
+                    playerPerformance: {
+                        currentStreak: playerPerformance.currentStreak,
+                        bestStreak: playerPerformance.bestStreak,
+                        lastAccuracy: playerPerformance.lastAccuracy,
+                        lastAttemptFailed: playerPerformance.lastAttemptFailed,
+                        lastPlayedDate: playerPerformance.lastPlayedDate,
+                        totalRiskBonus: playerPerformance.totalRiskBonus,
+                        worldProgress: playerPerformance.worldProgress
+                    },
+                    worlds: Object.keys(worlds).reduce((acc, key) => {
+                        const world = worlds[key];
+                        acc[key] = {
+                            id: world.id,
+                            unlocked: world.unlocked,
+                            completed: world.completed,
+                            units: world.units.map(u => ({
+                                id: u.id,
+                                wordsCompleted: u.wordsCompleted,
+                                unlocked: u.unlocked
+                            }))
+                        };
+                        return acc;
+                    }, {})
+                };
+
+                // Save to Telegram CloudStorage (silent)
+                tg.CloudStorage.setItem(
+                    'spellforge_save',
+                    JSON.stringify(saveData),
+                    function(err, success) {
+                        if (!success) {
+                            // Fallback to localStorage silently
+                            try {
+                                localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
+                            } catch (e) {}
+                        }
+                    }
+                );
+            }
+
+            function loadProgress(callback) {
+                if (!tg?.CloudStorage) {
+                    // Try localStorage fallback
+                    try {
+                        const saved = localStorage.getItem('spellforge_backup');
+                        if (saved) {
+                            const data = JSON.parse(saved);
+                            applyLoadedData(data);
+                        }
+                    } catch (e) {}
+                    if (callback) callback();
+                    return;
+                }
+
+                tg.CloudStorage.getItem('spellforge_save', function(err, data) {
+                    if (data) {
+                        try {
+                            const saveData = JSON.parse(data);
+                            applyLoadedData(saveData);
+                        } catch (e) {}
+                    } else {
+                        // Try localStorage as fallback
+                        try {
+                            const saved = localStorage.getItem('spellforge_backup');
+                            if (saved) {
+                                const data = JSON.parse(saved);
+                                applyLoadedData(data);
+                            }
+                        } catch (e) {}
+                    }
+                    if (callback) callback();
+                });
+            }
+
+            function applyLoadedData(saveData) {
+                try {
+                    // Restore world states
+                    if (saveData.worlds) {
+                        Object.keys(saveData.worlds).forEach(key => {
+                            if (worlds[key]) {
+                                const savedWorld = saveData.worlds[key];
+                                worlds[key].unlocked = savedWorld.unlocked;
+                                worlds[key].completed = savedWorld.completed;
+                                
+                                savedWorld.units.forEach(savedUnit => {
+                                    const unit = worlds[key].units.find(u => u.id === savedUnit.id);
+                                    if (unit) {
+                                        unit.wordsCompleted = savedUnit.wordsCompleted;
+                                        unit.unlocked = savedUnit.unlocked;
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    // Restore current position
+                    if (saveData.currentWorld) currentWorld = saveData.currentWorld;
+                    if (saveData.currentUnit) currentUnit = saveData.currentUnit;
+                    if (saveData.completedWords) completedWords = saveData.completedWords;
+
+                    // Restore player performance
+                    if (saveData.playerPerformance) {
+                        playerPerformance = {
+                            ...playerPerformance,
+                            ...saveData.playerPerformance
+                        };
+                    }
+
+                    // Update displays
+                    updateWorldDisplay();
+                    resetForNewUnit();
+                } catch (e) {}
+            }
+
+            function startAutoSave() {
+                setInterval(() => {
+                    saveProgress();
+                }, 60000); // Auto-save every 60 seconds
+            }
 
             // ---------- POPUP FUNCTIONS ----------
             function showWordCard(wordData) {
@@ -2915,10 +2920,14 @@
                                 }, 100);
                             } else {
                                 renderAll();
+                                setUnitSectionVisibility(true);
+                                updateHeaderForSelection();
                             }
                         }
                     } else {
                         renderAll();
+                        setUnitSectionVisibility(true);
+                        updateHeaderForSelection();
                     }
                 });
 
@@ -2951,6 +2960,13 @@
 
                 activeWordIndex = null;
                 currentPosition = 0;
+                
+                // After completing a word, if no word is active, show unit section
+                if (activeWordIndex === null) {
+                    setUnitSectionVisibility(true);
+                    updateHeaderForSelection();
+                }
+                
                 renderAll();
                 updateWorldDisplay();
                 
@@ -3052,8 +3068,15 @@
                             chip.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 if (completedWords.includes(idx) || gameCompleted) return;
+                                
+                                // Set active word and update UI for gameplay
                                 activeWordIndex = idx;
                                 currentPosition = 0;
+                                
+                                // Hide unit section and update header for gameplay
+                                setUnitSectionVisibility(false);
+                                updateHeaderForGameplay();
+                                
                                 renderAll();
                                 tg?.HapticFeedback?.selectionChanged?.();
                             });
@@ -3129,11 +3152,38 @@
                 saveProgress();
             });
 
+            // Click outside to deselect word (optional)
+            document.addEventListener('click', (e) => {
+                // If clicking on the game container but not on a word chip or letter tile
+                if (activeWordIndex !== null && 
+                    !e.target.closest('.word-chip') && 
+                    !e.target.closest('.letter-tile')) {
+                    
+                    activeWordIndex = null;
+                    currentPosition = 0;
+                    
+                    // Show unit section and update header for selection
+                    setUnitSectionVisibility(true);
+                    updateHeaderForSelection();
+                    
+                    renderAll();
+                }
+            });
+
             // Load saved progress and start
             loadProgress(() => {
                 startAutoSave();
                 updateWorldDisplay();
                 resetForNewUnit();
+                
+                // Ensure correct header state
+                if (activeWordIndex !== null) {
+                    setUnitSectionVisibility(false);
+                    updateHeaderForGameplay();
+                } else {
+                    setUnitSectionVisibility(true);
+                    updateHeaderForSelection();
+                }
             });
 
             // Save before closing
