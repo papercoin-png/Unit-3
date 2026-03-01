@@ -2409,7 +2409,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // FIXED: Ingot Complete Popup with fromCompletion flag
+            // Ingot Complete Popup
             function showIngotCompletePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 const world = worlds[currentWorld];
@@ -2456,7 +2456,6 @@
                 
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    // Pass true to indicate we came from a completed ingot
                     showLeaderboardPopup(true);
                 });
                 
@@ -2467,7 +2466,12 @@
                     if (allUnitsCompleted) {
                         showWorldArtifactPopup();
                     } else {
-                        showNextIngotPreview();
+                        const nextIngotId = currentUnit + 1;
+                        const nextUnit = world.units.find(u => u.id === nextIngotId);
+                        if (nextUnit) {
+                            nextUnit.unlocked = true;
+                            showNextIngotPreview();
+                        }
                     }
                 });
                 
@@ -2679,7 +2683,7 @@
                 });
             }
 
-            // FIXED: Leaderboard Popup with fromCompletion parameter
+            // Leaderboard Popup
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
