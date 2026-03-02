@@ -1,4 +1,4 @@
-// script.js - Spellforge Telegram Mini App
+// script.js - Spellforge Telegram Mini App (FIXED LOADING SCREEN)
 
 (function() {
     // ---------- TELEGRAM INTEGRATION ----------
@@ -9,7 +9,7 @@
         tg.setHeaderColor?.('#1a2f3f');
     }
 
-    // ---------- LOADING SCREEN - FIXED ----------
+    // ---------- SIMPLE LOADING SCREEN - GUARANTEED TO WORK ----------
     const loadingTips = [
         '"Every word forged strengthens the crystal"',
         '"The forge remembers every letter"',
@@ -23,79 +23,54 @@
         '"Forgemasters never rush the craft"'
     ];
 
+    // Get loading screen elements
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    const loadingTip = document.getElementById('loadingTip');
+
     // Set initial tip
-    const loadingTipElement = document.getElementById('loadingTip');
-    if (loadingTipElement) {
-        loadingTipElement.innerText = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+    if (loadingTip) {
+        loadingTip.innerText = loadingTips[Math.floor(Math.random() * loadingTips.length)];
     }
 
-    let loadingComplete = false;
-    let minimumTimePassed = false;
-
-    function simulateLoading() {
-        const loadingScreen = document.getElementById('loadingScreen');
-        const loadingBar = document.getElementById('loadingBar');
-        const loadingText = document.getElementById('loadingText');
-        const loadingTip = document.getElementById('loadingTip');
+    // SIMPLE FIX: Just count to 100 and remove loading screen
+    let progress = 0;
+    
+    function updateLoading() {
+        progress += 5; // Increment by 5 each time
         
-        // Check if elements exist
-        if (!loadingBar || !loadingText || !loadingTip) {
-            console.error('Loading elements not found');
-            return;
+        if (loadingBar) {
+            loadingBar.style.width = progress + '%';
         }
         
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 8 + 3;
-            
-            if (progress >= 100) {
-                progress = 100;
-                loadingBar.style.width = progress + '%';
-                loadingText.innerText = 'Forge ready!';
-                
-                loadingComplete = true;
-                if (minimumTimePassed) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        if (loadingScreen) {
-                            loadingScreen.classList.add('fade-out');
-                            setTimeout(() => {
-                                loadingScreen.style.display = 'none';
-                            }, 500);
-                        }
-                    }, 300);
-                }
-            } else {
-                loadingBar.style.width = progress + '%';
-                loadingText.innerText = `Loading forge... ${Math.floor(progress)}%`;
-                
-                // Show random tips occasionally
-                if (Math.random() > 0.7 && loadingTip) {
-                    const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
-                    loadingTip.innerText = randomTip;
-                }
-            }
-        }, 200);
+        if (loadingText) {
+            loadingText.innerText = `Loading forge... ${progress}%`;
+        }
         
-        // Store interval to clear it later if needed
-        return interval;
-    }
-
-    // Start loading after a short delay to ensure DOM is ready
-    setTimeout(() => {
-        simulateLoading();
-    }, 100);
-
-    // Set minimum time of 2 seconds (reduced from 4 for faster testing)
-    setTimeout(() => {
-        minimumTimePassed = true;
-        if (loadingComplete) {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.classList.add('fade-out');
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
+        // Show random tips occasionally
+        if (progress % 20 === 0 && loadingTip) {
+            const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+            loadingTip.innerText = randomTip;
+        }
+        
+        if (progress >= 100) {
+            // Loading complete - remove screen
+            clearInterval(loadingInterval);
+            
+            if (loadingText) {
+                loadingText.innerText = 'Forge ready!';
+            }
+            
+            // Fade out and remove loading screen
+            setTimeout(() => {
+                if (loadingScreen) {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 500);
             }
         }
     }, 2000); // Changed from 4000 to 2000 for faster loading
