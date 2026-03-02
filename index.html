@@ -852,7 +852,7 @@
             color: white;
         }
 
-        /* simplified next ingot preview popup - no modifiers */
+        /* next ingot preview popup - with grace display */
         .preview-card {
             max-width: 440px;
             width: 100%;
@@ -918,6 +918,25 @@
             background: linear-gradient(90deg, #f0b345, #ffd966);
             border-radius: 30px;
             transition: width 0.3s;
+        }
+
+        .grace-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #1d3f4f;
+            border-radius: 40px;
+            font-size: 16px;
+            color: #ffdcaa;
+        }
+
+        .grace-badge {
+            display: inline-block;
+            background: #f5c542;
+            color: #1e2f3a;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: 700;
+            margin-top: 10px;
         }
 
         .preview-buttons {
@@ -1129,7 +1148,7 @@
             100% { opacity: 0.6; }
         }
 
-        /* leaderboard popup - redesigned for words */
+        /* leaderboard popup - words-based */
         .leaderboard-card {
             max-width: 480px;
             width: 100%;
@@ -1593,7 +1612,7 @@
 
             // ---------- MASTER WORD BANK · 3,600 WORDS ----------
             const MASTER_WORDS = {
-                // WORLD 1: GRAND FORGE (600 words) - ALL 30 INGOTS COMPLETE
+                // WORLD 1: GRAND FORGE (600 words)
                 world1: {
                     name: "Grand Forge",
                     icon: "⚒️",
@@ -2738,6 +2757,42 @@
                 180: { baseChance: 1, tier: "Cosmic" }
             };
 
+            // ---------- NEW: GRACE SYSTEM (1% per failure, stacks, max 99%) ----------
+            // Track grace for each ingot separately
+            const ingotGrace = {};
+            for (let i = 1; i <= 180; i++) {
+                ingotGrace[i] = 0;
+            }
+
+            // Calculate chance with grace
+            function calculateSuccessChance(ingotId) {
+                const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
+                const grace = ingotGrace[ingotId] || 0;
+                const finalChance = Math.min(difficulty.baseChance + grace, 99); // Cap at 99%
+                
+                return {
+                    final: finalChance,
+                    base: difficulty.baseChance,
+                    grace: grace,
+                    tier: difficulty.tier,
+                    maxed: finalChance === 99
+                };
+            }
+
+            // Called when failing an ingot
+            function onFailure(ingotId) {
+                if (ingotGrace[ingotId] < 98) { // 98 grace + 1 base = 99 max
+                    ingotGrace[ingotId]++;
+                }
+                saveProgress();
+            }
+
+            // Called when successfully completing an ingot
+            function onSuccess(ingotId) {
+                ingotGrace[ingotId] = 0; // Reset grace for this ingot
+                saveProgress();
+            }
+
             // ---------- PLAYER PERFORMANCE TRACKING ----------
             let playerPerformance = {
                 currentStreak: 0,
@@ -3055,16 +3110,6 @@
                 }
             }
 
-            // SIMPLIFIED: Chance of Success - pure base chance, no modifiers
-            function calculateSuccessChance(ingotId) {
-                const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
-                return {
-                    final: difficulty.baseChance,
-                    base: difficulty.baseChance,
-                    tier: difficulty.tier
-                };
-            }
-
             function calculateRiskBonus(baseChance, actualChance, success) {
                 if (!success) return 0;
                 const riskFactor = 100 - actualChance;
@@ -3170,131 +3215,71 @@
 
             // ---------- SAVE SYSTEM (Silent) ----------
             function saveProgress() {
-                if (!tg?.CloudStorage) {
-                    try {
-                        const saveData = {
-                            version: "1.0",
-                            lastUpdated: new Date().toISOString(),
-                            currentWorld: currentWorld,
-                            currentUnit: currentUnit,
-                            completedWords: completedWords,
-                            playerPerformance: playerPerformance,
-                            worlds: worlds
-                        };
-                        localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
-                    } catch (e) {}
-                    return;
-                }
-
                 const saveData = {
                     version: "1.0",
                     lastUpdated: new Date().toISOString(),
                     currentWorld: currentWorld,
                     currentUnit: currentUnit,
                     completedWords: completedWords,
-                    playerPerformance: {
-                        currentStreak: playerPerformance.currentStreak,
-                        bestStreak: playerPerformance.bestStreak,
-                        lastAccuracy: playerPerformance.lastAccuracy,
-                        lastAttemptFailed: playerPerformance.lastAttemptFailed,
-                        lastPlayedDate: playerPerformance.lastPlayedDate,
-                        totalRiskBonus: playerPerformance.totalRiskBonus,
-                        worldProgress: playerPerformance.worldProgress
-                    },
-                    worlds: Object.keys(worlds).reduce((acc, key) => {
-                        const world = worlds[key];
-                        acc[key] = {
-                            id: world.id,
-                            unlocked: world.unlocked,
-                            completed: world.completed,
-                            units: world.units.map(u => ({
-                                id: u.id,
-                                wordsCompleted: u.wordsCompleted,
-                                unlocked: u.unlocked
-                            }))
-                        };
-                        return acc;
-                    }, {})
+                    playerPerformance: playerPerformance,
+                    worlds: worlds,
+                    ingotGrace: ingotGrace // Save grace data
                 };
 
-                tg.CloudStorage.setItem(
-                    'spellforge_save',
-                    JSON.stringify(saveData),
-                    function(err, success) {
-                        if (!success) {
-                            try {
-                                localStorage.setItem('spellforge_backup', JSON.stringify(saveData));
-                            } catch (e) {}
-                        }
-                    }
-                );
-            }
-
-            function loadProgress(callback) {
-                if (!tg?.CloudStorage) {
-                    try {
-                        const saved = localStorage.getItem('spellforge_backup');
-                        if (saved) {
-                            const data = JSON.parse(saved);
-                            applyLoadedData(data);
-                        }
-                    } catch (e) {}
-                    if (callback) callback();
-                    return;
-                }
-
-                tg.CloudStorage.getItem('spellforge_save', function(err, data) {
-                    if (data) {
-                        try {
-                            const saveData = JSON.parse(data);
-                            applyLoadedData(saveData);
-                        } catch (e) {}
-                    } else {
-                        try {
-                            const saved = localStorage.getItem('spellforge_backup');
-                            if (saved) {
-                                const data = JSON.parse(saved);
-                                applyLoadedData(data);
-                            }
-                        } catch (e) {}
-                    }
-                    if (callback) callback();
-                });
-            }
-
-            function applyLoadedData(saveData) {
+                // Save to localStorage (temporary until CloudStorage is implemented)
                 try {
-                    if (saveData.worlds) {
-                        Object.keys(saveData.worlds).forEach(key => {
-                            if (worlds[key]) {
-                                const savedWorld = saveData.worlds[key];
-                                worlds[key].unlocked = savedWorld.unlocked;
-                                worlds[key].completed = savedWorld.completed;
-                                
-                                savedWorld.units.forEach(savedUnit => {
-                                    const unit = worlds[key].units.find(u => u.id === savedUnit.id);
-                                    if (unit) {
-                                        unit.wordsCompleted = savedUnit.wordsCompleted;
-                                        unit.unlocked = savedUnit.unlocked;
-                                    }
-                                });
-                            }
-                        });
+                    localStorage.setItem('spellforge_save', JSON.stringify(saveData));
+                } catch (e) {}
+            }
+
+            function loadProgress() {
+                try {
+                    const saved = localStorage.getItem('spellforge_save');
+                    if (saved) {
+                        const saveData = JSON.parse(saved);
+                        
+                        // Restore world states
+                        if (saveData.worlds) {
+                            Object.keys(saveData.worlds).forEach(key => {
+                                if (worlds[key]) {
+                                    const savedWorld = saveData.worlds[key];
+                                    worlds[key].unlocked = savedWorld.unlocked;
+                                    worlds[key].completed = savedWorld.completed;
+                                    
+                                    savedWorld.units.forEach(savedUnit => {
+                                        const unit = worlds[key].units.find(u => u.id === savedUnit.id);
+                                        if (unit) {
+                                            unit.wordsCompleted = savedUnit.wordsCompleted;
+                                            unit.unlocked = savedUnit.unlocked;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+
+                        // Restore grace data
+                        if (saveData.ingotGrace) {
+                            Object.keys(saveData.ingotGrace).forEach(key => {
+                                ingotGrace[key] = saveData.ingotGrace[key];
+                            });
+                        }
+
+                        // Restore current position
+                        if (saveData.currentWorld) currentWorld = saveData.currentWorld;
+                        if (saveData.currentUnit) currentUnit = saveData.currentUnit;
+                        if (saveData.completedWords) completedWords = saveData.completedWords;
+
+                        // Restore player performance
+                        if (saveData.playerPerformance) {
+                            playerPerformance = {
+                                ...playerPerformance,
+                                ...saveData.playerPerformance
+                            };
+                        }
+
+                        updateWorldDisplay();
+                        resetForNewUnit();
                     }
-
-                    if (saveData.currentWorld) currentWorld = saveData.currentWorld;
-                    if (saveData.currentUnit) currentUnit = saveData.currentUnit;
-                    if (saveData.completedWords) completedWords = saveData.completedWords;
-
-                    if (saveData.playerPerformance) {
-                        playerPerformance = {
-                            ...playerPerformance,
-                            ...saveData.playerPerformance
-                        };
-                    }
-
-                    updateWorldDisplay();
-                    resetForNewUnit();
                 } catch (e) {}
             }
 
@@ -3304,7 +3289,7 @@
                 }, 60000);
             }
 
-            // ---------- NEW: LEADERBOARD POPUP (Words-based) ----------
+            // ---------- LEADERBOARD POPUP (Words-based) ----------
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
                 
@@ -3585,7 +3570,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Simplified Next Ingot Preview - no modifiers
+            // Next Ingot Preview - with grace display
             function showNextIngotPreview() {
                 const nextIngotId = currentUnit + 1;
                 const world = worlds[currentWorld];
@@ -3605,6 +3590,11 @@
                 }
                 
                 const unitName = nextUnitData.name || "Unknown";
+                const graceMessage = chance.grace > 0 
+                    ? `+${chance.grace}% from ${chance.grace} failed attempt${chance.grace > 1 ? 's' : ''}` 
+                    : 'First attempt';
+                
+                const maxedMessage = chance.maxed ? '⚡ MAXIMUM GRACE REACHED! ⚡' : '';
                 
                 const overlay = document.getElementById('popupOverlay');
                 overlay.innerHTML = '';
@@ -3620,6 +3610,12 @@
                         <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
                         <div class="chance-bar">
                             <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+                        </div>
+                        
+                        <div class="grace-info">
+                            Base: ${chance.base}% · Grace: +${chance.grace}%
+                            <div class="grace-badge">${graceMessage}</div>
+                            ${maxedMessage ? `<div style="color: #ffd966; margin-top: 5px;">${maxedMessage}</div>` : ''}
                         </div>
                     </div>
                     
@@ -3853,6 +3849,9 @@
                                 date: new Date().toISOString()
                             });
                             
+                            // Reset grace on success
+                            onSuccess(currentUnit);
+                            
                             showIngotCompletePopup();
                             
                             const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
@@ -3862,7 +3861,9 @@
                             
                             saveProgress();
                         } else {
-                            // FAILURE: Show failure popup, reset current ingot
+                            // FAILURE: Increase grace, show failure popup
+                            onFailure(currentUnit);
+                            
                             playerPerformance.lastAttemptFailed = true;
                             playerPerformance.lastPlayedDate = new Date().toISOString();
                             playerPerformance.worldProgress[currentWorld].failed++;
@@ -4052,19 +4053,10 @@
                 }
             });
 
-            loadProgress(() => {
-                startAutoSave();
-                updateWorldDisplay();
-                resetForNewUnit();
-                
-                if (activeWordIndex !== null) {
-                    setUnitSectionVisibility(false);
-                    updateHeaderForGameplay();
-                } else {
-                    setUnitSectionVisibility(true);
-                    updateHeaderForSelection();
-                }
-            });
+            loadProgress();
+            startAutoSave();
+            updateWorldDisplay();
+            resetForNewUnit();
 
             if (tg) {
                 tg.onEvent('backButtonClicked', () => {
