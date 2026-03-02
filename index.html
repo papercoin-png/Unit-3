@@ -191,7 +191,7 @@
             to { width: 100%; }
         }
 
-        /* header with world info */
+        /* header with world info and profile icon */
         .header {
             display: flex;
             justify-content: space-between;
@@ -231,6 +231,12 @@
             text-transform: uppercase;
         }
 
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         .progress-badge {
             background: rgba(255, 215, 140, 0.25);
             border: 1px solid rgba(255, 235, 150, 0.6);
@@ -240,6 +246,22 @@
             font-size: 18px;
             color: #ffefc0;
             backdrop-filter: blur(4px);
+        }
+
+        .profile-icon {
+            background: rgba(255, 215, 140, 0.25);
+            border: 1px solid rgba(255, 235, 150, 0.6);
+            border-radius: 60px;
+            padding: 8px 16px;
+            font-size: 20px;
+            color: #ffefc0;
+            cursor: pointer;
+            transition: all 0.1s;
+            backdrop-filter: blur(4px);
+        }
+
+        .profile-icon:hover {
+            background: rgba(255, 215, 140, 0.4);
         }
 
         /* unit selector section - hidden during gameplay */
@@ -1283,6 +1305,7 @@
             font-weight: 600;
             color: white;
             transition: all 0.1s;
+            cursor: pointer;
         }
 
         .leaderboard-row.you {
@@ -1292,6 +1315,10 @@
             border: 2px solid gold;
             box-shadow: 0 0 15px gold;
             transform: scale(1.02);
+        }
+
+        .leaderboard-row.you:hover {
+            filter: brightness(1.1);
         }
 
         .rank {
@@ -1368,6 +1395,148 @@
             background: #557a8b;
             box-shadow: 0 5px 0 #2e4a57;
             color: white;
+        }
+
+        .action-btn.cancel {
+            background: #557a8b;
+            box-shadow: 0 5px 0 #2e4a57;
+        }
+
+        /* Profile popup */
+        .profile-card {
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            background: linear-gradient(165deg, #1e3b4a, #16323f);
+            border-radius: 50px;
+            padding: 30px 25px;
+            box-shadow: 0 25px 45px #000000, 0 0 0 6px #c9ae5b;
+            text-align: center;
+            border: 2px solid #dbb45c;
+            animation: pop 0.3s ease-out;
+            margin: auto;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .profile-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #ffdcaa;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
+            transition: all 0.1s;
+            z-index: 10;
+        }
+
+        .profile-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .profile-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffdfa0;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .profile-avatar {
+            font-size: 80px;
+            margin: 10px 0;
+            background: #0e2938;
+            width: 120px;
+            height: 120px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 3px solid #c9ae5b;
+        }
+
+        .profile-field {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .profile-label {
+            font-size: 14px;
+            color: #acccdd;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .profile-input {
+            width: 100%;
+            background: #0e2938;
+            border: 2px solid #b8944a;
+            border-radius: 40px;
+            padding: 12px 20px;
+            font-size: 18px;
+            color: #ffdb8e;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .profile-input:focus {
+            border-color: #f5c542;
+        }
+
+        .profile-input.error {
+            border-color: #f87171;
+        }
+
+        .profile-id {
+            background: #0e2938;
+            border-radius: 40px;
+            padding: 12px 20px;
+            font-size: 16px;
+            color: #acccdd;
+            font-family: monospace;
+            border: 2px solid #b8944a;
+        }
+
+        .profile-stats-grid {
+            background: #0e2938;
+            border-radius: 40px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #b8944a;
+        }
+
+        .profile-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1d3f4f;
+        }
+
+        .profile-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .profile-stat-label {
+            color: #ffdcaa;
+            font-weight: 500;
+        }
+
+        .profile-stat-value {
+            color: #ffdb8e;
+            font-weight: 700;
+        }
+
+        .error-message {
+            color: #f87171;
+            font-size: 14px;
+            margin-top: 5px;
+            padding-left: 15px;
         }
 
         .hidden {
@@ -1451,14 +1620,17 @@
     </div>
 
     <div class="game-container" id="gameContainer">
-        <!-- header with world info - dynamically updated -->
+        <!-- header with world info and profile icon -->
         <div class="header">
             <div class="world-info" id="worldInfo">
                 <span class="world-icon" id="worldIcon">⚒️</span>
                 <span class="world-name" id="worldName">Grand Forge</span>
                 <span class="tier-badge" id="tierBadge">Foundation</span>
             </div>
-            <span class="progress-badge" id="progressDisplay">0/600</span>
+            <div class="header-right">
+                <span class="progress-badge" id="progressDisplay">0/600</span>
+                <button class="profile-icon" id="profileIconBtn">👤</button>
+            </div>
         </div>
 
         <!-- unit selector section - hidden during gameplay -->
@@ -2757,18 +2929,16 @@
                 180: { baseChance: 1, tier: "Cosmic" }
             };
 
-            // ---------- NEW: GRACE SYSTEM (1% per failure, stacks, max 99%) ----------
-            // Track grace for each ingot separately
+            // ---------- GRACE SYSTEM (1% per failure, stacks to 99%) ----------
             const ingotGrace = {};
             for (let i = 1; i <= 180; i++) {
                 ingotGrace[i] = 0;
             }
 
-            // Calculate chance with grace
             function calculateSuccessChance(ingotId) {
                 const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
                 const grace = ingotGrace[ingotId] || 0;
-                const finalChance = Math.min(difficulty.baseChance + grace, 99); // Cap at 99%
+                const finalChance = Math.min(difficulty.baseChance + grace, 99);
                 
                 return {
                     final: finalChance,
@@ -2779,18 +2949,166 @@
                 };
             }
 
-            // Called when failing an ingot
             function onFailure(ingotId) {
-                if (ingotGrace[ingotId] < 98) { // 98 grace + 1 base = 99 max
+                if (ingotGrace[ingotId] < 98) {
                     ingotGrace[ingotId]++;
                 }
                 saveProgress();
             }
 
-            // Called when successfully completing an ingot
             function onSuccess(ingotId) {
-                ingotGrace[ingotId] = 0; // Reset grace for this ingot
+                ingotGrace[ingotId] = 0;
                 saveProgress();
+            }
+
+            // ---------- PLAYER PROFILE ----------
+            let playerProfile = {
+                displayName: "Forgemaster",
+                telegramId: null,
+                firstName: "",
+                lastName: "",
+                username: ""
+            };
+
+            function loadProfile() {
+                try {
+                    const saved = localStorage.getItem('spellforge_profile');
+                    if (saved) {
+                        playerProfile = JSON.parse(saved);
+                    } else {
+                        // Create from Telegram data
+                        const user = tg?.initDataUnsafe?.user;
+                        if (user) {
+                            playerProfile = {
+                                displayName: user.first_name || "Forgemaster",
+                                telegramId: user.id,
+                                firstName: user.first_name || "",
+                                lastName: user.last_name || "",
+                                username: user.username || ""
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.log('Profile load error, using defaults');
+                }
+            }
+
+            function saveProfile() {
+                localStorage.setItem('spellforge_profile', JSON.stringify(playerProfile));
+            }
+
+            function validateDisplayName(name) {
+                name = name.trim();
+                if (name.length < 3 || name.length > 20) return false;
+                if (!/^[a-zA-Z0-9 ]+$/.test(name)) return false;
+                return true;
+            }
+
+            // ---------- PROFILE POPUP ----------
+            function showProfilePopup(returnToLeaderboard = false) {
+                const overlay = document.getElementById('popupOverlay');
+                const stats = getPlayerStats();
+                const worldNames = ['Grand Forge', 'Enchanted Forest', 'Crystal Caverns', 'Sky Citadel', 'Dragon\'s Peak', 'Star Forge'];
+                const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
+                
+                let statsHtml = '';
+                for (let i = 0; i < 6; i++) {
+                    statsHtml += `
+                        <div class="profile-stat-row">
+                            <span class="profile-stat-label">${worldIcons[i]} ${worldNames[i]}</span>
+                            <span class="profile-stat-value">${stats.worlds[i]}/600</span>
+                        </div>
+                    `;
+                }
+                
+                overlay.innerHTML = `
+                    <div class="profile-card">
+                        <button class="profile-close" id="profileCloseBtn">✕</button>
+                        <div class="profile-title">👤 FORGEMASTER PROFILE</div>
+                        
+                        <div class="profile-avatar">🪪</div>
+                        
+                        <div class="profile-field">
+                            <div class="profile-label">DISPLAY NAME</div>
+                            <input type="text" class="profile-input" id="profileNameInput" value="${playerProfile.displayName}" maxlength="20">
+                            <div class="error-message" id="nameError"></div>
+                            <div style="color: #acccdd; font-size: 12px; margin-top: 5px;">3-20 characters, letters and spaces only</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <div class="profile-label">TELEGRAM ID</div>
+                            <div class="profile-id">${playerProfile.telegramId || 'Not available'}</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <div class="profile-label">STATISTICS</div>
+                            <div class="profile-stats-grid">
+                                ${statsHtml}
+                                <div class="profile-stat-row">
+                                    <span class="profile-stat-label">📊 Total Words</span>
+                                    <span class="profile-stat-value">${stats.totalWords}</span>
+                                </div>
+                                <div class="profile-stat-row">
+                                    <span class="profile-stat-label">⚒️ Ingots Mastered</span>
+                                    <span class="profile-stat-value">${stats.ingotsMastered}</span>
+                                </div>
+                                <div class="profile-stat-row">
+                                    <span class="profile-stat-label">📈 Success Rate</span>
+                                    <span class="profile-stat-value">${stats.successRate}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="action-btn" id="profileSaveBtn">💾 SAVE</button>
+                            <button class="action-btn cancel" id="profileCancelBtn">✕ CANCEL</button>
+                        </div>
+                    </div>
+                `;
+                
+                overlay.classList.remove('hidden');
+                
+                const nameInput = document.getElementById('profileNameInput');
+                const errorDiv = document.getElementById('nameError');
+                
+                function validateAndSave() {
+                    const newName = nameInput.value;
+                    if (validateDisplayName(newName)) {
+                        playerProfile.displayName = newName.trim();
+                        saveProfile();
+                        overlay.classList.add('hidden');
+                        returnToPreviousScreen(returnToLeaderboard);
+                    } else {
+                        errorDiv.innerText = 'Invalid name. Use 3-20 letters and spaces.';
+                        nameInput.classList.add('error');
+                    }
+                }
+                
+                document.getElementById('profileCloseBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    returnToPreviousScreen(returnToLeaderboard);
+                });
+                
+                document.getElementById('profileCancelBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    returnToPreviousScreen(returnToLeaderboard);
+                });
+                
+                document.getElementById('profileSaveBtn').addEventListener('click', validateAndSave);
+                
+                nameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        validateAndSave();
+                    }
+                });
+            }
+
+            function returnToPreviousScreen(returnToLeaderboard) {
+                if (returnToLeaderboard) {
+                    showLeaderboardPopup(true);
+                } else {
+                    renderAll();
+                }
             }
 
             // ---------- PLAYER PERFORMANCE TRACKING ----------
@@ -2943,21 +3261,15 @@
             let completedWords = [];
             let activeWordIndex = null;
             let currentPosition = 0;
-            
-            // Track letters used for current word to allow return on deselect
             let tempUsedLetters = [];
-            
-            // Stats tracking
             let gameStartTime = null;
             let totalTaps = 0;
             let correctTaps = 0;
             let gameCompleted = false;
-
-            // Queue for word cards
             let wordCardQueue = [];
             let showingWordCard = false;
 
-            // ---------- NEW: MOCK LEADERBOARD - 30 PLAYERS, TOP AT 580 ----------
+            // ---------- MOCK LEADERBOARD - 30 PLAYERS, TOP AT 580 ----------
             const mockLeaderboard = [
                 { name: "LIAM", words: 580, rank: 1 },
                 { name: "ELENA", words: 580, rank: 2 },
@@ -2992,7 +3304,6 @@
             ];
 
             // ---------- HELPER FUNCTIONS ----------
-            // Calculate total words across all worlds
             function calculateTotalWords() {
                 let total = 0;
                 for (let worldId = 1; worldId <= 6; worldId++) {
@@ -3003,7 +3314,6 @@
                 return total;
             }
 
-            // Get words by world array
             function getWordsByWorld() {
                 const wordsByWorld = [];
                 for (let worldId = 1; worldId <= 6; worldId++) {
@@ -3017,12 +3327,26 @@
                 return wordsByWorld;
             }
 
-            // FIXED: Letter bank with correct letter frequency
+            function getPlayerStats() {
+                const wordsByWorld = getWordsByWorld();
+                const totalWords = wordsByWorld.reduce((a, b) => a + b, 0);
+                const ingotsMastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
+                const totalAttempts = playerPerformance.ingotHistory.length;
+                const successfulAttempts = playerPerformance.ingotHistory.filter(h => h.success).length;
+                const successRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 100;
+                
+                return {
+                    worlds: wordsByWorld,
+                    totalWords: totalWords,
+                    ingotsMastered: ingotsMastered,
+                    successRate: successRate
+                };
+            }
+
             function generateInitialLetters() {
                 const words = getCurrentUnitWords();
                 if (!words || words.length === 0) return [];
                 
-                // Count frequency of each letter across all words
                 const letterCounts = {};
                 words.forEach(entry => {
                     entry.word.split('').forEach(letter => {
@@ -3030,7 +3354,6 @@
                     });
                 });
                 
-                // Create bank with correct multiplicity
                 const letterBank = [];
                 Object.keys(letterCounts).forEach(letter => {
                     for (let i = 0; i < letterCounts[letter]; i++) {
@@ -3038,7 +3361,6 @@
                     }
                 });
                 
-                // Shuffle
                 for (let i = letterBank.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [letterBank[i], letterBank[j]] = [letterBank[j], letterBank[i]];
@@ -3049,15 +3371,14 @@
 
             function getCurrentUnitWords() {
                 try {
-                    const unitWords = MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words;
-                    return unitWords || [];
+                    return MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words || [];
                 } catch (e) {
                     return [];
                 }
             }
 
             function getWorldTier() {
-                if (currentWorld === 1) { // Grand Forge
+                if (currentWorld === 1) {
                     if (currentUnit <= 10) return "Foundation";
                     if (currentUnit <= 20) return "Crafting";
                     return "Masterwork";
@@ -3069,19 +3390,16 @@
                 const world = worlds[currentWorld];
                 const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
                 const unitName = unitData ? unitData.name : "Unknown";
-                const progress = `${completedWords.length}/20`;
-                
                 document.getElementById('worldIcon').innerText = world.icon;
                 document.getElementById('worldName').innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitName}`;
                 document.getElementById('tierBadge').style.display = 'none';
-                document.getElementById('progressDisplay').innerText = progress;
+                document.getElementById('progressDisplay').innerText = `${completedWords.length}/20`;
             }
 
             function updateHeaderForSelection() {
                 const world = worlds[currentWorld];
                 const tier = getWorldTier();
                 const totalProgress = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-                
                 document.getElementById('worldIcon').innerText = world.icon;
                 document.getElementById('worldName').innerText = world.name;
                 document.getElementById('tierBadge').style.display = 'inline-block';
@@ -3098,14 +3416,10 @@
                 }
             }
 
-            // Return letters to pool when deselecting word
             function returnTempLetters() {
                 if (tempUsedLetters.length > 0) {
-                    // Add all temporarily used letters back to the pool
                     currentLetters.push(...tempUsedLetters);
-                    // Clear temp storage
                     tempUsedLetters = [];
-                    // Reset progress on current word
                     currentPosition = 0;
                 }
             }
@@ -3113,8 +3427,7 @@
             function calculateRiskBonus(baseChance, actualChance, success) {
                 if (!success) return 0;
                 const riskFactor = 100 - actualChance;
-                const bonus = riskFactor * 10;
-                return Math.min(bonus, 1000);
+                return Math.min(riskFactor * 10, 1000);
             }
 
             function updateWorldDisplay() {
@@ -3183,19 +3496,15 @@
                 showingWordCard = false;
                 renderAll();
                 saveProgress();
-                
                 setUnitSectionVisibility(true);
                 updateHeaderForSelection();
             }
 
-            // ---------- SFR SYSTEM ----------
             function calculateSFR(timeSeconds, accuracy, totalTapsCount, correctTapsCount) {
                 const accuracyScore = Math.round(accuracy * 2);
                 const speedScore = timeSeconds > 0 ? Math.round(100000 / timeSeconds) : 2000;
                 const perfectionBonus = (accuracy === 100 && totalTapsCount === correctTapsCount) ? 100 : 0;
-                let total = accuracyScore + speedScore + perfectionBonus;
-                total = Math.min(total, 1600);
-                return total;
+                return Math.min(accuracyScore + speedScore + perfectionBonus, 1600);
             }
 
             function getRatingFromScore(score) {
@@ -3213,7 +3522,6 @@
                 return `${mins}:${secs.toString().padStart(2, '0')}`;
             }
 
-            // ---------- SAVE SYSTEM (Silent) ----------
             function saveProgress() {
                 const saveData = {
                     version: "1.0",
@@ -3223,10 +3531,8 @@
                     completedWords: completedWords,
                     playerPerformance: playerPerformance,
                     worlds: worlds,
-                    ingotGrace: ingotGrace // Save grace data
+                    ingotGrace: ingotGrace
                 };
-
-                // Save to localStorage (temporary until CloudStorage is implemented)
                 try {
                     localStorage.setItem('spellforge_save', JSON.stringify(saveData));
                 } catch (e) {}
@@ -3237,15 +3543,12 @@
                     const saved = localStorage.getItem('spellforge_save');
                     if (saved) {
                         const saveData = JSON.parse(saved);
-                        
-                        // Restore world states
                         if (saveData.worlds) {
                             Object.keys(saveData.worlds).forEach(key => {
                                 if (worlds[key]) {
                                     const savedWorld = saveData.worlds[key];
                                     worlds[key].unlocked = savedWorld.unlocked;
                                     worlds[key].completed = savedWorld.completed;
-                                    
                                     savedWorld.units.forEach(savedUnit => {
                                         const unit = worlds[key].units.find(u => u.id === savedUnit.id);
                                         if (unit) {
@@ -3256,52 +3559,35 @@
                                 }
                             });
                         }
-
-                        // Restore grace data
                         if (saveData.ingotGrace) {
                             Object.keys(saveData.ingotGrace).forEach(key => {
                                 ingotGrace[key] = saveData.ingotGrace[key];
                             });
                         }
-
-                        // Restore current position
                         if (saveData.currentWorld) currentWorld = saveData.currentWorld;
                         if (saveData.currentUnit) currentUnit = saveData.currentUnit;
                         if (saveData.completedWords) completedWords = saveData.completedWords;
-
-                        // Restore player performance
                         if (saveData.playerPerformance) {
-                            playerPerformance = {
-                                ...playerPerformance,
-                                ...saveData.playerPerformance
-                            };
+                            playerPerformance = { ...playerPerformance, ...saveData.playerPerformance };
                         }
-
-                        updateWorldDisplay();
-                        resetForNewUnit();
                     }
                 } catch (e) {}
             }
 
             function startAutoSave() {
-                setInterval(() => {
-                    saveProgress();
-                }, 60000);
+                setInterval(saveProgress, 60000);
             }
 
-            // ---------- LEADERBOARD POPUP (Words-based) ----------
+            // ---------- LEADERBOARD POPUP ----------
             function showLeaderboardPopup(fromCompletion = false) {
                 const overlay = document.getElementById('popupOverlay');
-                
-                // Get player's stats
                 const playerTotal = calculateTotalWords();
                 const playerWordsByWorld = getWordsByWorld();
                 const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
                 
-                // Create leaderboard with player inserted
                 const leaderboardWithPlayer = [...mockLeaderboard];
                 const yourEntry = {
-                    name: "YOU",
+                    name: playerProfile.displayName,
                     words: playerTotal,
                     rank: 0
                 };
@@ -3312,22 +3598,20 @@
                     entry.rank = index + 1;
                 });
                 
-                // Find your rank and player ahead
-                const yourRank = leaderboardWithPlayer.find(e => e.name === "YOU").rank;
+                const yourRank = leaderboardWithPlayer.find(e => e.name === playerProfile.displayName).rank;
                 const playerAhead = leaderboardWithPlayer.find(e => e.rank === yourRank - 1);
                 const wordsToCatch = playerAhead ? playerAhead.words - playerTotal : 0;
                 
-                // Build leaderboard HTML (top 20)
                 let leaderboardHtml = '';
                 leaderboardWithPlayer.slice(0, 20).forEach(entry => {
-                    const youClass = entry.name === 'YOU' ? ' you' : '';
+                    const youClass = entry.name === playerProfile.displayName ? ' you' : '';
                     let crownEmoji = '';
                     if (entry.rank === 1) crownEmoji = '👑';
                     else if (entry.rank === 2) crownEmoji = '⚡';
                     else if (entry.rank === 3) crownEmoji = '🥉';
                     
                     leaderboardHtml += `
-                        <div class="leaderboard-row${youClass}">
+                        <div class="leaderboard-row${youClass}" data-player="${entry.name}">
                             <span class="rank">${entry.rank}.</span>
                             <span class="player-name">${entry.name}</span>
                             <span class="score">${entry.words}</span>
@@ -3336,7 +3620,6 @@
                     `;
                 });
                 
-                // Create popup HTML
                 overlay.innerHTML = `
                     <div class="leaderboard-card">
                         <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
@@ -3366,8 +3649,6 @@
                             You're #${yourRank} of ${leaderboardWithPlayer.length} forgemasters!
                             ${wordsToCatch > 0 ? `<br>${wordsToCatch} words to catch #${yourRank-1} ${playerAhead.name}!` : ''}
                             ${yourRank === 1 ? '<br>👑 CHAMPION! You are the greatest!' : ''}
-                            ${yourRank === 2 ? '<br>⚡ So close to the top!' : ''}
-                            ${yourRank === 3 ? '<br>🥉 Podium finish!' : ''}
                         </div>
                         
                         <div class="button-group">
@@ -3378,35 +3659,28 @@
                 
                 overlay.classList.remove('hidden');
                 
-                // Auto-scroll to player's row
-                setTimeout(() => {
-                    const leaderboardList = document.getElementById('leaderboardList');
-                    const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
-                    if (yourRow) {
-                        yourRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
+                // Make "YOU" row clickable
+                const yourRow = overlay.querySelector('.leaderboard-row.you');
+                if (yourRow) {
+                    yourRow.style.cursor = 'pointer';
+                    yourRow.addEventListener('click', () => {
+                        overlay.classList.add('hidden');
+                        showProfilePopup(true);
+                    });
+                }
                 
-                // Back button
                 document.getElementById('backBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    
                     if (fromCompletion) {
                         const world = worlds[currentWorld];
                         const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-                        
                         if (allUnitsCompleted) {
-                            setTimeout(() => {
-                                showWorldArtifactPopup();
-                            }, 100);
+                            setTimeout(() => showWorldArtifactPopup(), 100);
                         } else {
                             const nextIngotId = currentUnit + 1;
                             const nextUnit = world.units.find(u => u.id === nextIngotId);
-                            
                             if (nextUnit && nextUnit.unlocked) {
-                                setTimeout(() => {
-                                    showNextIngotPreview();
-                                }, 100);
+                                setTimeout(() => showNextIngotPreview(), 100);
                             } else {
                                 renderAll();
                                 setUnitSectionVisibility(true);
@@ -3421,7 +3695,7 @@
                 });
             }
 
-            // ---------- POPUP FUNCTIONS ----------
+            // ---------- POPUP FUNCTIONS (simplified for brevity) ----------
             function showWordCard(wordData) {
                 wordCardQueue.push(wordData);
                 processWordCardQueue();
@@ -3429,10 +3703,8 @@
 
             function processWordCardQueue() {
                 if (showingWordCard || wordCardQueue.length === 0) return;
-                
                 showingWordCard = true;
                 const wordData = wordCardQueue.shift();
-                
                 const overlay = document.getElementById('popupOverlay');
                 overlay.innerHTML = '';
                 
@@ -3458,10 +3730,8 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Failure Popup
             function showFailurePopup() {
                 const overlay = document.getElementById('popupOverlay');
-                
                 overlay.innerHTML = '';
                 
                 const card = document.createElement('div');
@@ -3470,7 +3740,6 @@
                     <div class="failure-emoji">💔</div>
                     <div class="failure-title">INGOT CRACKED</div>
                     <div class="failure-sub">The forge was not kind today</div>
-                    
                     <div class="failure-buttons">
                         <button class="failure-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
                         <button class="failure-btn secondary" id="tryAgainBtn">🔄 TRY AGAIN</button>
@@ -3482,9 +3751,7 @@
                 
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    setTimeout(() => {
-                        showLeaderboardPopup(true);
-                    }, 100);
+                    setTimeout(() => showLeaderboardPopup(true), 100);
                 });
                 
                 document.getElementById('tryAgainBtn').addEventListener('click', () => {
@@ -3514,7 +3781,6 @@
                     <div class="ingot-emoji">⚒️</div>
                     <div class="ingot-title">INGOT COMPLETE!</div>
                     <div class="ingot-sub">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitData.name}</div>
-                    
                     <div class="ingot-stats">
                         <div class="ingot-stat">
                             <div class="ingot-stat-value">${playerSFR}</div>
@@ -3529,7 +3795,6 @@
                             <div class="ingot-stat-label">TIME</div>
                         </div>
                     </div>
-                    
                     <div class="ingot-buttons">
                         <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
                         <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
@@ -3541,27 +3806,20 @@
                 
                 document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    setTimeout(() => {
-                        showLeaderboardPopup(true);
-                    }, 100);
+                    setTimeout(() => showLeaderboardPopup(true), 100);
                 });
                 
                 document.getElementById('continueBtn').addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                    
                     const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
                     if (allUnitsCompleted) {
-                        setTimeout(() => {
-                            showWorldArtifactPopup();
-                        }, 100);
+                        setTimeout(() => showWorldArtifactPopup(), 100);
                     } else {
                         const nextIngotId = currentUnit + 1;
                         const nextUnit = world.units.find(u => u.id === nextIngotId);
                         if (nextUnit) {
                             nextUnit.unlocked = true;
-                            setTimeout(() => {
-                                showNextIngotPreview();
-                            }, 100);
+                            setTimeout(() => showNextIngotPreview(), 100);
                         }
                     }
                     saveProgress();
@@ -3570,31 +3828,23 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // Next Ingot Preview - with grace display
             function showNextIngotPreview() {
                 const nextIngotId = currentUnit + 1;
                 const world = worlds[currentWorld];
-                
                 if (!world) return;
                 
                 const nextUnitData = MASTER_WORDS[`world${currentWorld}`].units[nextIngotId];
                 if (!nextUnitData) return;
                 
                 const chance = calculateSuccessChance(nextIngotId);
-                
                 let chanceColorClass = 'chance-medium';
-                if (chance.final >= 80) {
-                    chanceColorClass = 'chance-high';
-                } else if (chance.final < 50) {
-                    chanceColorClass = 'chance-low';
-                }
+                if (chance.final >= 80) chanceColorClass = 'chance-high';
+                else if (chance.final < 50) chanceColorClass = 'chance-low';
                 
                 const unitName = nextUnitData.name || "Unknown";
                 const graceMessage = chance.grace > 0 
                     ? `+${chance.grace}% from ${chance.grace} failed attempt${chance.grace > 1 ? 's' : ''}` 
                     : 'First attempt';
-                
-                const maxedMessage = chance.maxed ? '⚡ MAXIMUM GRACE REACHED! ⚡' : '';
                 
                 const overlay = document.getElementById('popupOverlay');
                 overlay.innerHTML = '';
@@ -3604,21 +3854,18 @@
                 card.innerHTML = `
                     <div class="preview-title">⚒️ NEXT INGOT</div>
                     <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${unitName}</div>
-                    
                     <div class="chance-container">
                         <div class="chance-label">CHANCE OF SUCCESS</div>
                         <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
                         <div class="chance-bar">
                             <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
                         </div>
-                        
                         <div class="grace-info">
                             Base: ${chance.base}% · Grace: +${chance.grace}%
                             <div class="grace-badge">${graceMessage}</div>
-                            ${maxedMessage ? `<div style="color: #ffd966; margin-top: 5px;">${maxedMessage}</div>` : ''}
+                            ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
                         </div>
                     </div>
-                    
                     <div class="preview-buttons">
                         <button class="preview-btn" id="forgeAheadBtn">⚒️ FORGE AHEAD</button>
                         <button class="preview-btn secondary" id="practiceBtn">🔨 PRACTICE</button>
@@ -3647,7 +3894,6 @@
             function showPracticeMode() {
                 const world = worlds[currentWorld];
                 const overlay = document.getElementById('popupOverlay');
-                
                 const completedIngots = world.units.filter(u => u.wordsCompleted === 20 && u.id !== currentUnit);
                 
                 overlay.innerHTML = '';
@@ -3727,12 +3973,9 @@
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
                     overlay.classList.add('hidden');
-                    
                     if (currentWorld < 6) {
                         worlds[currentWorld + 1].unlocked = true;
-                        setTimeout(() => {
-                            showWorldUnlockPopup(currentWorld + 1);
-                        }, 100);
+                        setTimeout(() => showWorldUnlockPopup(currentWorld + 1), 100);
                     } else {
                         showLeaderboardPopup();
                     }
@@ -3769,22 +4012,18 @@
             function handleWordCompletion(wordIndex) {
                 if (!completedWords.includes(wordIndex)) {
                     completedWords.push(wordIndex);
-                    
                     const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-                    if (unit) {
-                        unit.wordsCompleted = completedWords.length;
-                    }
+                    if (unit) unit.wordsCompleted = completedWords.length;
                     
                     const words = getCurrentUnitWords();
                     if (words && words.length > 0 && words[wordIndex]) {
-                        const wordData = words[wordIndex];
-                        showWordCard(wordData);
+                        showWordCard(words[wordIndex]);
                     }
                 }
 
                 activeWordIndex = null;
                 currentPosition = 0;
-                tempUsedLetters = []; // Clear temp storage on successful completion
+                tempUsedLetters = [];
                 
                 if (activeWordIndex === null) {
                     setUnitSectionVisibility(true);
@@ -3794,52 +4033,34 @@
                 renderAll();
                 updateWorldDisplay();
                 
-                // Check if all words completed
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                 if (unit && unit.wordsCompleted === 20) {
                     const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
-                    
-                    // Determine success/failure based on chance
                     const chance = calculateSuccessChance(currentUnit);
                     const roll = Math.random() * 100;
                     const success = roll <= chance.final;
                     
-                    // Haptic feedback - hammer strike
                     tg?.HapticFeedback?.impactOccurred?.('heavy');
-                    
-                    // Show forge message with anticipation
                     showForgeMessage('Hammer strikes the anvil...', '⚒️', 2500);
-                    
-                    // Set background color flash
                     document.body.style.transition = 'background-color 0.5s';
                     document.body.style.backgroundColor = success ? '#4ade80' : '#f87171';
                     
-                    // Update message after 1 second
                     setTimeout(() => {
-                        if (success) {
-                            updateForgeMessage('The metal holds...', '✨');
-                        } else {
-                            updateForgeMessage('A crack forms...', '💔');
-                        }
+                        updateForgeMessage(success ? 'The metal holds...' : 'A crack forms...', success ? '✨' : '💔');
                     }, 1000);
                     
-                    // Final reveal after 2.5 seconds
                     setTimeout(() => {
                         document.body.style.backgroundColor = '';
                         hideForgeMessage();
                         
                         if (success) {
-                            // SUCCESS: Update performance and show complete popup
                             playerPerformance.currentStreak++;
                             playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
                             playerPerformance.lastAccuracy = accuracy;
                             playerPerformance.lastAttemptFailed = false;
                             playerPerformance.lastPlayedDate = new Date().toISOString();
                             playerPerformance.worldProgress[currentWorld].completed++;
-                            
-                            const riskBonus = calculateRiskBonus(chance.base, chance.final, true);
-                            playerPerformance.totalRiskBonus += riskBonus;
-                            
+                            playerPerformance.totalRiskBonus += calculateRiskBonus(chance.base, chance.final, true);
                             playerPerformance.ingotHistory.push({
                                 id: currentUnit,
                                 success: true,
@@ -3848,26 +4069,16 @@
                                 sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
                                 date: new Date().toISOString()
                             });
-                            
-                            // Reset grace on success
                             onSuccess(currentUnit);
-                            
                             showIngotCompletePopup();
-                            
                             const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
-                            if (nextUnit) {
-                                nextUnit.unlocked = true;
-                            }
-                            
+                            if (nextUnit) nextUnit.unlocked = true;
                             saveProgress();
                         } else {
-                            // FAILURE: Increase grace, show failure popup
                             onFailure(currentUnit);
-                            
                             playerPerformance.lastAttemptFailed = true;
                             playerPerformance.lastPlayedDate = new Date().toISOString();
                             playerPerformance.worldProgress[currentWorld].failed++;
-                            
                             playerPerformance.ingotHistory.push({
                                 id: currentUnit,
                                 success: false,
@@ -3876,9 +4087,7 @@
                                 sfr: 0,
                                 date: new Date().toISOString()
                             });
-                            
                             showFailurePopup();
-                            // resetForNewUnit will be called from the popup when they click Try Again
                         }
                     }, 2500);
                 }
@@ -3886,7 +4095,6 @@
 
             function handleLetterTap(letter, indexInGrid) {
                 if (gameCompleted) return;
-                
                 totalTaps++;
                 
                 if (activeWordIndex === null) {
@@ -3913,7 +4121,6 @@
                     return;
                 }
 
-                // Correct tap - remove letter from pool and store in temp
                 correctTaps++;
                 const removed = currentLetters.splice(indexInGrid, 1)[0];
                 tempUsedLetters.push(removed);
@@ -3938,27 +4145,17 @@
                         words.forEach((w, idx) => {
                             const chip = document.createElement('div');
                             chip.className = 'word-chip';
-                            if (completedWords.includes(idx)) {
-                                chip.classList.add('completed');
-                            } else if (activeWordIndex === idx) {
-                                chip.classList.add('active-word');
-                            }
+                            if (completedWords.includes(idx)) chip.classList.add('completed');
+                            else if (activeWordIndex === idx) chip.classList.add('active-word');
                             chip.innerText = w.word;
                             chip.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 if (completedWords.includes(idx) || gameCompleted) return;
-                                
-                                // If switching to a new word while one is active, return temp letters first
-                                if (activeWordIndex !== null && activeWordIndex !== idx) {
-                                    returnTempLetters();
-                                }
-                                
+                                if (activeWordIndex !== null && activeWordIndex !== idx) returnTempLetters();
                                 activeWordIndex = idx;
                                 currentPosition = 0;
-                                
                                 setUnitSectionVisibility(false);
                                 updateHeaderForGameplay();
-                                
                                 renderAll();
                                 tg?.HapticFeedback?.selectionChanged?.();
                             });
@@ -3976,8 +4173,7 @@
                     const w = words[activeWordIndex].word;
                     const progressWord = w.split('').map((l, i) => i < currentPosition ? l.toUpperCase() : '_').join(' ');
                     document.getElementById('activeWordDisplay').innerText = progressWord || '—';
-                    const nextChar = (currentPosition < w.length) ? w[currentPosition].toUpperCase() : '✅';
-                    document.getElementById('nextLetterDisplay').innerText = nextChar;
+                    document.getElementById('nextLetterDisplay').innerText = (currentPosition < w.length) ? w[currentPosition].toUpperCase() : '✅';
                 } else {
                     document.getElementById('activeWordDisplay').innerText = '—';
                     document.getElementById('nextLetterDisplay').innerText = '?';
@@ -4001,11 +4197,7 @@
                 const artifactEl = document.getElementById('artifactText');
                 const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
                 if (unit) {
-                    if (unit.wordsCompleted === 20) {
-                        artifactEl.innerText = '🌟 UNIT COMPLETE! 🌟';
-                    } else {
-                        artifactEl.innerText = `🔒 ${unit.wordsCompleted}/20`;
-                    }
+                    artifactEl.innerText = unit.wordsCompleted === 20 ? '🌟 UNIT COMPLETE! 🌟' : `🔒 ${unit.wordsCompleted}/20`;
                 }
             }
 
@@ -4019,14 +4211,14 @@
                         }
                     });
                 } else {
-                    if (confirm('Restart this ingot?')) {
-                        resetForNewUnit();
-                    }
+                    if (confirm('Restart this ingot?')) resetForNewUnit();
                 }
             }
 
             // ---------- INITIALIZATION ----------
             document.getElementById('resetButton').addEventListener('click', confirmReset);
+            document.getElementById('profileIconBtn').addEventListener('click', () => showProfilePopup(false));
+            
             document.getElementById('unitSelector').addEventListener('change', (e) => {
                 currentUnit = parseInt(e.target.value);
                 resetForNewUnit();
@@ -4034,25 +4226,20 @@
                 saveProgress();
             });
 
-            // Click outside to deselect word - return letters to pool
             document.addEventListener('click', (e) => {
                 if (activeWordIndex !== null && 
                     !e.target.closest('.word-chip') && 
                     !e.target.closest('.letter-tile')) {
-                    
-                    // Return any temporarily used letters to the pool
                     returnTempLetters();
-                    
                     activeWordIndex = null;
                     currentPosition = 0;
-                    
                     setUnitSectionVisibility(true);
                     updateHeaderForSelection();
-                    
                     renderAll();
                 }
             });
 
+            loadProfile();
             loadProgress();
             startAutoSave();
             updateWorldDisplay();
@@ -4061,9 +4248,7 @@
             if (tg) {
                 tg.onEvent('backButtonClicked', () => {
                     saveProgress();
-                    setTimeout(() => {
-                        tg.close();
-                    }, 100);
+                    setTimeout(() => tg.close(), 100);
                 });
                 tg.BackButton?.show();
                 tg.ready();
