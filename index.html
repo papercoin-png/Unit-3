@@ -233,7 +233,7 @@
 
         .header-right {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -241,27 +241,32 @@
             background: rgba(255, 215, 140, 0.25);
             border: 1px solid rgba(255, 235, 150, 0.6);
             border-radius: 60px;
-            padding: 8px 16px;
+            padding: 6px 14px;
             font-weight: 600;
-            font-size: 18px;
+            font-size: 16px;
             color: #ffefc0;
             backdrop-filter: blur(4px);
         }
 
         .profile-icon {
-            background: rgba(255, 215, 140, 0.25);
-            border: 1px solid rgba(255, 235, 150, 0.6);
-            border-radius: 60px;
-            padding: 8px 16px;
-            font-size: 20px;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 24px;
             color: #ffefc0;
             cursor: pointer;
-            transition: all 0.1s;
-            backdrop-filter: blur(4px);
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            transition: transform 0.1s ease, color 0.1s ease;
         }
 
         .profile-icon:hover {
-            background: rgba(255, 215, 140, 0.4);
+            transform: scale(1.1);
+            color: #ffffff;
         }
 
         /* unit selector section - hidden during gameplay */
