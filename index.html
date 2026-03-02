@@ -532,11 +532,11 @@
             box-shadow: 0 4px 0 #946f2c;
         }
 
-        /* letter bank - MODIFIED: removed padding for larger tiles */
+        /* letter bank - MODIFIED: removed padding for larger tiles, enhanced 3D letters */
         .letter-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
-            padding: 15px 0; /* Removed left/right padding */
+            padding: 15px 0;
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
@@ -546,12 +546,12 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 6px;
-            padding: 5px 0; /* Removed left/right padding */
+            padding: 5px 0;
             width: 100%;
         }
 
         .letter-tile {
-            width: calc((100% - 30px) / 5); /* 5 tiles per row with gap */
+            width: calc((100% - 30px) / 5);
             max-width: 70px;
             aspect-ratio: 1 / 1;
             background: linear-gradient(145deg, #ffcf8a, #febf6e);
@@ -559,20 +559,34 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: min(5vw, 32px); /* Responsive font size */
+            font-weight: 900;
+            font-size: min(8vw, 48px);
             color: #1f3b4a;
-            box-shadow: 0 5px 0 #b2752e, 0 6px 10px rgba(0, 0, 0, 0.4);
+            /* Enhanced 3D text effect */
+            text-shadow: 
+                1px 1px 0 #b2752e,
+                2px 2px 0 #b2752e,
+                3px 3px 0 #b2752e,
+                4px 4px 0 #b2752e,
+                5px 5px 0 #b2752e,
+                6px 6px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 0 #b2752e, 0 8px 12px rgba(0, 0, 0, 0.4);
             transition: all 0.08s linear;
             cursor: pointer;
             border: 2px solid #ffdcaa;
             text-transform: uppercase;
             user-select: none;
+            line-height: 1;
+            padding: 0;
         }
 
         .letter-tile:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #b2752e, 0 6px 10px rgba(0,0,0,0.4);
+            transform: translateY(5px);
+            text-shadow: 
+                1px 1px 0 #b2752e,
+                2px 2px 0 #b2752e,
+                3px 3px 0 #b2752e;
+            box-shadow: 0 2px 0 #b2752e, 0 5px 8px rgba(0,0,0,0.4);
         }
 
         .letter-tile.used {
@@ -584,6 +598,7 @@
             transform: translateY(2px);
             pointer-events: none;
             opacity: 0.5;
+            text-shadow: none;
         }
 
         /* reset button */
@@ -664,7 +679,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: clip;
-            font-size: calc(58px - (var(--word-length, 5) * 2px)); /* Dynamic sizing based on word length */
+            font-size: calc(58px - (var(--word-length, 5) * 2px));
             max-font-size: 58px;
             min-font-size: 32px;
         }
@@ -1594,7 +1609,7 @@
 
         @media (max-width: 350px) {
             .letter-tile {
-                font-size: min(5vw, 28px);
+                font-size: min(8vw, 42px);
             }
         }
     </style>
@@ -1665,7 +1680,7 @@
             <span class="next-letter" id="nextLetterDisplay">?</span>
         </div>
 
-        <!-- letter grid - MODIFIED: 5 tiles per row, no padding -->
+        <!-- letter grid - MODIFIED: 5 tiles per row, no padding, enhanced 3D letters -->
         <div class="letter-section">
             <div class="section-label">🔤 LETTER FORGE · tap in order</div>
             <div class="letter-grid" id="letterGridContainer"></div>
