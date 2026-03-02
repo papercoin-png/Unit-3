@@ -9,7 +9,7 @@
         tg.setHeaderColor?.('#1a2f3f');
     }
 
-    // ---------- LOADING SCREEN ----------
+    // ---------- LOADING SCREEN - FIXED ----------
     const loadingTips = [
         '"Every word forged strengthens the crystal"',
         '"The forge remembers every letter"',
@@ -23,8 +23,11 @@
         '"Forgemasters never rush the craft"'
     ];
 
-    document.getElementById('loadingTip').innerText = 
-        loadingTips[Math.floor(Math.random() * loadingTips.length)];
+    // Set initial tip
+    const loadingTipElement = document.getElementById('loadingTip');
+    if (loadingTipElement) {
+        loadingTipElement.innerText = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+    }
 
     let loadingComplete = false;
     let minimumTimePassed = false;
@@ -34,6 +37,12 @@
         const loadingBar = document.getElementById('loadingBar');
         const loadingText = document.getElementById('loadingText');
         const loadingTip = document.getElementById('loadingTip');
+        
+        // Check if elements exist
+        if (!loadingBar || !loadingText || !loadingTip) {
+            console.error('Loading elements not found');
+            return;
+        }
         
         let progress = 0;
         const interval = setInterval(() => {
@@ -46,37 +55,50 @@
                 
                 loadingComplete = true;
                 if (minimumTimePassed) {
+                    clearInterval(interval);
                     setTimeout(() => {
-                        loadingScreen.classList.add('fade-out');
-                        setTimeout(() => {
-                            loadingScreen.style.display = 'none';
-                        }, 500);
+                        if (loadingScreen) {
+                            loadingScreen.classList.add('fade-out');
+                            setTimeout(() => {
+                                loadingScreen.style.display = 'none';
+                            }, 500);
+                        }
                     }, 300);
                 }
-                clearInterval(interval);
             } else {
                 loadingBar.style.width = progress + '%';
                 loadingText.innerText = `Loading forge... ${Math.floor(progress)}%`;
                 
-                if (Math.random() > 0.7) {
+                // Show random tips occasionally
+                if (Math.random() > 0.7 && loadingTip) {
                     const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
                     loadingTip.innerText = randomTip;
                 }
             }
         }, 200);
+        
+        // Store interval to clear it later if needed
+        return interval;
     }
 
+    // Start loading after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        simulateLoading();
+    }, 100);
+
+    // Set minimum time of 2 seconds (reduced from 4 for faster testing)
     setTimeout(() => {
         minimumTimePassed = true;
         if (loadingComplete) {
-            document.getElementById('loadingScreen').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.display = 'none';
-            }, 500);
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
         }
-    }, 4000);
-
-    window.addEventListener('load', simulateLoading);
+    }, 2000); // Changed from 4000 to 2000 for faster loading
 
     // ---------- FORGE MESSAGE FUNCTIONS ----------
     const forgeMessageOverlay = document.getElementById('forgeMessageOverlay');
@@ -85,22 +107,25 @@
     const forgeProgressFill = document.getElementById('forgeProgressFill');
 
     function showForgeMessage(text, icon = '⚒️', duration = 4000) {
+        if (!forgeMessageOverlay || !forgeMessageIcon || !forgeMessageText || !forgeProgressFill) return;
+        
         forgeMessageIcon.innerText = icon;
         forgeMessageText.innerText = text;
         forgeMessageOverlay.style.display = 'flex';
         
         forgeProgressFill.style.animation = 'none';
-        forgeProgressFill.offsetHeight;
+        // Force reflow
+        void forgeProgressFill.offsetHeight;
         forgeProgressFill.style.animation = 'progressFill ' + (duration/1000) + 's linear forwards';
     }
 
     function updateForgeMessage(text, icon = '⚒️') {
-        forgeMessageIcon.innerText = icon;
-        forgeMessageText.innerText = text;
+        if (forgeMessageIcon) forgeMessageIcon.innerText = icon;
+        if (forgeMessageText) forgeMessageText.innerText = text;
     }
 
     function hideForgeMessage() {
-        forgeMessageOverlay.style.display = 'none';
+        if (forgeMessageOverlay) forgeMessageOverlay.style.display = 'none';
     }
 
     // ---------- MASTER WORD BANK · 3,600 WORDS ----------
@@ -1729,10 +1754,12 @@
 
     function setUnitSectionVisibility(visible) {
         const unitSection = document.getElementById('unitSection');
-        if (visible) {
-            unitSection.classList.remove('hidden');
-        } else {
-            unitSection.classList.add('hidden');
+        if (unitSection) {
+            if (visible) {
+                unitSection.classList.remove('hidden');
+            } else {
+                unitSection.classList.add('hidden');
+            }
         }
     }
 
@@ -1754,46 +1781,50 @@
         const world = worlds[currentWorld];
         
         const selector = document.getElementById('unitSelector');
-        selector.innerHTML = '';
-        world.units.forEach((unit) => {
-            if (unit.unlocked) {
-                const option = document.createElement('option');
-                option.value = unit.id;
-                const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
-                const unitName = unitData ? unitData.name : "???";
-                option.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}`;
-                if (unit.id === currentUnit) option.selected = true;
-                selector.appendChild(option);
-            }
-        });
+        if (selector) {
+            selector.innerHTML = '';
+            world.units.forEach((unit) => {
+                if (unit.unlocked) {
+                    const option = document.createElement('option');
+                    option.value = unit.id;
+                    const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                    const unitName = unitData ? unitData.name : "???";
+                    option.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}`;
+                    if (unit.id === currentUnit) option.selected = true;
+                    selector.appendChild(option);
+                }
+            });
+        }
 
         const grid = document.getElementById('unitGrid');
-        grid.innerHTML = '';
-        world.units.forEach(unit => {
-            if (unit.unlocked) {
-                const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
-                const unitName = unitData ? unitData.name : "???";
-                const card = document.createElement('div');
-                card.className = `unit-card ${unit.id === currentUnit ? 'active-unit' : ''} ${unit.wordsCompleted === 20 ? 'completed' : ''}`;
-                card.innerHTML = `
-                    <div class="unit-number">${world.unitName} ${unit.id.toString().padStart(2, '0')}</div>
-                    <div class="unit-name">${unitName}</div>
-                    <div class="unit-progress">${unit.wordsCompleted}/20</div>
-                    <div class="unit-progress-bar">
-                        <div class="unit-progress-fill" style="width: ${(unit.wordsCompleted/20)*100}%"></div>
-                    </div>
-                `;
-                card.addEventListener('click', () => {
-                    if (unit.id !== currentUnit) {
-                        currentUnit = unit.id;
-                        resetForNewUnit();
-                        updateWorldDisplay();
-                        saveProgress();
-                    }
-                });
-                grid.appendChild(card);
-            }
-        });
+        if (grid) {
+            grid.innerHTML = '';
+            world.units.forEach(unit => {
+                if (unit.unlocked) {
+                    const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
+                    const unitName = unitData ? unitData.name : "???";
+                    const card = document.createElement('div');
+                    card.className = `unit-card ${unit.id === currentUnit ? 'active-unit' : ''} ${unit.wordsCompleted === 20 ? 'completed' : ''}`;
+                    card.innerHTML = `
+                        <div class="unit-number">${world.unitName} ${unit.id.toString().padStart(2, '0')}</div>
+                        <div class="unit-name">${unitName}</div>
+                        <div class="unit-progress">${unit.wordsCompleted}/20</div>
+                        <div class="unit-progress-bar">
+                            <div class="unit-progress-fill" style="width: ${(unit.wordsCompleted/20)*100}%"></div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        if (unit.id !== currentUnit) {
+                            currentUnit = unit.id;
+                            resetForNewUnit();
+                            updateWorldDisplay();
+                            saveProgress();
+                        }
+                    });
+                    grid.appendChild(card);
+                }
+            });
+        }
 
         if (activeWordIndex !== null) {
             updateHeaderForGameplay();
@@ -2560,23 +2591,25 @@
         }
 
         const gridContainer = document.getElementById('letterGridContainer');
-        gridContainer.innerHTML = '';
-        if (currentLetters.length > 0) {
-            currentLetters.forEach((letter, idx) => {
-                const tile = document.createElement('div');
-                tile.className = 'letter-tile';
-                tile.innerText = letter.toUpperCase();
-                tile.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    handleLetterTap(letter, idx);
+        if (gridContainer) {
+            gridContainer.innerHTML = '';
+            if (currentLetters.length > 0) {
+                currentLetters.forEach((letter, idx) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'letter-tile';
+                    tile.innerText = letter.toUpperCase();
+                    tile.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        handleLetterTap(letter, idx);
+                    });
+                    gridContainer.appendChild(tile);
                 });
-                gridContainer.appendChild(tile);
-            });
+            }
         }
 
         const artifactEl = document.getElementById('artifactText');
         const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-        if (unit) {
+        if (artifactEl && unit) {
             artifactEl.innerText = unit.wordsCompleted === 20 ? '🌟 UNIT COMPLETE! 🌟' : `🔒 ${unit.wordsCompleted}/20`;
         }
     }
@@ -2597,10 +2630,10 @@
     }
 
     // ---------- INITIALIZATION ----------
-    document.getElementById('resetButton').addEventListener('click', handleReset);
-    document.getElementById('profileIconBtn').addEventListener('click', () => showProfilePopup(false));
+    document.getElementById('resetButton')?.addEventListener('click', handleReset);
+    document.getElementById('profileIconBtn')?.addEventListener('click', () => showProfilePopup(false));
     
-    document.getElementById('unitSelector').addEventListener('change', (e) => {
+    document.getElementById('unitSelector')?.addEventListener('change', (e) => {
         currentUnit = parseInt(e.target.value);
         resetForNewUnit();
         updateWorldDisplay();
