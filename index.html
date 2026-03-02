@@ -1892,7 +1892,7 @@
                 }
             };
 
-            // ---------- LOADING SCREEN ----------
+            // ---------- LOADING SCREEN - FIXED ----------
             const loadingTips = [
                 '"Every word forged strengthens the crystal"',
                 '"The forge remembers every letter"',
@@ -1913,6 +1913,7 @@
 
             let loadingComplete = false;
             let minimumTimePassed = false;
+            let loadingInterval = null;
 
             function simulateLoading() {
                 const loadingScreen = document.getElementById('loadingScreen');
@@ -1921,24 +1922,19 @@
                 const loadingTip = document.getElementById('loadingTip');
                 
                 let progress = 0;
-                const interval = cleanupRegistry.addInterval(setInterval(() => {
+                loadingInterval = setInterval(() => {
                     progress += Math.random() * 8 + 3;
                     
                     if (progress >= 100) {
                         progress = 100;
-                        if (loadingBar) loadingBar.style.width = progress + '%';
+                        if (loadingBar) loadingBar.style.width = '100%';
                         if (loadingText) loadingText.innerText = 'Forge ready!';
                         
                         loadingComplete = true;
-                        if (minimumTimePassed) {
-                            cleanupRegistry.addTimeout(setTimeout(() => {
-                                if (loadingScreen) loadingScreen.classList.add('fade-out');
-                                cleanupRegistry.addTimeout(setTimeout(() => {
-                                    if (loadingScreen) loadingScreen.style.display = 'none';
-                                }, 500));
-                            }, 300));
-                        }
-                        clearInterval(interval);
+                        clearInterval(loadingInterval);
+                        
+                        // Try to hide loading screen immediately if minimum time has passed
+                        tryHideLoadingScreen();
                     } else {
                         if (loadingBar) loadingBar.style.width = progress + '%';
                         if (loadingText) loadingText.innerText = `Loading forge... ${Math.floor(progress)}%`;
@@ -1948,23 +1944,41 @@
                             loadingTip.innerText = randomTip;
                         }
                     }
-                }, 200));
+                }, 200);
             }
 
-            cleanupRegistry.addTimeout(setTimeout(() => {
-                minimumTimePassed = true;
-                if (loadingComplete) {
-                    const loadingScreen = document.getElementById('loadingScreen');
-                    if (loadingScreen) {
-                        loadingScreen.classList.add('fade-out');
-                        cleanupRegistry.addTimeout(setTimeout(() => {
-                            loadingScreen.style.display = 'none';
-                        }, 500));
-                    }
+            function tryHideLoadingScreen() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (!loadingScreen) return;
+                
+                if (loadingComplete && minimumTimePassed) {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
                 }
-            }, 4000));
+            }
 
+            // Set minimum display time to 2 seconds
+            setTimeout(() => {
+                minimumTimePassed = true;
+                tryHideLoadingScreen();
+            }, 2000);
+
+            // Start loading simulation
             window.addEventListener('load', simulateLoading);
+
+            // Safety fallback: if loading screen never hides after 5 seconds, force hide it
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen && loadingScreen.style.display !== 'none') {
+                    console.warn('Loading screen forced hide after timeout');
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 5000);
 
             // ---------- FORGE MESSAGE FUNCTIONS ----------
             const forgeMessageOverlay = document.getElementById('forgeMessageOverlay');
@@ -3577,10 +3591,12 @@
 
             function setUnitSectionVisibility(visible) {
                 const unitSection = document.getElementById('unitSection');
-                if (visible) {
-                    unitSection.classList.remove('hidden');
-                } else {
-                    unitSection.classList.add('hidden');
+                if (unitSection) {
+                    if (visible) {
+                        unitSection.classList.remove('hidden');
+                    } else {
+                        unitSection.classList.add('hidden');
+                    }
                 }
             }
 
@@ -4613,11 +4629,16 @@
                     tg.showConfirm('View success chance before resetting?', (ok) => {
                         if (ok) {
                             showCurrentIngotPreview();
+                        } else {
+                            // User chose to reset without preview
+                            resetForNewUnit();
                         }
                     });
                 } else {
                     if (confirm('View success chance before resetting?')) {
                         showCurrentIngotPreview();
+                    } else {
+                        resetForNewUnit();
                     }
                 }
             }
