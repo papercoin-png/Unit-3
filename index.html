@@ -532,7 +532,7 @@
             box-shadow: 0 4px 0 #946f2c;
         }
 
-        /* letter bank - MODIFIED: removed padding for larger tiles, enhanced 3D letters */
+        /* letter bank - MODIFIED: removed padding for larger tiles, enhanced 3D letters with 50% larger size and 50% less shadow */
         .letter-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
@@ -560,16 +560,15 @@
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: min(8vw, 48px);
+            /* 50% larger font size */
+            font-size: min(12vw, 72px);
             color: #1f3b4a;
-            /* Enhanced 3D text effect */
+            /* Reduced shadow by 50% - fewer layers, softer edges */
             text-shadow: 
                 1px 1px 0 #b2752e,
                 2px 2px 0 #b2752e,
                 3px 3px 0 #b2752e,
-                4px 4px 0 #b2752e,
-                5px 5px 0 #b2752e,
-                6px 6px 5px rgba(0,0,0,0.3);
+                4px 4px 3px rgba(0,0,0,0.2);
             box-shadow: 0 5px 0 #b2752e, 0 8px 12px rgba(0, 0, 0, 0.4);
             transition: all 0.08s linear;
             cursor: pointer;
@@ -582,10 +581,10 @@
 
         .letter-tile:active {
             transform: translateY(5px);
+            /* Active state shadow also reduced */
             text-shadow: 
                 1px 1px 0 #b2752e,
-                2px 2px 0 #b2752e,
-                3px 3px 0 #b2752e;
+                2px 2px 0 #b2752e;
             box-shadow: 0 2px 0 #b2752e, 0 5px 8px rgba(0,0,0,0.4);
         }
 
@@ -1609,7 +1608,7 @@
 
         @media (max-width: 350px) {
             .letter-tile {
-                font-size: min(8vw, 42px);
+                font-size: min(12vw, 64px);
             }
         }
     </style>
@@ -1680,7 +1679,7 @@
             <span class="next-letter" id="nextLetterDisplay">?</span>
         </div>
 
-        <!-- letter grid - MODIFIED: 5 tiles per row, no padding, enhanced 3D letters -->
+        <!-- letter grid - MODIFIED: 5 tiles per row, no padding, 50% larger letters, 50% less shadow -->
         <div class="letter-section">
             <div class="section-label">🔤 LETTER FORGE · tap in order</div>
             <div class="letter-grid" id="letterGridContainer"></div>
