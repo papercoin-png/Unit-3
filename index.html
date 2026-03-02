@@ -532,11 +532,11 @@
             box-shadow: 0 4px 0 #946f2c;
         }
 
-        /* letter bank - OPTIMIZED for 5 tiles per row */
+        /* letter bank - MODIFIED: removed padding for larger tiles */
         .letter-section {
             background: rgba(10, 25, 35, 0.7);
             border-radius: 38px;
-            padding: 15px 5px;
+            padding: 15px 0; /* Removed left/right padding */
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
@@ -546,19 +546,21 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 6px;
-            padding: 5px;
+            padding: 5px 0; /* Removed left/right padding */
+            width: 100%;
         }
 
         .letter-tile {
-            width: 48px;
-            height: 48px;
+            width: calc((100% - 30px) / 5); /* 5 tiles per row with gap */
+            max-width: 70px;
+            aspect-ratio: 1 / 1;
             background: linear-gradient(145deg, #ffcf8a, #febf6e);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 26px;
+            font-size: min(5vw, 32px); /* Responsive font size */
             color: #1f3b4a;
             box-shadow: 0 5px 0 #b2752e, 0 6px 10px rgba(0, 0, 0, 0.4);
             transition: all 0.08s linear;
@@ -626,7 +628,7 @@
             overflow-y: auto;
         }
 
-        /* word card - with smaller collect button */
+        /* word card - MODIFIED: dynamic font sizing for word title */
         .word-card {
             max-width: 380px;
             width: 100%;
@@ -652,14 +654,19 @@
         }
 
         .word-title {
-            font-size: 58px;
             font-weight: 900;
             color: #1f4a5c;
             text-transform: uppercase;
             letter-spacing: 3px;
             text-shadow: 3px 5px 0 #ffcd7e;
             margin: 5px 0;
-            word-break: break-word;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+            font-size: calc(58px - (var(--word-length, 5) * 2px)); /* Dynamic sizing based on word length */
+            max-font-size: 58px;
+            min-font-size: 32px;
         }
 
         .word-sentence {
@@ -674,7 +681,6 @@
             word-break: break-word;
         }
 
-        /* 25% smaller collect button */
         .collect-btn {
             background: #f5b342;
             border: none;
@@ -871,7 +877,7 @@
             color: white;
         }
 
-        /* next ingot preview popup - with grace display */
+        /* next ingot preview popup - also used for FORGE AGAIN */
         .preview-card {
             max-width: 440px;
             width: 100%;
@@ -1588,24 +1594,18 @@
 
         @media (max-width: 350px) {
             .letter-tile {
-                width: 42px;
-                height: 42px;
-                font-size: 22px;
-            }
-            .letter-grid {
-                gap: 4px;
+                font-size: min(5vw, 28px);
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen - UPDATED: 4 seconds, full-width image, no title -->
+    <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <img src="https://i.postimg.cc/TwmzR9V2/grok-image-1772302795443.jpg" 
                  alt="Spellforge" 
                  class="loading-image">
-            <!-- Title removed - it's in the image -->
             
             <div class="loading-bar-container">
                 <div class="loading-bar" id="loadingBar"></div>
@@ -1653,7 +1653,7 @@
             <div class="unit-grid" id="unitGrid"></div>
         </div>
 
-        <!-- word list area - reduced padding -->
+        <!-- word list area -->
         <div class="word-section">
             <div class="section-label">📋 WORDS TO FORGE · tap any to start</div>
             <div class="word-grid" id="wordListContainer"></div>
@@ -1665,7 +1665,7 @@
             <span class="next-letter" id="nextLetterDisplay">?</span>
         </div>
 
-        <!-- letter grid - OPTIMIZED: 5 tiles per row -->
+        <!-- letter grid - MODIFIED: 5 tiles per row, no padding -->
         <div class="letter-section">
             <div class="section-label">🔤 LETTER FORGE · tap in order</div>
             <div class="letter-grid" id="letterGridContainer"></div>
@@ -1696,7 +1696,7 @@
                 tg.setHeaderColor?.('#1a2f3f');
             }
 
-            // ---------- LOADING SCREEN (UPDATED: 4 seconds) ----------
+            // ---------- LOADING SCREEN ----------
             const loadingTips = [
                 '"Every word forged strengthens the crystal"',
                 '"The forge remembers every letter"',
@@ -1724,7 +1724,7 @@
                 
                 let progress = 0;
                 const interval = setInterval(() => {
-                    progress += Math.random() * 8 + 3; // Slower increment for 4s total
+                    progress += Math.random() * 8 + 3;
                     
                     if (progress >= 100) {
                         progress = 100;
@@ -1753,7 +1753,6 @@
                 }, 200);
             }
 
-            // UPDATED: 4 seconds minimum loading time (from 2 seconds)
             setTimeout(() => {
                 minimumTimePassed = true;
                 if (loadingComplete) {
@@ -1762,7 +1761,7 @@
                         document.getElementById('loadingScreen').style.display = 'none';
                     }, 500);
                 }
-            }, 4000); // Changed from 2000 to 4000
+            }, 4000);
 
             window.addEventListener('load', simulateLoading);
 
@@ -1772,14 +1771,13 @@
             const forgeMessageText = document.getElementById('forgeMessageText');
             const forgeProgressFill = document.getElementById('forgeProgressFill');
 
-            function showForgeMessage(text, icon = '⚒️', duration = 4000) { // Updated default to 4s
+            function showForgeMessage(text, icon = '⚒️', duration = 4000) {
                 forgeMessageIcon.innerText = icon;
                 forgeMessageText.innerText = text;
                 forgeMessageOverlay.style.display = 'flex';
                 
-                // Reset and restart progress animation
                 forgeProgressFill.style.animation = 'none';
-                forgeProgressFill.offsetHeight; // Trigger reflow
+                forgeProgressFill.offsetHeight;
                 forgeProgressFill.style.animation = 'progressFill ' + (duration/1000) + 's linear forwards';
             }
 
@@ -2986,7 +2984,6 @@
                     if (saved) {
                         playerProfile = JSON.parse(saved);
                     } else {
-                        // Create from Telegram data
                         const user = tg?.initDataUnsafe?.user;
                         if (user) {
                             playerProfile = {
@@ -3492,6 +3489,62 @@
                 }
             }
 
+            // ---------- NEW FUNCTION: Show current ingot preview for FORGE AGAIN ----------
+            function showCurrentIngotPreview() {
+                const world = worlds[currentWorld];
+                const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
+                if (!unitData) return;
+                
+                const chance = calculateSuccessChance(currentUnit);
+                let chanceColorClass = 'chance-medium';
+                if (chance.final >= 80) chanceColorClass = 'chance-high';
+                else if (chance.final < 50) chanceColorClass = 'chance-low';
+                
+                const unitName = unitData.name || "Unknown";
+                const graceMessage = chance.grace > 0 
+                    ? `+${chance.grace}% from ${chance.grace} failed attempt${chance.grace > 1 ? 's' : ''}` 
+                    : 'No failures yet';
+                
+                const overlay = document.getElementById('popupOverlay');
+                overlay.innerHTML = '';
+                
+                const card = document.createElement('div');
+                card.className = 'preview-card';
+                card.innerHTML = `
+                    <div class="preview-title">⚒️ FORGE AGAIN?</div>
+                    <div class="preview-ingot">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitName}</div>
+                    <div class="chance-container">
+                        <div class="chance-label">CURRENT SUCCESS CHANCE</div>
+                        <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
+                        <div class="chance-bar">
+                            <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+                        </div>
+                        <div class="grace-info">
+                            Base: ${chance.base}% · Grace: +${chance.grace}%
+                            <div class="grace-badge">${graceMessage}</div>
+                            ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
+                        </div>
+                    </div>
+                    <div class="preview-buttons">
+                        <button class="preview-btn" id="confirmResetBtn">⚒️ FORGE AGAIN</button>
+                        <button class="preview-btn secondary" id="cancelResetBtn">✕ CANCEL</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(card);
+                overlay.classList.remove('hidden');
+                
+                document.getElementById('confirmResetBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    resetForNewUnit();
+                    tg?.HapticFeedback?.impactOccurred?.('heavy');
+                });
+                
+                document.getElementById('cancelResetBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                });
+            }
+
             function resetForNewUnit() {
                 currentLetters = generateInitialLetters();
                 completedWords = [];
@@ -3669,7 +3722,6 @@
                 
                 overlay.classList.remove('hidden');
                 
-                // Make "YOU" row clickable
                 const yourRow = overlay.querySelector('.leaderboard-row.you');
                 if (yourRow) {
                     yourRow.style.cursor = 'pointer';
@@ -3705,7 +3757,7 @@
                 });
             }
 
-            // ---------- POPUP FUNCTIONS (simplified for brevity) ----------
+            // ---------- POPUP FUNCTIONS ----------
             function showWordCard(wordData) {
                 wordCardQueue.push(wordData);
                 processWordCardQueue();
@@ -3720,9 +3772,14 @@
                 
                 const card = document.createElement('div');
                 card.className = 'word-card';
+                
+                // MODIFIED: Dynamic font size based on word length
+                const wordLength = wordData.word.length;
+                const fontSize = Math.max(32, Math.min(58, 58 - (wordLength * 2)));
+                
                 card.innerHTML = `
                     <div class="word-emoji">${wordData.emoji}</div>
-                    <div class="word-title">${wordData.word.toUpperCase()}</div>
+                    <div class="word-title" style="font-size: ${fontSize}px;">${wordData.word.toUpperCase()}</div>
                     <div class="word-sentence">${wordData.sentence}</div>
                     <button class="collect-btn" id="collectWordBtn">✨ COLLECT</button>
                 `;
@@ -4051,13 +4108,13 @@
                     const success = roll <= chance.final;
                     
                     tg?.HapticFeedback?.impactOccurred?.('heavy');
-                    showForgeMessage('Hammer strikes the anvil...', '⚒️', 4000); // Updated to 4s
+                    showForgeMessage('Hammer strikes the anvil...', '⚒️', 4000);
                     document.body.style.transition = 'background-color 0.5s';
                     document.body.style.backgroundColor = success ? '#4ade80' : '#f87171';
                     
                     setTimeout(() => {
                         updateForgeMessage(success ? 'The metal holds...' : 'A crack forms...', success ? '✨' : '💔');
-                    }, 2000); // Updated proportionally
+                    }, 2000);
                     
                     setTimeout(() => {
                         document.body.style.backgroundColor = '';
@@ -4099,7 +4156,7 @@
                             });
                             showFailurePopup();
                         }
-                    }, 4000); // Updated to 4s total
+                    }, 4000);
                 }
             }
 
@@ -4211,22 +4268,23 @@
                 }
             }
 
-            // ---------- RESET ----------
-            function confirmReset() {
+            // ---------- MODIFIED RESET HANDLER ----------
+            function handleReset() {
                 if (tg) {
-                    tg.showConfirm('Restart this ingot? All progress will be lost.', (ok) => {
+                    tg.showConfirm('View success chance before resetting?', (ok) => {
                         if (ok) {
-                            resetForNewUnit();
-                            tg.HapticFeedback?.impactOccurred?.('heavy');
+                            showCurrentIngotPreview();
                         }
                     });
                 } else {
-                    if (confirm('Restart this ingot?')) resetForNewUnit();
+                    if (confirm('View success chance before resetting?')) {
+                        showCurrentIngotPreview();
+                    }
                 }
             }
 
             // ---------- INITIALIZATION ----------
-            document.getElementById('resetButton').addEventListener('click', confirmReset);
+            document.getElementById('resetButton').addEventListener('click', handleReset);
             document.getElementById('profileIconBtn').addEventListener('click', () => showProfilePopup(false));
             
             document.getElementById('unitSelector').addEventListener('change', (e) => {
