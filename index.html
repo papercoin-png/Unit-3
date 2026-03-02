@@ -1129,7 +1129,7 @@
             100% { opacity: 0.6; }
         }
 
-        /* leaderboard popup - scrollable */
+        /* leaderboard popup - redesigned for words */
         .leaderboard-card {
             max-width: 480px;
             width: 100%;
@@ -1146,32 +1146,39 @@
             flex-direction: column;
         }
 
-        .stats-row {
+        .world-stats-row {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
             background: #0e2938;
             border-radius: 40px;
             padding: 12px 10px;
-            margin: 10px 0 15px;
+            margin: 10px 0;
             border: 2px solid #b8944a;
             flex-shrink: 0;
         }
 
-        .stat-item {
+        .world-stat-item {
             text-align: center;
             color: white;
-            min-width: 70px;
+            min-width: 50px;
         }
 
-        .stat-value {
-            font-size: 28px;
+        .world-stat-icon {
+            font-size: 22px;
             font-weight: 800;
             color: #ffdb8e;
-            line-height: 1.2;
         }
 
-        .stat-label {
-            font-size: 13px;
+        .world-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffdb8e;
+        }
+
+        .world-stat-label {
+            font-size: 10px;
             color: #acccdd;
             text-transform: uppercase;
         }
@@ -1179,7 +1186,7 @@
         .score-highlight {
             background: #f5b342;
             border-radius: 60px;
-            padding: 15px;
+            padding: 12px;
             margin: 5px 0 10px;
             border: 3px solid gold;
             box-shadow: 0 0 20px gold;
@@ -1187,14 +1194,14 @@
         }
 
         .score-title {
-            font-size: 16px;
+            font-size: 14px;
             color: #1e3a4a;
             font-weight: 600;
             letter-spacing: 1px;
         }
 
         .score-number {
-            font-size: 52px;
+            font-size: 42px;
             font-weight: 900;
             color: #1f2e3a;
             line-height: 1.1;
@@ -1202,7 +1209,7 @@
         }
 
         .score-rating {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 800;
             color: #1f2e3a;
         }
@@ -1288,7 +1295,7 @@
             font-weight: 700;
             color: #ffd966;
             font-size: 15px;
-            min-width: 55px;
+            min-width: 45px;
             text-align: right;
         }
 
@@ -1296,18 +1303,11 @@
             color: #2d1905;
         }
 
-        .rating-badge {
-            font-size: 14px;
-            margin-left: 6px;
-            min-width: 55px;
+        .crown {
+            font-size: 18px;
+            margin-left: 4px;
+            min-width: 22px;
             text-align: right;
-            padding: 3px 6px;
-            border-radius: 20px;
-            background: rgba(0,0,0,0.3);
-        }
-
-        .you .rating-badge {
-            background: rgba(255,215,0,0.3);
         }
 
         .leaderboard-footer {
@@ -1386,15 +1386,12 @@
             .leaderboard-card {
                 padding: 15px 15px 18px;
             }
-            .stats-row {
+            .world-stats-row {
                 padding: 8px 5px;
                 margin: 5px 0 10px;
             }
-            .stat-value {
-                font-size: 24px;
-            }
             .score-number {
-                font-size: 42px;
+                font-size: 36px;
             }
             .word-grid {
                 max-height: 150px;
@@ -1596,7 +1593,7 @@
 
             // ---------- MASTER WORD BANK · 3,600 WORDS ----------
             const MASTER_WORDS = {
-                // WORLD 1: GRAND FORGE (600 words) - ALL 30 INGOTS NOW COMPLETE
+                // WORLD 1: GRAND FORGE (600 words) - ALL 30 INGOTS COMPLETE
                 world1: {
                     name: "Grand Forge",
                     icon: "⚒️",
@@ -2892,7 +2889,7 @@
             let activeWordIndex = null;
             let currentPosition = 0;
             
-            // NEW: Track letters used for current word to allow return on deselect
+            // Track letters used for current word to allow return on deselect
             let tempUsedLetters = [];
             
             // Stats tracking
@@ -2905,7 +2902,66 @@
             let wordCardQueue = [];
             let showingWordCard = false;
 
+            // ---------- NEW: MOCK LEADERBOARD - 30 PLAYERS, TOP AT 580 ----------
+            const mockLeaderboard = [
+                { name: "LIAM", words: 580, rank: 1 },
+                { name: "ELENA", words: 580, rank: 2 },
+                { name: "SOFIA", words: 560, rank: 3 },
+                { name: "NOAH", words: 560, rank: 4 },
+                { name: "OLIVER", words: 540, rank: 5 },
+                { name: "MIA", words: 540, rank: 6 },
+                { name: "LUCAS", words: 520, rank: 7 },
+                { name: "AMELIA", words: 520, rank: 8 },
+                { name: "ELIJAH", words: 500, rank: 9 },
+                { name: "HARPER", words: 500, rank: 10 },
+                { name: "JAMES", words: 480, rank: 11 },
+                { name: "EVELYN", words: 480, rank: 12 },
+                { name: "BENJAMIN", words: 460, rank: 13 },
+                { name: "ABIGAIL", words: 460, rank: 14 },
+                { name: "ALEXANDER", words: 440, rank: 15 },
+                { name: "ELIZABETH", words: 440, rank: 16 },
+                { name: "HENRY", words: 420, rank: 17 },
+                { name: "SOPHIA", words: 420, rank: 18 },
+                { name: "DANIEL", words: 400, rank: 19 },
+                { name: "CHARLOTTE", words: 400, rank: 20 },
+                { name: "MATTHEW", words: 380, rank: 21 },
+                { name: "AVA", words: 380, rank: 22 },
+                { name: "JACKSON", words: 360, rank: 23 },
+                { name: "SCARLETT", words: 360, rank: 24 },
+                { name: "SEBASTIAN", words: 340, rank: 25 },
+                { name: "GRACE", words: 340, rank: 26 },
+                { name: "DAVID", words: 320, rank: 27 },
+                { name: "CHLOE", words: 320, rank: 28 },
+                { name: "JOSEPH", words: 300, rank: 29 },
+                { name: "VICTORIA", words: 300, rank: 30 }
+            ];
+
             // ---------- HELPER FUNCTIONS ----------
+            // Calculate total words across all worlds
+            function calculateTotalWords() {
+                let total = 0;
+                for (let worldId = 1; worldId <= 6; worldId++) {
+                    if (worlds[worldId]) {
+                        total += worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+                    }
+                }
+                return total;
+            }
+
+            // Get words by world array
+            function getWordsByWorld() {
+                const wordsByWorld = [];
+                for (let worldId = 1; worldId <= 6; worldId++) {
+                    if (worlds[worldId]) {
+                        const worldTotal = worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+                        wordsByWorld.push(worldTotal);
+                    } else {
+                        wordsByWorld.push(0);
+                    }
+                }
+                return wordsByWorld;
+            }
+
             // FIXED: Letter bank with correct letter frequency
             function generateInitialLetters() {
                 const words = getCurrentUnitWords();
@@ -2987,7 +3043,7 @@
                 }
             }
 
-            // FIXED: Return letters to pool when deselecting word
+            // Return letters to pool when deselecting word
             function returnTempLetters() {
                 if (tempUsedLetters.length > 0) {
                     // Add all temporarily used letters back to the pool
@@ -3111,20 +3167,6 @@
                 const secs = Math.floor(seconds % 60);
                 return `${mins}:${secs.toString().padStart(2, '0')}`;
             }
-
-            // ---------- MOCK LEADERBOARD ----------
-            const mockLeaderboard = [
-                { name: "LIAM", score: 1420, time: "1:24", accuracy: 98, rank: 1 },
-                { name: "ELENA", score: 1380, time: "1:28", accuracy: 99, rank: 2 },
-                { name: "NOAH", score: 1350, time: "1:31", accuracy: 97, rank: 3 },
-                { name: "SOFIA", score: 1310, time: "1:35", accuracy: 98, rank: 4 },
-                { name: "OLIVER", score: 1280, time: "1:38", accuracy: 96, rank: 5 },
-                { name: "MIA", score: 1240, time: "1:42", accuracy: 97, rank: 6 },
-                { name: "LUCAS", score: 1210, time: "1:45", accuracy: 95, rank: 7 },
-                { name: "AMELIA", score: 1180, time: "1:48", accuracy: 96, rank: 8 },
-                { name: "ELIJAH", score: 1150, time: "1:51", accuracy: 94, rank: 9 },
-                { name: "HARPER", score: 1120, time: "1:54", accuracy: 95, rank: 10 }
-            ];
 
             // ---------- SAVE SYSTEM (Silent) ----------
             function saveProgress() {
@@ -3262,6 +3304,138 @@
                 }, 60000);
             }
 
+            // ---------- NEW: LEADERBOARD POPUP (Words-based) ----------
+            function showLeaderboardPopup(fromCompletion = false) {
+                const overlay = document.getElementById('popupOverlay');
+                
+                // Get player's stats
+                const playerTotal = calculateTotalWords();
+                const playerWordsByWorld = getWordsByWorld();
+                const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
+                
+                // Create leaderboard with player inserted
+                const leaderboardWithPlayer = [...mockLeaderboard];
+                const yourEntry = {
+                    name: "YOU",
+                    words: playerTotal,
+                    rank: 0
+                };
+                
+                leaderboardWithPlayer.push(yourEntry);
+                leaderboardWithPlayer.sort((a, b) => b.words - a.words);
+                leaderboardWithPlayer.forEach((entry, index) => {
+                    entry.rank = index + 1;
+                });
+                
+                // Find your rank and player ahead
+                const yourRank = leaderboardWithPlayer.find(e => e.name === "YOU").rank;
+                const playerAhead = leaderboardWithPlayer.find(e => e.rank === yourRank - 1);
+                const wordsToCatch = playerAhead ? playerAhead.words - playerTotal : 0;
+                
+                // Build leaderboard HTML (top 20)
+                let leaderboardHtml = '';
+                leaderboardWithPlayer.slice(0, 20).forEach(entry => {
+                    const youClass = entry.name === 'YOU' ? ' you' : '';
+                    let crownEmoji = '';
+                    if (entry.rank === 1) crownEmoji = '👑';
+                    else if (entry.rank === 2) crownEmoji = '⚡';
+                    else if (entry.rank === 3) crownEmoji = '🥉';
+                    
+                    leaderboardHtml += `
+                        <div class="leaderboard-row${youClass}">
+                            <span class="rank">${entry.rank}.</span>
+                            <span class="player-name">${entry.name}</span>
+                            <span class="score">${entry.words}</span>
+                            <span class="crown">${crownEmoji}</span>
+                        </div>
+                    `;
+                });
+                
+                // Create popup HTML
+                overlay.innerHTML = `
+                    <div class="leaderboard-card">
+                        <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
+                        
+                        <div class="world-stats-row">
+                            ${worldIcons.map((icon, i) => `
+                                <div class="world-stat-item">
+                                    <div class="world-stat-icon">${icon}</div>
+                                    <div class="world-stat-value">${playerWordsByWorld[i]}</div>
+                                    <div class="world-stat-label">${i === 0 ? 'Grand' : ''}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="score-highlight">
+                            <div class="score-title">YOUR TOTAL</div>
+                            <div class="score-number">${playerTotal}</div>
+                            <div class="score-rating">of 600 words</div>
+                        </div>
+                        
+                        <div class="leaderboard-title">🏆 TOP FORGEMASTERS</div>
+                        <div class="leaderboard-list" id="leaderboardList">
+                            ${leaderboardHtml}
+                        </div>
+                        
+                        <div class="leaderboard-footer">
+                            You're #${yourRank} of ${leaderboardWithPlayer.length} forgemasters!
+                            ${wordsToCatch > 0 ? `<br>${wordsToCatch} words to catch #${yourRank-1} ${playerAhead.name}!` : ''}
+                            ${yourRank === 1 ? '<br>👑 CHAMPION! You are the greatest!' : ''}
+                            ${yourRank === 2 ? '<br>⚡ So close to the top!' : ''}
+                            ${yourRank === 3 ? '<br>🥉 Podium finish!' : ''}
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="action-btn" id="backBtn">← BACK</button>
+                        </div>
+                    </div>
+                `;
+                
+                overlay.classList.remove('hidden');
+                
+                // Auto-scroll to player's row
+                setTimeout(() => {
+                    const leaderboardList = document.getElementById('leaderboardList');
+                    const yourRow = leaderboardList.querySelector('.leaderboard-row.you');
+                    if (yourRow) {
+                        yourRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+                
+                // Back button
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    overlay.classList.add('hidden');
+                    
+                    if (fromCompletion) {
+                        const world = worlds[currentWorld];
+                        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+                        
+                        if (allUnitsCompleted) {
+                            setTimeout(() => {
+                                showWorldArtifactPopup();
+                            }, 100);
+                        } else {
+                            const nextIngotId = currentUnit + 1;
+                            const nextUnit = world.units.find(u => u.id === nextIngotId);
+                            
+                            if (nextUnit && nextUnit.unlocked) {
+                                setTimeout(() => {
+                                    showNextIngotPreview();
+                                }, 100);
+                            } else {
+                                renderAll();
+                                setUnitSectionVisibility(true);
+                                updateHeaderForSelection();
+                            }
+                        }
+                    } else {
+                        renderAll();
+                        setUnitSectionVisibility(true);
+                        updateHeaderForSelection();
+                    }
+                });
+            }
+
             // ---------- POPUP FUNCTIONS ----------
             function showWordCard(wordData) {
                 wordCardQueue.push(wordData);
@@ -3299,7 +3473,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // NEW: Failure Popup
+            // Failure Popup
             function showFailurePopup() {
                 const overlay = document.getElementById('popupOverlay');
                 
@@ -3411,7 +3585,7 @@
                 tg?.HapticFeedback?.notificationOccurred?.('success');
             }
 
-            // SIMPLIFIED: Next Ingot Preview - no modifiers
+            // Simplified Next Ingot Preview - no modifiers
             function showNextIngotPreview() {
                 const nextIngotId = currentUnit + 1;
                 const world = worlds[currentWorld];
@@ -3592,149 +3766,6 @@
                 
                 card.addEventListener('click', () => {
                     overlay.classList.add('hidden');
-                });
-            }
-
-            function showLeaderboardPopup(fromCompletion = false) {
-                const overlay = document.getElementById('popupOverlay');
-                
-                const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-                const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
-                const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
-                const playerRating = getRatingFromScore(playerSFR);
-                
-                const leaderboardWithPlayer = [...mockLeaderboard];
-                const yourEntry = {
-                    name: "YOU",
-                    score: playerSFR,
-                    time: formatTime(timeElapsed),
-                    accuracy: accuracy,
-                    rank: 0
-                };
-                
-                leaderboardWithPlayer.push(yourEntry);
-                leaderboardWithPlayer.sort((a, b) => b.score - a.score);
-                leaderboardWithPlayer.forEach((entry, index) => {
-                    entry.rank = index + 1;
-                });
-                
-                let leaderboardHtml = '';
-                leaderboardWithPlayer.forEach(entry => {
-                    const youClass = entry.name === 'YOU' ? ' you' : '';
-                    const rating = entry.name === 'YOU' ? playerRating : getRatingFromScore(entry.score);
-                    
-                    let crownEmoji = '';
-                    if (entry.rank === 1) crownEmoji = '👑';
-                    else if (entry.rank === 2) crownEmoji = '⚡';
-                    else if (entry.rank === 3) crownEmoji = '🥉';
-                    
-                    leaderboardHtml += `
-                        <div class="leaderboard-row${youClass}">
-                            <span class="rank">${entry.rank}.</span>
-                            <span class="player-name">${entry.name}</span>
-                            <span class="score">${entry.score}</span>
-                            <span class="rating-badge">${rating.emoji} ${rating.title}</span>
-                            <span class="crown">${crownEmoji}</span>
-                        </div>
-                    `;
-                });
-
-                const yourRank = leaderboardWithPlayer.find(e => e.name === 'YOU').rank;
-                
-                overlay.innerHTML = '';
-                
-                const leaderboardCard = document.createElement('div');
-                leaderboardCard.className = 'leaderboard-card';
-                leaderboardCard.innerHTML = `
-                    <div class="leaderboard-title">⚒️ ${worlds[currentWorld].name} · INGOT ${currentUnit}</div>
-                    
-                    <div class="score-highlight">
-                        <div class="score-title">SPELLFORGE RATING (SFR)</div>
-                        <div class="score-number">${playerSFR}</div>
-                        <div class="score-rating">${playerRating.emoji} ${playerRating.title}</div>
-                    </div>
-                    
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value">${formatTime(timeElapsed)}</div>
-                            <div class="stat-label">TIME</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">${accuracy}%</div>
-                            <div class="stat-label">ACCURACY</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">${correctTaps}/${totalTaps}</div>
-                            <div class="stat-label">TAPS</div>
-                        </div>
-                    </div>
-
-                    <div class="leaderboard-title">🏆 SFR LEADERBOARD · ${leaderboardWithPlayer.length} PLAYERS</div>
-                    <div class="leaderboard-list" id="leaderboardList">
-                        ${leaderboardHtml}
-                    </div>
-
-                    <div class="leaderboard-footer">
-                        You're #${yourRank} of ${leaderboardWithPlayer.length}!
-                        ${yourRank === 1 ? ' 🏆 CHAMPION!' : yourRank <= 3 ? ' ⚡ PODIUM FINISH!' : ''}
-                    </div>
-
-                    <div class="button-group">
-                        <button class="action-btn" id="backFromLeaderboardBtn">← BACK</button>
-                        <button class="action-btn secondary" id="shareBtn">📤 SHARE</button>
-                    </div>
-                `;
-                
-                overlay.appendChild(leaderboardCard);
-                overlay.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    const leaderboardList = document.getElementById('leaderboardList');
-                    const yourRow = leaderboardList?.querySelector('.leaderboard-row.you');
-                    if (yourRow) {
-                        yourRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-                
-                document.getElementById('backFromLeaderboardBtn').addEventListener('click', () => {
-                    overlay.classList.add('hidden');
-                    
-                    if (fromCompletion) {
-                        const world = worlds[currentWorld];
-                        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-                        
-                        if (allUnitsCompleted) {
-                            setTimeout(() => {
-                                showWorldArtifactPopup();
-                            }, 100);
-                        } else {
-                            const nextIngotId = currentUnit + 1;
-                            const nextUnit = world.units.find(u => u.id === nextIngotId);
-                            
-                            if (nextUnit && nextUnit.unlocked) {
-                                setTimeout(() => {
-                                    showNextIngotPreview();
-                                }, 100);
-                            } else {
-                                renderAll();
-                                setUnitSectionVisibility(true);
-                                updateHeaderForSelection();
-                            }
-                        }
-                    } else {
-                        renderAll();
-                        setUnitSectionVisibility(true);
-                        updateHeaderForSelection();
-                    }
-                });
-
-                document.getElementById('shareBtn').addEventListener('click', () => {
-                    const text = `I completed ${worlds[currentWorld].name} Ingot ${currentUnit} in Spellforge with a score of ${playerSFR} SFR (${playerRating.title})! Rank #${yourRank} of ${leaderboardWithPlayer.length}! 🔮⚒️`;
-                    if (tg) {
-                        tg.shareToStory?.(text);
-                    } else {
-                        alert('Share: ' + text);
-                    }
                 });
             }
 
@@ -4002,7 +4033,7 @@
                 saveProgress();
             });
 
-            // FIXED: Click outside to deselect word - return letters to pool
+            // Click outside to deselect word - return letters to pool
             document.addEventListener('click', (e) => {
                 if (activeWordIndex !== null && 
                     !e.target.closest('.word-chip') && 
