@@ -70,10 +70,7 @@
                         loadingScreen.style.display = 'none';
                     }, 500);
                 }
-            }, 500);
-            }
-        }
-    }, 2000); // Changed from 4000 to 2000 for faster loading
+            }, 5000);
 
     // ---------- FORGE MESSAGE FUNCTIONS ----------
     const forgeMessageOverlay = document.getElementById('forgeMessageOverlay');
