@@ -100,6 +100,139 @@ function hideForgeMessage() {
     forgeMessageOverlay.style.display = 'none';
 }
 
+// ---------- QUICK RESUME SYSTEM ---------- // <-- NEW SECTION
+const QUICK_RESUME = {
+    // Save current game state on every meaningful action
+    saveSession() {
+        const sessionData = {
+            // Game progress
+            currentWorld: currentWorld,
+            currentUnit: currentUnit,
+            completedWords: [...completedWords],
+            currentLetters: [...currentLetters],
+            activeWordIndex: activeWordIndex,
+            currentPosition: currentPosition,
+            tempUsedLetters: [...tempUsedLetters],
+            
+            // Performance tracking
+            gameStartTime: gameStartTime,
+            totalTaps: totalTaps,
+            correctTaps: correctTaps,
+            
+            // Timestamp for "Last played" display
+            lastPlayed: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        try {
+            localStorage.setItem('spellforge_quicksave', JSON.stringify(sessionData));
+        } catch (e) {
+            console.warn('Could not save session:', e);
+        }
+    },
+    
+    // Load the last session
+    loadSession() {
+        try {
+            const saved = localStorage.getItem('spellforge_quicksave');
+            if (!saved) return null;
+            
+            const session = JSON.parse(saved);
+            
+            // Version check (in case game updates break saves)
+            if (session.version !== '1.0') return null;
+            
+            // Validate session is recent (keep last 7 days)
+            const lastPlayed = new Date(session.lastPlayed);
+            const daysSince = (Date.now() - lastPlayed) / (1000 * 60 * 60 * 24);
+            if (daysSince > 7) {
+                console.log('Session too old, starting fresh');
+                return null;
+            }
+            
+            return session;
+        } catch (e) {
+            console.warn('Could not load session:', e);
+            return null;
+        }
+    },
+    
+    // Restore a loaded session
+    restoreSession(session) {
+        if (!session) return false;
+        
+        // Restore game state
+        currentWorld = session.currentWorld || 1;
+        currentUnit = session.currentUnit || 1;
+        completedWords = session.completedWords || [];
+        currentLetters = session.currentLetters || [];
+        activeWordIndex = session.activeWordIndex !== undefined ? session.activeWordIndex : null;
+        currentPosition = session.currentPosition || 0;
+        tempUsedLetters = session.tempUsedLetters || [];
+        gameStartTime = session.gameStartTime || null;
+        totalTaps = session.totalTaps || 0;
+        correctTaps = session.correctTaps || 0;
+        
+        // Update UI
+        updateWorldDisplay();
+        renderAll();
+        
+        // Show resume notification
+        this.showResumeNotification(session);
+        
+        return true;
+    },
+    
+    // Show a subtle notification that game was resumed
+    showResumeNotification(session) {
+        const lastPlayed = new Date(session.lastPlayed);
+        const timeDiff = Math.floor((Date.now() - lastPlayed) / 1000);
+        
+        let timeMessage = '';
+        if (timeDiff < 60) timeMessage = 'just now';
+        else if (timeDiff < 3600) timeMessage = `${Math.floor(timeDiff / 60)} minutes ago`;
+        else if (timeDiff < 86400) timeMessage = `${Math.floor(timeDiff / 3600)} hours ago`;
+        else timeMessage = `${Math.floor(timeDiff / 86400)} days ago`;
+        
+        // Create temporary notification
+        const notification = document.createElement('div');
+        notification.className = 'resume-notification';
+        notification.innerHTML = `
+            <div class="resume-content">
+                <span class="resume-icon">⚒️</span>
+                <div class="resume-text">
+                    <strong>Welcome back, Forgemaster!</strong>
+                    <small>Resumed from ${timeMessage} · Ingot ${session.currentUnit}</small>
+                </div>
+                <button class="resume-dismiss">✕</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Auto-dismiss after 5 seconds
+        const dismissTimer = setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+        
+        // Manual dismiss
+        notification.querySelector('.resume-dismiss').addEventListener('click', () => {
+            clearTimeout(dismissTimer);
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+    },
+    
+    // Clear saved session (when starting fresh)
+    clearSession() {
+        localStorage.removeItem('spellforge_quicksave');
+    }
+};
+
 // ---------- MASTER WORD BANK · 3,600 WORDS ----------
 const MASTER_WORDS = {
     // WORLD 1: GRAND FORGE (600 words)
@@ -1633,6 +1766,7 @@ function showCurrentIngotPreview() {
     });
 }
 
+// ---------- UPDATED resetForNewUnit FUNCTION ---------- // <-- MODIFIED
 function resetForNewUnit() {
     currentLetters = generateInitialLetters();
     completedWords = [];
@@ -1649,6 +1783,9 @@ function resetForNewUnit() {
     saveProgress();
     setUnitSectionVisibility(true);
     updateHeaderForSelection();
+    
+    // QUICK RESUME: Save session after reset
+    QUICK_RESUME.saveSession();
 }
 
 function calculateSFR(timeSeconds, accuracy, totalTapsCount, correctTapsCount) {
@@ -2018,6 +2155,8 @@ function showFailurePopup() {
     document.getElementById('tryAgainBtn').addEventListener('click', () => {
         overlay.classList.add('hidden');
         resetForNewUnit();
+        // QUICK RESUME: Clear session on failure and restart
+        QUICK_RESUME.clearSession();
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('error');
@@ -2084,6 +2223,8 @@ function showIngotCompletePopup() {
             }
         }
         saveProgress();
+        // QUICK RESUME: Save after completing ingot
+        QUICK_RESUME.saveSession();
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
@@ -2269,7 +2410,7 @@ function showWorldUnlockPopup(worldId) {
     });
 }
 
-// ---------- GAME MECHANICS ----------
+// ---------- UPDATED handleWordCompletion FUNCTION ---------- // <-- MODIFIED
 function handleWordCompletion(wordIndex) {
     if (!completedWords.includes(wordIndex)) {
         completedWords.push(wordIndex);
@@ -2280,6 +2421,9 @@ function handleWordCompletion(wordIndex) {
         if (words && words.length > 0 && words[wordIndex]) {
             showWordCard(words[wordIndex]);
         }
+        
+        // QUICK RESUME: Save after word completion
+        QUICK_RESUME.saveSession();
     }
 
     activeWordIndex = null;
@@ -2354,6 +2498,7 @@ function handleWordCompletion(wordIndex) {
     }
 }
 
+// ---------- UPDATED handleLetterTap FUNCTION ---------- // <-- MODIFIED
 function handleLetterTap(letter, indexInGrid) {
     if (gameCompleted) return;
     totalTaps++;
@@ -2389,6 +2534,9 @@ function handleLetterTap(letter, indexInGrid) {
     
     tg?.HapticFeedback?.impactOccurred?.('light');
     renderAll();
+    
+    // QUICK RESUME: Save after each correct letter tap
+    QUICK_RESUME.saveSession();
 
     if (currentPosition === targetWord.length) {
         handleWordCompletion(activeWordIndex);
@@ -2477,7 +2625,49 @@ function handleReset() {
     }
 }
 
-// ---------- INITIALIZATION ----------
+// ---------- NEW INITIALIZATION FUNCTION ---------- // <-- NEW
+function initializeGame() {
+    // First try to load saved session
+    const savedSession = QUICK_RESUME.loadSession();
+    
+    if (savedSession) {
+        // Ask user if they want to resume
+        if (tg) {
+            tg.showConfirm('Resume your last forging session?', (resume) => {
+                if (resume) {
+                    QUICK_RESUME.restoreSession(savedSession);
+                } else {
+                    // Start fresh but keep progress
+                    loadProgress();
+                    resetForNewUnit();
+                    QUICK_RESUME.clearSession();
+                }
+            });
+        } else {
+            // Fallback for browser testing
+            if (confirm('Resume your last forging session?')) {
+                QUICK_RESUME.restoreSession(savedSession);
+            } else {
+                loadProgress();
+                resetForNewUnit();
+                QUICK_RESUME.clearSession();
+            }
+        }
+    } else {
+        // No saved session, normal start
+        loadProgress();
+        resetForNewUnit();
+    }
+    
+    // Start auto-save interval (backup every 30 seconds)
+    setInterval(() => {
+        if (!gameCompleted && activeWordIndex !== null) {
+            QUICK_RESUME.saveSession();
+        }
+    }, 30000);
+}
+
+// ---------- EVENT LISTENERS ----------
 document.getElementById('resetButton').addEventListener('click', handleReset);
 document.getElementById('profileIconBtn').addEventListener('click', () => showProfilePopup(false));
 
@@ -2501,15 +2691,17 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// ---------- INITIALIZATION ---------- // <-- MODIFIED
 loadProfile();
-loadProgress();
-startAutoSave();
-updateWorldDisplay();
-resetForNewUnit();
+// loadProgress(); // REMOVED - now handled in initializeGame
+// resetForNewUnit(); // REMOVED - now handled in initializeGame
+// startAutoSave(); // REMOVED - now in initializeGame
+initializeGame(); // NEW - replaces the above
 
 if (tg) {
     tg.onEvent('backButtonClicked', () => {
         saveProgress();
+        QUICK_RESUME.saveSession(); // Save before closing
         setTimeout(() => tg.close(), 100);
     });
     tg.BackButton?.show();
