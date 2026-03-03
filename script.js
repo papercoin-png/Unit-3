@@ -180,7 +180,7 @@ const QUICK_RESUME = {
         }
     },
     
-    // Restore a loaded session - FIXED to preserve completed ingots
+    // Restore a loaded session - FIXED to mark all previous ingots as COMPLETED
     restoreSession(session) {
         if (!session) return false;
         
@@ -207,21 +207,28 @@ const QUICK_RESUME = {
                     if (unit) {
                         // Restore the exact wordsCompleted count
                         unit.wordsCompleted = savedUnit.wordsCompleted;
-                        // Unlock based on completion status
-                        unit.unlocked = savedUnit.unlocked || savedUnit.wordsCompleted === 20;
+                        unit.unlocked = savedUnit.unlocked;
                     }
                 });
             }
             
-            // Then ensure all ingots up to currentUnit are unlocked
-            for (let i = 1; i <= currentUnit; i++) {
+            // CRITICAL FIX: Mark ALL ingots before currentUnit as COMPLETED (20/20)
+            for (let i = 1; i < currentUnit; i++) {
                 const unit = world.units.find(u => u.id === i);
                 if (unit) {
+                    unit.wordsCompleted = 20; // Force complete
                     unit.unlocked = true;
                 }
             }
             
-            // Mark any ingots with 20 words as completed (green)
+            // Ensure current unit is unlocked
+            const currentUnitObj = world.units.find(u => u.id === currentUnit);
+            if (currentUnitObj) {
+                currentUnitObj.unlocked = true;
+                // Don't change its wordsCompleted - keep actual progress
+            }
+            
+            // Also unlock any ingots that have been completed
             world.units.forEach(unit => {
                 if (unit.wordsCompleted === 20) {
                     unit.unlocked = true;
