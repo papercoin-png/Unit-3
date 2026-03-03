@@ -2566,7 +2566,7 @@ function handleWordCompletion(wordIndex) {
     }
 }
 
-// ---------- handleLetterTap FUNCTION ----------
+// ---------- OPTIMIZED handleLetterTap FUNCTION with Green Mist Effect ----------
 function handleLetterTap(letter, indexInGrid) {
     if (gameCompleted) return;
     totalTaps++;
@@ -2595,16 +2595,35 @@ function handleLetterTap(letter, indexInGrid) {
         return;
     }
 
+    // CORRECT TAP - Add green mist effect immediately
+    const tile = document.querySelector(`.letter-tile:nth-child(${indexInGrid + 1})`);
+    if (tile) {
+        // Remove any existing effect
+        tile.classList.remove('correct-tap');
+        // Force reflow to restart animation
+        void tile.offsetWidth;
+        // Add the effect
+        tile.classList.add('correct-tap');
+    }
+    
+    // Haptic feedback
+    tg?.HapticFeedback?.impactOccurred?.('light');
+    
+    // Update game state
     correctTaps++;
     const removed = currentLetters.splice(indexInGrid, 1)[0];
     tempUsedLetters.push(removed);
     currentPosition++;
     
-    tg?.HapticFeedback?.impactOccurred?.('light');
-    renderAll();
-    
-    // QUICK RESUME: Save after each correct letter tap
-    QUICK_RESUME.saveSession();
+    // Batch render updates for better performance
+    requestAnimationFrame(() => {
+        renderAll();
+        
+        // QUICK RESUME: Save after each correct letter tap (do this async)
+        setTimeout(() => {
+            QUICK_RESUME.saveSession();
+        }, 50);
+    });
 
     if (currentPosition === targetWord.length) {
         handleWordCompletion(activeWordIndex);
