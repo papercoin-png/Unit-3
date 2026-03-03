@@ -2566,7 +2566,7 @@ function handleWordCompletion(wordIndex) {
     }
 }
 
-// ---------- OPTIMIZED handleLetterTap FUNCTION with Simple Flash & Haptic ----------
+// ---------- OPTIMIZED handleLetterTap FUNCTION with Green Mist Effect ----------
 function handleLetterTap(letter, indexInGrid) {
     if (gameCompleted) return;
     totalTaps++;
@@ -2595,30 +2595,18 @@ function handleLetterTap(letter, indexInGrid) {
         return;
     }
 
-    // CORRECT TAP - Simple visual feedback (guaranteed to work in Telegram)
+    // CORRECT TAP - Add green mist effect immediately
     const tile = document.querySelector(`.letter-tile:nth-child(${indexInGrid + 1})`);
     if (tile) {
-        // Store original styles
-        const originalBg = tile.style.backgroundColor;
-        const originalTransform = tile.style.transform;
-        const originalBoxShadow = tile.style.boxShadow;
-        
-        // Apply flash effect
-        tile.style.backgroundColor = '#A5D6A5';
-        tile.style.transform = 'translateY(4px)';
-        tile.style.boxShadow = '0 4px 0 #2A5A2A, 0 8px 15px rgba(0, 0, 0, 0.5)';
-        tile.style.transition = 'all 0.1s ease';
-        
-        // Reset after short delay
-        setTimeout(() => {
-            tile.style.backgroundColor = originalBg;
-            tile.style.transform = originalTransform;
-            tile.style.boxShadow = originalBoxShadow;
-            tile.style.transition = '';
-        }, 150);
+        // Remove any existing effect
+        tile.classList.remove('correct-tap');
+        // Force reflow to restart animation
+        void tile.offsetWidth;
+        // Add the effect
+        tile.classList.add('correct-tap');
     }
     
-    // Haptic feedback (works great in Telegram)
+    // Haptic feedback
     tg?.HapticFeedback?.impactOccurred?.('light');
     
     // Update game state
