@@ -383,8 +383,7 @@ const MASTER_WORDS = {
                     { word: "wake", emoji: "⏰", sentence: "I wake up early every morning." }
                 ]
             },
-            // Ingot 12: Steel Blend
-            12: {
+            12: { // Ingot 12: Steel Blend
                 name: "Steel Blend",
                 words: [
                     { word: "alone", emoji: "🧍", sentence: "He likes to walk alone in the park." },
@@ -409,8 +408,7 @@ const MASTER_WORDS = {
                     { word: "thin", emoji: "📏", sentence: "The ice was too thin to walk on." }
                 ]
             },
-            // Ingot 13: Fold
-            13: {
+            13: { // Ingot 13: Fold
                 name: "Fold",
                 words: [
                     { word: "blood", emoji: "🩸", sentence: "The doctor tested his blood." },
@@ -435,8 +433,7 @@ const MASTER_WORDS = {
                     { word: "whole", emoji: "🟤", sentence: "She ate the whole pizza by herself." }
                 ]
             },
-            // Ingot 14: Shape
-            14: {
+            14: { // Ingot 14: Shape
                 name: "Shape",
                 words: [
                     { word: "coach", emoji: "🏋️", sentence: "The coach taught us how to play better." },
@@ -461,8 +458,7 @@ const MASTER_WORDS = {
                     { word: "technology", emoji: "💻", sentence: "Technology changes so fast." }
                 ]
             },
-            // Ingot 15: Edge
-            15: {
+            15: { // Ingot 15: Edge
                 name: "Edge",
                 words: [
                     { word: "across", emoji: "↔️", sentence: "We swam across the river." },
@@ -487,8 +483,7 @@ const MASTER_WORDS = {
                     { word: "yet", emoji: "⏳", sentence: "She hasn't arrived yet." }
                 ]
             },
-            // Ingot 16: Curve
-            16: {
+            16: { // Ingot 16: Curve
                 name: "Curve",
                 words: [
                     { word: "academy", emoji: "🏫", sentence: "She attends the music academy." },
@@ -513,8 +508,7 @@ const MASTER_WORDS = {
                     { word: "wealth", emoji: "💰", sentence: "His wealth comes from hard work." }
                 ]
             },
-            // Ingot 17: Point
-            17: {
+            17: { // Ingot 17: Point
                 name: "Point",
                 words: [
                     { word: "appreciate", emoji: "🙏", sentence: "I appreciate all your help." },
@@ -539,8 +533,7 @@ const MASTER_WORDS = {
                     { word: "whether", emoji: "🤔", sentence: "I don't know whether to go or stay." }
                 ]
             },
-            // Ingot 18: Balance
-            18: {
+            18: { // Ingot 18: Balance
                 name: "Balance",
                 words: [
                     { word: "argue", emoji: "🗣️", sentence: "Don't argue with your sister." },
@@ -565,8 +558,7 @@ const MASTER_WORDS = {
                     { word: "treat", emoji: "🍬", sentence: "Grandma gave us a treat." }
                 ]
             },
-            // Ingot 19: Polish
-            19: {
+            19: { // Ingot 19: Polish
                 name: "Polish",
                 words: [
                     { word: "alive", emoji: "💚", sentence: "The plant is still alive." },
@@ -591,8 +583,7 @@ const MASTER_WORDS = {
                     { word: "wood", emoji: "🪵", sentence: "The table is made of wood." }
                 ]
             },
-            // Ingot 20: Gleam
-            20: {
+            20: { // Ingot 20: Gleam
                 name: "Gleam",
                 words: [
                     { word: "achieve", emoji: "🏆", sentence: "You can achieve anything with hard work." },
@@ -617,8 +608,7 @@ const MASTER_WORDS = {
                     { word: "worth", emoji: "💰", sentence: "How much is it worth?" }
                 ]
             },
-            // Ingot 21: Pattern
-            21: {
+            21: { // Ingot 21: Pattern
                 name: "Pattern",
                 words: [
                     { word: "appear", emoji: "👻", sentence: "A figure appeared in the fog." },
@@ -643,8 +633,7 @@ const MASTER_WORDS = {
                     { word: "various", emoji: "🌈", sentence: "We saw various birds at the park." }
                 ]
             },
-            // Ingot 22: Inlay
-            22: {
+            22: { // Ingot 22: Inlay
                 name: "Inlay",
                 words: [
                     { word: "actual", emoji: "✅", sentence: "The actual cost was higher than expected." },
@@ -669,8 +658,7 @@ const MASTER_WORDS = {
                     { word: "thief", emoji: "🦹", sentence: "The thief was caught on camera." }
                 ]
             },
-            // Ingot 23: Filigree
-            23: {
+            23: { // Ingot 23: Filigree
                 name: "Filigree",
                 words: [
                     { word: "advance", emoji: "⬆️", sentence: "Technology continues to advance." },
@@ -695,8 +683,7 @@ const MASTER_WORDS = {
                     { word: "web", emoji: "🕸️", sentence: "The spider spun a web." }
                 ]
             },
-            // Ingot 24: Engrave
-            24: {
+            24: { // Ingot 24: Engrave
                 name: "Engrave",
                 words: [
                     { word: "block", emoji: "🧱", sentence: "There's a block in the road." },
@@ -721,8 +708,7 @@ const MASTER_WORDS = {
                     { word: "unite", emoji: "🤝", sentence: "Let's unite for a common cause." }
                 ]
             },
-            // Ingot 25: Harden
-            25: {
+            25: { // Ingot 25: Harden
                 name: "Harden",
                 words: [
                     { word: "associate", emoji: "👥", sentence: "I associate summer with beach trips." },
@@ -747,8 +733,7 @@ const MASTER_WORDS = {
                     { word: "wide", emoji: "📏", sentence: "The river is very wide." }
                 ]
             },
-            // Ingot 26: Resilience
-            26: {
+            26: { // Ingot 26: Resilience
                 name: "Resilience",
                 words: [
                     { word: "advice", emoji: "💬", sentence: "Take my advice and study." },
@@ -773,8 +758,7 @@ const MASTER_WORDS = {
                     { word: "suggest", emoji: "💡", sentence: "I suggest we leave now." }
                 ]
             },
-            // Ingot 27: Legacy
-            27: {
+            27: { // Ingot 27: Legacy
                 name: "Legacy",
                 words: [
                     { word: "actually", emoji: "✅", sentence: "I actually finished the whole book." },
@@ -799,8 +783,7 @@ const MASTER_WORDS = {
                     { word: "value", emoji: "💰", sentence: "This ring has great value." }
                 ]
             },
-            // Ingot 28: Masterpiece
-            28: {
+            28: { // Ingot 28: Masterpiece
                 name: "Masterpiece",
                 words: [
                     { word: "band", emoji: "🎸", sentence: "The band played our favorite song." },
@@ -825,8 +808,7 @@ const MASTER_WORDS = {
                     { word: "within", emoji: "🔲", sentence: "Stay within the lines." }
                 ]
             },
-            // Ingot 29: Legendary
-            29: {
+            29: { // Ingot 29: Legendary
                 name: "Legendary",
                 words: [
                     { word: "advertise", emoji: "📢", sentence: "Companies advertise on TV." },
@@ -851,8 +833,7 @@ const MASTER_WORDS = {
                     { word: "vote", emoji: "🗳️", sentence: "Don't forget to vote." }
                 ]
             },
-            // Ingot 30: Soulforge
-            30: {
+            30: { // Ingot 30: Soulforge
                 name: "Soulforge",
                 words: [
                     { word: "above", emoji: "⬆️", sentence: "The stars are above us." },
@@ -955,6 +936,7 @@ for (let i = 151; i <= 180; i++) {
         words: []
     };
 }
+
 // ---------- INGOT DIFFICULTY DATABASE ----------
 const ingotDifficulty = {
     // WORLD 1: Grand Forge (Ingots 1-30)
@@ -1366,6 +1348,7 @@ const worlds = {
         })
     }
 };
+
 // ---------- GAME STATE ----------
 let currentWorld = 1;
 let currentUnit = 1;
@@ -1593,6 +1576,7 @@ function updateWorldDisplay() {
         updateHeaderForSelection();
     }
 }
+
 // ---------- NEW FUNCTION: Show current ingot preview for FORGE AGAIN ----------
 function showCurrentIngotPreview() {
     const world = worlds[currentWorld];
@@ -1744,6 +1728,7 @@ function loadProgress() {
 function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
+
 // ---------- PROFILE POPUP ----------
 function showProfilePopup(returnToLeaderboard = false) {
     const overlay = document.getElementById('popupOverlay');
@@ -1966,6 +1951,7 @@ function showLeaderboardPopup(fromCompletion = false) {
         }
     });
 }
+
 // ---------- POPUP FUNCTIONS ----------
 function showWordCard(wordData) {
     wordCardQueue.push(wordData);
@@ -2282,6 +2268,7 @@ function showWorldUnlockPopup(worldId) {
         overlay.classList.add('hidden');
     });
 }
+
 // ---------- GAME MECHANICS ----------
 function handleWordCompletion(wordIndex) {
     if (!completedWords.includes(wordIndex)) {
@@ -2474,6 +2461,7 @@ function renderAll() {
         artifactEl.innerText = unit.wordsCompleted === 20 ? '🌟 UNIT COMPLETE! 🌟' : `🔒 ${unit.wordsCompleted}/20`;
     }
 }
+
 // ---------- MODIFIED RESET HANDLER ----------
 function handleReset() {
     if (tg) {
