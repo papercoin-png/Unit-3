@@ -119,7 +119,7 @@ const QUICK_RESUME = {
             totalTaps: totalTaps,
             correctTaps: correctTaps,
             
-            // World progression data
+            // World progression data (includes wordsCompleted for all ingots)
             worlds: JSON.parse(JSON.stringify(worlds)), // Deep copy of worlds data
             
             // Timestamp for "Last played" display
@@ -180,7 +180,7 @@ const QUICK_RESUME = {
         }
     },
     
-    // Restore a loaded session
+    // Restore a loaded session - FIXED to preserve completed ingots
     restoreSession(session) {
         if (!session) return false;
         
@@ -196,10 +196,24 @@ const QUICK_RESUME = {
         totalTaps = session.totalTaps || 0;
         correctTaps = session.correctTaps || 0;
         
-        // FIX: Unlock all ingots up to current unit
+        // FIX: Restore world progression including completed words
         const world = worlds[currentWorld];
         if (world) {
-            // Unlock all ingots from 1 up to currentUnit
+            // First, restore from the saved worlds data if available
+            if (session.worlds && session.worlds[currentWorld]) {
+                const savedWorld = session.worlds[currentWorld];
+                savedWorld.units.forEach(savedUnit => {
+                    const unit = world.units.find(u => u.id === savedUnit.id);
+                    if (unit) {
+                        // Restore the exact wordsCompleted count
+                        unit.wordsCompleted = savedUnit.wordsCompleted;
+                        // Unlock based on completion status
+                        unit.unlocked = savedUnit.unlocked || savedUnit.wordsCompleted === 20;
+                    }
+                });
+            }
+            
+            // Then ensure all ingots up to currentUnit are unlocked
             for (let i = 1; i <= currentUnit; i++) {
                 const unit = world.units.find(u => u.id === i);
                 if (unit) {
@@ -207,7 +221,7 @@ const QUICK_RESUME = {
                 }
             }
             
-            // Also unlock any ingots that have been completed (based on wordsCompleted)
+            // Mark any ingots with 20 words as completed (green)
             world.units.forEach(unit => {
                 if (unit.wordsCompleted === 20) {
                     unit.unlocked = true;
