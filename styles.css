@@ -1,5 +1,3 @@
-/* styles.css - Spellforge Telegram Mini App */
-
 * {
     margin: 0;
     padding: 0;
@@ -255,7 +253,7 @@ body {
     color: #ffffff;
 }
 
-/* unit selector section - hidden during gameplay */
+/* unit selector section */
 .unit-section {
     background: rgba(10, 25, 35, 0.7);
     border-radius: 38px;
@@ -399,7 +397,7 @@ body {
     transition: width 0.3s;
 }
 
-/* word list area - reduced padding */
+/* word list area */
 .word-section {
     background: rgba(10, 25, 35, 0.7);
     border-radius: 38px;
@@ -527,7 +525,7 @@ body {
     box-shadow: 0 4px 0 #946f2c;
 }
 
-/* letter bank - MODIFIED: removed padding for larger tiles, enhanced 3D letters with 50% larger size and 50% less shadow */
+/* letter bank */
 .letter-section {
     background: rgba(10, 25, 35, 0.7);
     border-radius: 38px;
@@ -555,10 +553,8 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 900;
-    /* 50% larger font size */
     font-size: min(12vw, 72px);
     color: #1f3b4a;
-    /* Reduced shadow by 50% - fewer layers, softer edges */
     text-shadow: 
         1px 1px 0 #b2752e,
         2px 2px 0 #b2752e,
@@ -576,7 +572,6 @@ body {
 
 .letter-tile:active {
     transform: translateY(5px);
-    /* Active state shadow also reduced */
     text-shadow: 
         1px 1px 0 #b2752e,
         2px 2px 0 #b2752e;
@@ -637,7 +632,7 @@ body {
     overflow-y: auto;
 }
 
-/* word card - MODIFIED: dynamic font sizing for word title */
+/* word card */
 .word-card {
     max-width: 380px;
     width: 100%;
@@ -886,7 +881,7 @@ body {
     color: white;
 }
 
-/* next ingot preview popup - also used for FORGE AGAIN */
+/* next ingot preview popup */
 .preview-card {
     max-width: 440px;
     width: 100%;
@@ -1182,7 +1177,7 @@ body {
     100% { opacity: 0.6; }
 }
 
-/* leaderboard popup - words-based */
+/* leaderboard popup */
 .leaderboard-card {
     max-width: 480px;
     width: 100%;
@@ -1276,7 +1271,6 @@ body {
     flex-shrink: 0;
 }
 
-/* Scrollable leaderboard list */
 .leaderboard-list {
     background: #0c202b;
     border-radius: 30px;
