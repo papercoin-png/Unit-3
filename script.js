@@ -100,7 +100,7 @@ function hideForgeMessage() {
     forgeMessageOverlay.style.display = 'none';
 }
 
-// ---------- QUICK RESUME SYSTEM ---------- // <-- NEW SECTION
+// ---------- QUICK RESUME SYSTEM ----------
 const QUICK_RESUME = {
     // Save current game state on every meaningful action
     saveSession() {
@@ -119,9 +119,12 @@ const QUICK_RESUME = {
             totalTaps: totalTaps,
             correctTaps: correctTaps,
             
+            // World progression data
+            worlds: JSON.parse(JSON.stringify(worlds)), // Deep copy of worlds data
+            
             // Timestamp for "Last played" display
             lastPlayed: new Date().toISOString(),
-            version: '1.0'
+            version: '1.1'
         };
         
         try {
@@ -139,8 +142,8 @@ const QUICK_RESUME = {
             
             const session = JSON.parse(saved);
             
-            // Version check (in case game updates break saves)
-            if (session.version !== '1.0') return null;
+            // Version check
+            if (!session.version) return null; // Old version, discard
             
             // Validate session is recent (keep last 7 days)
             const lastPlayed = new Date(session.lastPlayed);
@@ -148,6 +151,26 @@ const QUICK_RESUME = {
             if (daysSince > 7) {
                 console.log('Session too old, starting fresh');
                 return null;
+            }
+            
+            // Restore world progression if available
+            if (session.worlds && session.version >= '1.1') {
+                // Merge saved world progression with current worlds
+                Object.keys(session.worlds).forEach(key => {
+                    if (worlds[key]) {
+                        const savedWorld = session.worlds[key];
+                        worlds[key].unlocked = savedWorld.unlocked;
+                        worlds[key].completed = savedWorld.completed;
+                        
+                        savedWorld.units.forEach(savedUnit => {
+                            const unit = worlds[key].units.find(u => u.id === savedUnit.id);
+                            if (unit) {
+                                unit.wordsCompleted = savedUnit.wordsCompleted;
+                                unit.unlocked = savedUnit.unlocked;
+                            }
+                        });
+                    }
+                });
             }
             
             return session;
@@ -172,6 +195,30 @@ const QUICK_RESUME = {
         gameStartTime = session.gameStartTime || null;
         totalTaps = session.totalTaps || 0;
         correctTaps = session.correctTaps || 0;
+        
+        // FIX: Unlock all ingots up to current unit
+        const world = worlds[currentWorld];
+        if (world) {
+            // Unlock all ingots from 1 up to currentUnit
+            for (let i = 1; i <= currentUnit; i++) {
+                const unit = world.units.find(u => u.id === i);
+                if (unit) {
+                    unit.unlocked = true;
+                }
+            }
+            
+            // Also unlock any ingots that have been completed (based on wordsCompleted)
+            world.units.forEach(unit => {
+                if (unit.wordsCompleted === 20) {
+                    unit.unlocked = true;
+                    // Also unlock the next one if not already unlocked
+                    const nextUnit = world.units.find(u => u.id === unit.id + 1);
+                    if (nextUnit && !nextUnit.unlocked) {
+                        nextUnit.unlocked = true;
+                    }
+                }
+            });
+        }
         
         // Update UI
         updateWorldDisplay();
@@ -1710,7 +1757,7 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- NEW FUNCTION: Show current ingot preview for FORGE AGAIN ----------
+// ---------- Show current ingot preview for FORGE AGAIN ----------
 function showCurrentIngotPreview() {
     const world = worlds[currentWorld];
     const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
@@ -1766,7 +1813,7 @@ function showCurrentIngotPreview() {
     });
 }
 
-// ---------- UPDATED resetForNewUnit FUNCTION ---------- // <-- MODIFIED
+// ---------- resetForNewUnit FUNCTION ----------
 function resetForNewUnit() {
     currentLetters = generateInitialLetters();
     completedWords = [];
@@ -2410,7 +2457,7 @@ function showWorldUnlockPopup(worldId) {
     });
 }
 
-// ---------- UPDATED handleWordCompletion FUNCTION ---------- // <-- MODIFIED
+// ---------- handleWordCompletion FUNCTION ----------
 function handleWordCompletion(wordIndex) {
     if (!completedWords.includes(wordIndex)) {
         completedWords.push(wordIndex);
@@ -2498,7 +2545,7 @@ function handleWordCompletion(wordIndex) {
     }
 }
 
-// ---------- UPDATED handleLetterTap FUNCTION ---------- // <-- MODIFIED
+// ---------- handleLetterTap FUNCTION ----------
 function handleLetterTap(letter, indexInGrid) {
     if (gameCompleted) return;
     totalTaps++;
@@ -2610,7 +2657,7 @@ function renderAll() {
     }
 }
 
-// ---------- MODIFIED RESET HANDLER ----------
+// ---------- RESET HANDLER ----------
 function handleReset() {
     if (tg) {
         tg.showConfirm('View success chance before resetting?', (ok) => {
@@ -2625,7 +2672,7 @@ function handleReset() {
     }
 }
 
-// ---------- NEW INITIALIZATION FUNCTION ---------- // <-- NEW
+// ---------- INITIALIZATION FUNCTION ----------
 function initializeGame() {
     // First try to load saved session
     const savedSession = QUICK_RESUME.loadSession();
@@ -2691,12 +2738,9 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ---------- INITIALIZATION ---------- // <-- MODIFIED
+// ---------- INITIALIZATION ----------
 loadProfile();
-// loadProgress(); // REMOVED - now handled in initializeGame
-// resetForNewUnit(); // REMOVED - now handled in initializeGame
-// startAutoSave(); // REMOVED - now in initializeGame
-initializeGame(); // NEW - replaces the above
+initializeGame();
 
 if (tg) {
     tg.onEvent('backButtonClicked', () => {
