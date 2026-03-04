@@ -1712,7 +1712,7 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- DEBUGGED SAVE FUNCTION ----------
+// ---------- FIXED JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
 function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
@@ -1776,7 +1776,7 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
     script.onerror = function(error) {
         console.error('❌ Script load error:', error);
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (script.parentNode) script.parentNode.removeChild(script);
         if (callback) callback();
     };
     document.body.appendChild(script);
@@ -1787,7 +1787,7 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
             console.error('❌ Save timeout after 5 seconds');
             delete window[callbackName];
             const script = document.getElementById(callbackName);
-            if (script) document.body.removeChild(script);
+            if (script) script.parentNode.removeChild(script);
             if (callback) callback(); // Still continue even if timeout
         }
     }, 5000);
@@ -1807,7 +1807,8 @@ function loadLeaderboardFromSheets(callback) {
         console.log('✅ Leaderboard loaded:', data);
         callback(Array.isArray(data) ? data : []);
         delete window[callbackName];
-        document.body.removeChild(script);
+        const script = document.getElementById(callbackName);
+        if (script) script.parentNode.removeChild(script);
     };
     
     const params = new URLSearchParams({
@@ -1820,12 +1821,13 @@ function loadLeaderboardFromSheets(callback) {
     console.log('📡 Loading from:', fullUrl);
     
     const script = document.createElement('script');
+    script.id = callbackName;
     script.src = fullUrl;
     script.onerror = function(error) {
         console.error('❌ Leaderboard load error:', error);
         callback([]);
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (script.parentNode) script.parentNode.removeChild(script);
     };
     document.body.appendChild(script);
     
@@ -1834,42 +1836,64 @@ function loadLeaderboardFromSheets(callback) {
             console.error('❌ Leaderboard timeout');
             callback([]);
             delete window[callbackName];
-            document.body.removeChild(script);
+            const script = document.getElementById(callbackName);
+            if (script) script.parentNode.removeChild(script);
         }
     }, 5000);
 }
 
-// ---------- TEST FUNCTION ----------
+// ---------- TEST FUNCTION (with debouncing) ----------
+let testButtonClickCount = 0;
+let lastTestClick = 0;
+
 function testManualSave() {
-    console.log('🧪 Manual save test');
-    const testWords = 50;
+    // Debounce clicks - prevent multiple rapid clicks
+    const now = Date.now();
+    if (now - lastTestClick < 1000) {
+        console.log('⚠️ Please wait 1 second between test clicks');
+        return;
+    }
+    lastTestClick = now;
+    
+    testButtonClickCount++;
+    console.log(`🧪 Manual save test #${testButtonClickCount}`);
+    
+    const testWords = 50 + testButtonClickCount; // Increment score each time
     
     const callbackName = 'test_save_' + Date.now();
     window[callbackName] = function(response) {
         console.log('✅ Test save response:', response);
-        alert('Save test complete! Check console and Google Sheets.');
+        alert(`Save test #${testButtonClickCount} complete! Score: ${testWords} - Check Google Sheets.`);
         delete window[callbackName];
     };
     
     const params = new URLSearchParams({
         action: 'save',
-        player_name: 'Test Manual',
+        player_name: 'Test Player',
         total_words: testWords,
         telegram_id: 'test_manual_' + Date.now(),
-        display_name: 'Test Manual',
+        display_name: 'Test Player',
         _: Date.now(),
         callback: callbackName
     });
     
     const script = document.createElement('script');
     script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    script.onerror = function() {
+        console.error('❌ Test save script error');
+        alert('Test save failed! Check console.');
+    };
     document.body.appendChild(script);
 }
 
-// Add test button
+// Add test button (only once)
 window.addEventListener('load', () => {
+    // Check if button already exists
+    if (document.getElementById('testSaveBtn')) return;
+    
     setTimeout(() => {
         const testBtn = document.createElement('button');
+        testBtn.id = 'testSaveBtn';
         testBtn.innerText = '🧪 TEST SAVE';
         testBtn.style.position = 'fixed';
         testBtn.style.bottom = '10px';
@@ -1881,8 +1905,10 @@ window.addEventListener('load', () => {
         testBtn.style.border = 'none';
         testBtn.style.borderRadius = '5px';
         testBtn.style.fontWeight = 'bold';
+        testBtn.style.cursor = 'pointer';
         testBtn.onclick = testManualSave;
         document.body.appendChild(testBtn);
+        console.log('🧪 Test button added');
     }, 3000);
 });
 
