@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Telegram Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #1a2f3f, #0f1f29);
+            color: white;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #D4AF37;
+        }
+        h1 {
+            color: #FFD700;
+            text-align: center;
+            margin-top: 0;
+        }
+        .debug-box {
+            background: #0a1a24;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #B8860B;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .label { color: #acccdd; }
+        .value { color: #ffd966; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Telegram WebApp Diagnostic</h1>
+        
+        <div class="debug-box">
+            <h3 style="color: #FFD700; margin-top: 0;">Test Results:</h3>
+            <div id="results"></div>
+        </div>
+        
+        <div class="debug-box">
+            <h3 style="color: #FFD700; margin-top: 0;">Instructions:</h3>
+            <p style="color: #acccdd;">1. Open this page in Telegram (not browser)</p>
+            <p style="color: #acccdd;">2. Take a screenshot of the results</p>
+            <p style="color: #acccdd;">3. Share what you see</p>
+        </div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(label, value, isSuccess = null) {
+            const div = document.createElement('div');
+            div.style.margin = '10px 0';
+            div.style.padding = '5px';
+            div.style.borderBottom = '1px solid #333';
+            
+            let statusClass = '';
+            if (isSuccess === true) statusClass = 'success';
+            if (isSuccess === false) statusClass = 'error';
+            
+            div.innerHTML = `
+                <span class="label">${label}:</span> 
+                <span class="${statusClass} value" style="float: right; font-weight: bold;">${value}</span>
+            `;
+            results.appendChild(div);
+        }
+        
+        // Check Telegram WebApp
+        const hasTelegram = typeof window.Telegram !== 'undefined';
+        const hasWebApp = hasTelegram && window.Telegram.WebApp;
+        const tg = hasWebApp ? window.Telegram.WebApp : null;
+        
+        addResult('window.Telegram exists', hasTelegram ? '✅ YES' : '❌ NO', hasTelegram);
+        addResult('Telegram.WebApp exists', hasWebApp ? '✅ YES' : '❌ NO', hasWebApp);
+        
+        if (tg) {
+            tg.ready();
+            addResult('WebApp version', tg.version || 'unknown');
+            addResult('initData exists', tg.initData ? '✅ YES' : '❌ NO', !!tg.initData);
+            
+            const hasUnsafe = !!tg.initDataUnsafe;
+            addResult('initDataUnsafe exists', hasUnsafe ? '✅ YES' : '❌ NO', hasUnsafe);
+            
+            if (hasUnsafe) {
+                const hasUser = !!tg.initDataUnsafe.user;
+                addResult('User data exists', hasUser ? '✅ YES' : '❌ NO', hasUser);
+                
+                if (hasUser) {
+                    const user = tg.initDataUnsafe.user;
+                    addResult('User ID', user.id || 'N/A');
+                    addResult('First Name', user.first_name || 'N/A');
+                    addResult('Last Name', user.last_name || 'N/A');
+                    addResult('Username', user.username || 'N/A');
+                    addResult('Language', user.language_code || 'N/A');
+                }
+                
+                addResult('Auth date', tg.initDataUnsafe.auth_date || 'N/A');
+                addResult('Hash present', tg.initDataUnsafe.hash ? '✅ YES' : '❌ NO', !!tg.initDataUnsafe.hash);
+                addResult('Start param', tg.initDataUnsafe.start_param || 'none');
+            }
+            
+            // Check query_id
+            addResult('Query ID', tg.initDataUnsafe?.query_id || 'none');
+            
+            // Platform info
+            addResult('Platform', tg.platform || 'unknown');
+            addResult('Color scheme', tg.colorScheme || 'unknown');
+            addResult('Theme params', tg.themeParams ? '✅ YES' : '❌ NO', !!tg.themeParams);
+            
+        } else {
+            addResult('ERROR', 'Telegram WebApp not loaded - are you opening this in Telegram?', false);
+            addResult('User Agent', navigator.userAgent.substring(0, 50) + '...');
+        }
+        
+        // Also log to console
+        console.log('Full Telegram object:', window.Telegram);
+        console.log('User agent:', navigator.userAgent);
+    </script>
+</body>
+</html>
