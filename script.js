@@ -1525,7 +1525,7 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- GOOGLE SHEETS LEADERBOARD WITH MODERN FETCH API ----------
+// ---------- GOOGLE SHEETS LEADERBOARD WITH FETCH - COMPLETELY REWRITTEN ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxb816QBBx6q6kwIPMBHGghpUZX4554Etg2G-mcU5akYnhcUMNaAI9sdT2tlq7kzWH2Lw/exec';
 
 // Save score using fetch
@@ -1533,8 +1533,11 @@ async function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
+    console.log('Saving score:', { totalWords, playerName, telegramId: playerProfile.telegramId });
+    
     if (totalWords === 0) {
-        if (callback) callback();
+        console.log('No words to save');
+        if (callback) callback({ success: false, message: 'No words to save' });
         return;
     }
     
@@ -1549,7 +1552,6 @@ async function saveScoreToGoogleSheetsWithCallback(callback) {
     const playerId = playerProfile.telegramId || localId;
     
     try {
-        // Build the URL with parameters (no callback needed)
         const url = new URL(GOOGLE_SHEETS_URL);
         url.searchParams.append('action', 'save');
         url.searchParams.append('player_name', playerName);
@@ -1558,33 +1560,40 @@ async function saveScoreToGoogleSheetsWithCallback(callback) {
         url.searchParams.append('display_name', playerProfile.displayName);
         url.searchParams.append('_', Date.now()); // Cache buster
         
+        console.log('Fetching save URL:', url.toString());
+        
         const response = await fetch(url.toString());
         const result = await response.json();
+        console.log('Save result:', result);
         
         if (callback) callback(result);
     } catch (error) {
         console.error('Error saving score:', error);
-        if (callback) callback(null);
+        if (callback) callback({ success: false, error: error.message });
     }
 }
 
-// Keep original function for backward compatibility
+// Legacy support
 function saveScoreToGoogleSheets() {
     saveScoreToGoogleSheetsWithCallback();
 }
 
-// Load leaderboard using fetch
+// Load leaderboard using fetch - FIXED: No JSONP, no callback parameter
 async function loadLeaderboardFromSheets(callback) {
     try {
-        // Build the URL with parameters (no callback needed)
+        console.log('Loading leaderboard...');
+        
         const url = new URL(GOOGLE_SHEETS_URL);
         url.searchParams.append('action', 'get');
         url.searchParams.append('_', Date.now()); // Cache buster
         
+        console.log('Fetching leaderboard URL:', url.toString());
+        
         const response = await fetch(url.toString());
         const data = await response.json();
+        console.log('Leaderboard data received:', data);
         
-        // Make sure we pass an array to the callback
+        // Ensure we pass an array to the callback
         callback(Array.isArray(data) ? data : []);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
