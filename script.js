@@ -1568,47 +1568,7 @@ function getPlayerStats() {
     };
 }
 
-// ---------- GOOGLE SHEETS LEADERBOARD FUNCTIONS ----------
-function saveScoreToGoogleSheets() {
-    const totalWords = calculateTotalWords();
-    const playerName = playerProfile.displayName || "Forgemaster";
-    
-    // Don't save if score is 0 (new players)
-    if (totalWords === 0) return;
-    
-    fetch(GOOGLE_SHEETS_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'save',
-            player_name: playerName,
-            total_words: totalWords,
-            telegram_id: playerProfile.telegramId || 'local_' + Date.now(),
-            display_name: playerProfile.displayName
-        })
-    }).catch(error => {});
-}
-
-function loadLeaderboardFromSheets(callback) {
-    const timeout = setTimeout(() => {
-        callback([]);
-    }, 5000);
-    
-    fetch(`${GOOGLE_SHEETS_URL}?action=get&t=${Date.now()}`)
-        .then(response => response.json())
-        .then(data => {
-            clearTimeout(timeout);
-            callback(Array.isArray(data) ? data : []);
-        })
-        .catch(() => {
-            clearTimeout(timeout);
-            callback([]);
-        });
-}
-
-// ---------- Always generates 30 tiles (6 rows × 5 columns) ----------
+// ---------- FIXED: Always generates 30 tiles (6 rows × 5 columns) ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
     if (!words || words.length === 0) return [];
@@ -1750,6 +1710,60 @@ function updateWorldDisplay() {
     } else {
         updateHeaderForSelection();
     }
+}
+
+// ---------- FIXED: GOOGLE SHEETS SAVE FUNCTION WITH PERSISTENT LOCAL ID ----------
+function saveScoreToGoogleSheets() {
+    const totalWords = calculateTotalWords();
+    const playerName = playerProfile.displayName || "Forgemaster";
+    
+    // Don't save if score is 0 (new players)
+    if (totalWords === 0) return;
+    
+    // Get or create a persistent local ID
+    let localId = localStorage.getItem('spellforge_local_id');
+    if (!localId) {
+        // Create a random ID that stays forever
+        localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
+                  Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('spellforge_local_id', localId);
+    }
+    
+    // Use Telegram ID if available, otherwise use persistent local ID
+    const playerId = playerProfile.telegramId || localId;
+    
+    const dataToSend = {
+        action: 'save',
+        player_name: playerName,
+        total_words: totalWords,
+        telegram_id: playerId,
+        display_name: playerProfile.displayName
+    };
+    
+    fetch(GOOGLE_SHEETS_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend)
+    }).catch(error => {});
+}
+
+function loadLeaderboardFromSheets(callback) {
+    const timeout = setTimeout(() => {
+        callback([]);
+    }, 5000);
+    
+    fetch(`${GOOGLE_SHEETS_URL}?action=get&t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            clearTimeout(timeout);
+            callback(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+            clearTimeout(timeout);
+            callback([]);
+        });
 }
 
 // ---------- Show current ingot preview for FORGE AGAIN ----------
