@@ -1712,12 +1712,20 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- FIXED JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
+// ---------- DEBUGGED SAVE FUNCTION ----------
 function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
+    console.log('🔍 SAVE ATTEMPT:', { 
+        totalWords, 
+        playerName, 
+        playerProfile,
+        telegramId: playerProfile.telegramId 
+    });
+    
     if (totalWords === 0) {
+        console.log('⚠️ No words to save (totalWords = 0)');
         if (callback) callback();
         return;
     }
@@ -1728,17 +1736,22 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
         localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
                   Math.random().toString(36).substring(2, 15);
         localStorage.setItem('spellforge_local_id', localId);
+        console.log('🆕 Created new local ID:', localId);
     }
     
     const playerId = playerProfile.telegramId || localId;
+    console.log('🆔 Using player ID:', playerId);
     
     // Create a unique callback name
     const callbackName = 'jsonp_callback_' + Date.now();
+    console.log('📞 Callback name:', callbackName);
     
     // Create a temporary callback function
     window[callbackName] = function(response) {
+        console.log('✅ Save successful! Response:', response);
         delete window[callbackName];
-        document.body.removeChild(script);
+        const script = document.getElementById(callbackName);
+        if (script) document.body.removeChild(script);
         if (callback) callback(response);
     };
     
@@ -1753,16 +1766,28 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
         callback: callbackName
     });
     
+    const fullUrl = GOOGLE_SHEETS_URL + '?' + params.toString();
+    console.log('📡 Sending request to:', fullUrl);
+    
     // Create and inject script tag
     const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    script.id = callbackName;
+    script.src = fullUrl;
+    script.onerror = function(error) {
+        console.error('❌ Script load error:', error);
+        delete window[callbackName];
+        document.body.removeChild(script);
+        if (callback) callback();
+    };
     document.body.appendChild(script);
     
     // Timeout fallback
     setTimeout(() => {
         if (window[callbackName]) {
+            console.error('❌ Save timeout after 5 seconds');
             delete window[callbackName];
-            document.body.removeChild(script);
+            const script = document.getElementById(callbackName);
+            if (script) document.body.removeChild(script);
             if (callback) callback(); // Still continue even if timeout
         }
     }, 5000);
@@ -1774,9 +1799,12 @@ function saveScoreToGoogleSheets() {
 }
 
 function loadLeaderboardFromSheets(callback) {
+    console.log('📥 Loading leaderboard...');
+    
     const callbackName = 'jsonp_load_' + Date.now();
     
     window[callbackName] = function(data) {
+        console.log('✅ Leaderboard loaded:', data);
         callback(Array.isArray(data) ? data : []);
         delete window[callbackName];
         document.body.removeChild(script);
@@ -1788,18 +1816,75 @@ function loadLeaderboardFromSheets(callback) {
         callback: callbackName
     });
     
+    const fullUrl = GOOGLE_SHEETS_URL + '?' + params.toString();
+    console.log('📡 Loading from:', fullUrl);
+    
     const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    script.src = fullUrl;
+    script.onerror = function(error) {
+        console.error('❌ Leaderboard load error:', error);
+        callback([]);
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
     document.body.appendChild(script);
     
     setTimeout(() => {
         if (window[callbackName]) {
+            console.error('❌ Leaderboard timeout');
             callback([]);
             delete window[callbackName];
             document.body.removeChild(script);
         }
     }, 5000);
 }
+
+// ---------- TEST FUNCTION ----------
+function testManualSave() {
+    console.log('🧪 Manual save test');
+    const testWords = 50;
+    
+    const callbackName = 'test_save_' + Date.now();
+    window[callbackName] = function(response) {
+        console.log('✅ Test save response:', response);
+        alert('Save test complete! Check console and Google Sheets.');
+        delete window[callbackName];
+    };
+    
+    const params = new URLSearchParams({
+        action: 'save',
+        player_name: 'Test Manual',
+        total_words: testWords,
+        telegram_id: 'test_manual_' + Date.now(),
+        display_name: 'Test Manual',
+        _: Date.now(),
+        callback: callbackName
+    });
+    
+    const script = document.createElement('script');
+    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    document.body.appendChild(script);
+}
+
+// Add test button
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const testBtn = document.createElement('button');
+        testBtn.innerText = '🧪 TEST SAVE';
+        testBtn.style.position = 'fixed';
+        testBtn.style.bottom = '10px';
+        testBtn.style.left = '10px';
+        testBtn.style.zIndex = '9999';
+        testBtn.style.padding = '10px';
+        testBtn.style.background = '#FF4444';
+        testBtn.style.color = 'white';
+        testBtn.style.border = 'none';
+        testBtn.style.borderRadius = '5px';
+        testBtn.style.fontWeight = 'bold';
+        testBtn.onclick = testManualSave;
+        document.body.appendChild(testBtn);
+    }, 3000);
+});
 
 // ---------- Show current ingot preview for FORGE AGAIN ----------
 function showCurrentIngotPreview() {
@@ -2287,6 +2372,8 @@ function showIngotCompletePopup() {
     const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
     const playerRating = getRatingFromScore(playerSFR);
     
+    console.log('🏆 Ingot completed! Preparing to save score...');
+    
     overlay.innerHTML = '';
     
     const card = document.createElement('div');
@@ -2335,8 +2422,11 @@ function showIngotCompletePopup() {
         // Show saving status
         document.getElementById('saveStatus').style.display = 'block';
         
+        console.log('💾 Attempting to save score...');
+        
         // Save the score first, then continue
         saveScoreToGoogleSheetsWithCallback(() => {
+            console.log('✅ Save callback executed, continuing...');
             overlay.classList.add('hidden');
             
             const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
