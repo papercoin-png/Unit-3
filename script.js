@@ -1525,6 +1525,9 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
+// ---------- GOOGLE SHEETS LEADERBOARD ----------
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzPM894XIU0OQttwV_2iROjISCTnw0jFGdup47jCMuEWgxxfvT8UoEMJrCcjViSOe5gEQ/exec';
+
 // ---------- HELPER FUNCTIONS ----------
 function calculateTotalWords() {
     let total = 0;
@@ -1563,6 +1566,47 @@ function getPlayerStats() {
         ingotsMastered: ingotsMastered,
         successRate: successRate
     };
+}
+
+// ---------- GOOGLE SHEETS LEADERBOARD FUNCTIONS ----------
+function saveScoreToGoogleSheets() {
+    const totalWords = calculateTotalWords();
+    const playerName = playerProfile.displayName || "Forgemaster";
+    
+    // Don't save if score is 0 (new players)
+    if (totalWords === 0) return;
+    
+    fetch(GOOGLE_SHEETS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'save',
+            player_name: playerName,
+            total_words: totalWords,
+            telegram_id: playerProfile.telegramId || 'local_' + Date.now(),
+            display_name: playerProfile.displayName
+        })
+    }).catch(error => {});
+}
+
+function loadLeaderboardFromSheets(callback) {
+    const timeout = setTimeout(() => {
+        callback([]);
+    }, 5000);
+    
+    fetch(`${GOOGLE_SHEETS_URL}?action=get&t=${Date.now()}`)
+        .then(response => response.json())
+        .then(data => {
+            clearTimeout(timeout);
+            callback(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+            clearTimeout(timeout);
+            callback([]);
+        });
 }
 
 // ---------- Always generates 30 tiles (6 rows × 5 columns) ----------
@@ -1707,65 +1751,6 @@ function updateWorldDisplay() {
     } else {
         updateHeaderForSelection();
     }
-}
-
-// ---------- CLOUDSTORAGE LEADERBOARD FUNCTIONS ----------
-function saveScoreToCloud() {
-    if (!Telegram?.WebApp?.CloudStorage) {
-        return;
-    }
-    
-    const totalWords = calculateTotalWords();
-    const playerName = playerProfile.displayName || "Forgemaster";
-    const sessionKey = 'spellforge_player_' + Date.now().toString().slice(-6);
-    
-    Telegram.WebApp.CloudStorage.setItem(
-        sessionKey, 
-        JSON.stringify({
-            name: playerName,
-            score: totalWords,
-            lastUpdated: new Date().toISOString()
-        }), 
-        function(error, success) {}
-    );
-}
-
-function loadLeaderboardFromCloud(callback) {
-    if (!Telegram?.WebApp?.CloudStorage) {
-        callback([]);
-        return;
-    }
-    
-    Telegram.WebApp.CloudStorage.getKeys(function(error, keys) {
-        if (error || !keys) {
-            callback([]);
-            return;
-        }
-        
-        const playerKeys = keys.filter(k => k.startsWith('spellforge_player_'));
-        
-        Telegram.WebApp.CloudStorage.getItems(playerKeys, function(error, items) {
-            if (error || !items) {
-                callback([]);
-                return;
-            }
-            
-            const leaderboard = [];
-            for (let key in items) {
-                try {
-                    const data = JSON.parse(items[key]);
-                    leaderboard.push({
-                        name: data.name,
-                        score: data.score,
-                        date: data.lastUpdated
-                    });
-                } catch (e) {}
-            }
-            
-            leaderboard.sort((a, b) => b.score - a.score);
-            callback(leaderboard);
-        });
-    });
 }
 
 // ---------- Show current ingot preview for FORGE AGAIN ----------
@@ -2030,30 +2015,80 @@ function returnToPreviousScreen(returnToLeaderboard) {
     }
 }
 
-// ---------- LEADERBOARD POPUP WITH CLOUDSTORAGE ----------
+// ---------- GOOGLE SHEETS LEADERBOARD POPUP ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
     
     overlay.innerHTML = `
         <div class="leaderboard-card">
             <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
-            <div style="text-align: center; padding: 40px; color: #FFD700;">Loading leaderboard...</div>
+            <div style="text-align: center; padding: 40px; color: #FFD700;">
+                <div style="margin-bottom: 15px;">Loading leaderboard...</div>
+                <div style="font-size: 14px; color: #ACCCDD;">If this takes too long, press BACK and try again</div>
+            </div>
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="action-btn" id="loadingBackBtn">← BACK</button>
+                <button class="action-btn secondary" id="loadingRetryBtn">🔄 RETRY</button>
+            </div>
         </div>
     `;
     overlay.classList.remove('hidden');
     
-    loadLeaderboardFromCloud(function(leaderboard) {
-        const playerTotal = calculateTotalWords();
-        const playerWordsByWorld = getWordsByWorld();
-        const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
-        
-        const allEntries = [...leaderboard];
-        const playerRank = allEntries.findIndex(e => e.name === playerProfile.displayName) + 1;
-        const playerAhead = allEntries[playerRank - 2];
-        const wordsToCatch = playerAhead ? playerAhead.score - playerTotal : 0;
-        
-        let leaderboardHtml = '';
-        allEntries.slice(0, 20).forEach((entry, index) => {
+    document.getElementById('loadingBackBtn')?.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        handleLeaderboardReturn(fromCompletion);
+    });
+    
+    document.getElementById('loadingRetryBtn')?.addEventListener('click', () => {
+        showLeaderboardPopup(fromCompletion);
+    });
+    
+    loadLeaderboardFromSheets(function(leaderboard) {
+        if (!overlay.classList.contains('hidden')) {
+            displayLeaderboard(leaderboard, fromCompletion);
+        }
+    });
+}
+
+function handleLeaderboardReturn(fromCompletion) {
+    if (fromCompletion) {
+        const world = worlds[currentWorld];
+        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+        if (allUnitsCompleted) {
+            setTimeout(() => showWorldArtifactPopup(), 100);
+        } else {
+            const nextIngotId = currentUnit + 1;
+            const nextUnit = world.units.find(u => u.id === nextIngotId);
+            if (nextUnit && nextUnit.unlocked) {
+                setTimeout(() => showNextIngotPreview(), 100);
+            } else {
+                renderAll();
+                setUnitSectionVisibility(true);
+                updateHeaderForSelection();
+            }
+        }
+    } else {
+        renderAll();
+    }
+}
+
+function displayLeaderboard(leaderboard, fromCompletion) {
+    const overlay = document.getElementById('popupOverlay');
+    const playerTotal = calculateTotalWords();
+    const playerWordsByWorld = getWordsByWorld();
+    const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
+    
+    const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : [];
+    
+    const playerRank = safeLeaderboard.findIndex(e => e.name === playerProfile.displayName) + 1;
+    const playerAhead = playerRank > 1 ? safeLeaderboard[playerRank - 2] : null;
+    const wordsToCatch = playerAhead ? playerAhead.score - playerTotal : 0;
+    
+    let leaderboardHtml = '';
+    if (safeLeaderboard.length === 0) {
+        leaderboardHtml = '<div style="text-align: center; padding: 20px; color: #ACCCDD;">Be the first to forge words!</div>';
+    } else {
+        safeLeaderboard.slice(0, 20).forEach((entry, index) => {
             const rank = index + 1;
             const youClass = entry.name === playerProfile.displayName ? ' you' : '';
             let crownEmoji = '';
@@ -2064,81 +2099,59 @@ function showLeaderboardPopup(fromCompletion = false) {
             leaderboardHtml += `
                 <div class="leaderboard-row${youClass}">
                     <span class="rank">${rank}.</span>
-                    <span class="player-name">${entry.name}</span>
-                    <span class="score">${entry.score}</span>
+                    <span class="player-name">${entry.name || 'Unknown'}</span>
+                    <span class="score">${entry.score || 0}</span>
                     <span class="crown">${crownEmoji}</span>
                 </div>
             `;
         });
-        
-        if (leaderboardHtml === '') {
-            leaderboardHtml = '<div style="text-align: center; padding: 20px; color: #ACCCDD;">Be the first to forge words!</div>';
-        }
-        
-        overlay.innerHTML = `
-            <div class="leaderboard-card">
-                <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
-                
-                <div class="world-stats-row">
-                    ${worldIcons.map((icon, i) => `
-                        <div class="world-stat-item">
-                            <div class="world-stat-icon">${icon}</div>
-                            <div class="world-stat-value">${playerWordsByWorld[i]}</div>
-                            <div class="world-stat-label">${i === 0 ? 'Grand' : ''}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div class="score-highlight">
-                    <div class="score-title">YOUR TOTAL</div>
-                    <div class="score-number">${playerTotal}</div>
-                    <div class="score-rating">of 600 words</div>
-                </div>
-                
-                <div class="leaderboard-title">🏆 TOP FORGEMASTERS</div>
-                <div class="leaderboard-list" id="leaderboardList">
-                    ${leaderboardHtml}
-                </div>
-                
-                <div class="leaderboard-footer">
-                    ${playerRank ? `You're #${playerRank} of ${allEntries.length} forgemasters!` : 'Play to join the rankings!'}
-                    ${wordsToCatch > 0 ? `<br>${wordsToCatch} words to catch #${playerRank-1} ${playerAhead.name}!` : ''}
-                    ${playerRank === 1 ? '<br>👑 CHAMPION! You are the greatest!' : ''}
-                </div>
-                
-                <div class="button-group">
-                    <button class="action-btn" id="backBtn">← BACK</button>
-                    <button class="action-btn secondary" id="refreshBtn">🔄 REFRESH</button>
-                </div>
+    }
+    
+    overlay.innerHTML = `
+        <div class="leaderboard-card">
+            <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
+            
+            <div class="world-stats-row">
+                ${worldIcons.map((icon, i) => `
+                    <div class="world-stat-item">
+                        <div class="world-stat-icon">${icon}</div>
+                        <div class="world-stat-value">${playerWordsByWorld[i] || 0}</div>
+                        <div class="world-stat-label">${i === 0 ? 'Grand' : ''}</div>
+                    </div>
+                `).join('')}
             </div>
-        `;
-        
-        document.getElementById('backBtn').addEventListener('click', () => {
-            overlay.classList.add('hidden');
-            if (fromCompletion) {
-                const world = worlds[currentWorld];
-                const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-                if (allUnitsCompleted) {
-                    setTimeout(() => showWorldArtifactPopup(), 100);
-                } else {
-                    const nextIngotId = currentUnit + 1;
-                    const nextUnit = world.units.find(u => u.id === nextIngotId);
-                    if (nextUnit && nextUnit.unlocked) {
-                        setTimeout(() => showNextIngotPreview(), 100);
-                    } else {
-                        renderAll();
-                        setUnitSectionVisibility(true);
-                        updateHeaderForSelection();
-                    }
-                }
-            } else {
-                renderAll();
-            }
-        });
-        
-        document.getElementById('refreshBtn').addEventListener('click', () => {
-            showLeaderboardPopup(fromCompletion);
-        });
+            
+            <div class="score-highlight">
+                <div class="score-title">YOUR TOTAL</div>
+                <div class="score-number">${playerTotal}</div>
+                <div class="score-rating">of 600 words</div>
+            </div>
+            
+            <div class="leaderboard-title">🏆 TOP FORGEMASTERS</div>
+            <div class="leaderboard-list">
+                ${leaderboardHtml}
+            </div>
+            
+            <div class="leaderboard-footer">
+                ${playerRank ? `You're #${playerRank} of ${safeLeaderboard.length} forgemasters!` : 'Play to join the rankings!'}
+                ${wordsToCatch > 0 ? `<br>${wordsToCatch} words to catch #${playerRank-1} ${playerAhead?.name || 'next'}!` : ''}
+                ${playerRank === 1 ? '<br>👑 CHAMPION! You are the greatest!' : ''}
+            </div>
+            
+            <div class="button-group">
+                <button class="action-btn" id="backBtn">← BACK</button>
+                <button class="action-btn secondary" id="refreshBtn">🔄 REFRESH</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        handleLeaderboardReturn(fromCompletion);
+    });
+    
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        showLeaderboardPopup(fromCompletion);
     });
 }
 
@@ -2276,7 +2289,7 @@ function showIngotCompletePopup() {
         }
         saveProgress();
         QUICK_RESUME.saveSession();
-        saveScoreToCloud();
+        saveScoreToGoogleSheets();
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
