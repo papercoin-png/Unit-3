@@ -1958,7 +1958,7 @@ function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
 
-// ---------- DEBUG PROFILE POPUP with Telegram info ----------
+// ---------- DEBUG PROFILE POPUP with enhanced Telegram info ----------
 function showProfilePopup(returnToLeaderboard = false) {
     const overlay = document.getElementById('popupOverlay');
     const stats = getPlayerStats();
@@ -1996,12 +1996,19 @@ function showProfilePopup(returnToLeaderboard = false) {
             <div class="profile-field">
                 <div class="profile-label">TELEGRAM ID</div>
                 <div class="profile-id">${playerProfile.telegramId || 'Not available'}</div>
-                <!-- DEBUG INFO - REMOVE LATER -->
-                <div style="font-size: 10px; color: #888; margin-top: 5px; border-top: 1px solid #333; padding-top: 5px;">
-                    Debug: Telegram WebApp ${tg ? '✓ Loaded' : '✗ Missing'}<br>
-                    User Data: ${tg?.initDataUnsafe?.user ? '✓ Present' : '✗ None'}<br>
-                    User ID: ${tg?.initDataUnsafe?.user?.id || 'N/A'}<br>
-                    Profile ID: ${playerProfile.telegramId || 'N/A'}
+                <!-- DEBUG INFO - KEEP THIS FOR NOW -->
+                <div style="font-size: 12px; color: #FFD700; margin-top: 10px; border-top: 1px solid #D4AF37; padding-top: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">🔍 TELEGRAM DEBUG INFO:</div>
+                    <div>• WebApp loaded: <span style="color: ${tg ? '#4ADE80' : '#F87171'}">${tg ? '✅ YES' : '❌ NO'}</span></div>
+                    <div>• User data present: <span style="color: ${tg?.initDataUnsafe?.user ? '#4ADE80' : '#F87171'}">${tg?.initDataUnsafe?.user ? '✅ YES' : '❌ NO'}</span></div>
+                    <div>• User ID from Telegram: <span style="color: #FFD700">${tg?.initDataUnsafe?.user?.id || 'N/A'}</span></div>
+                    <div>• Stored in profile: <span style="color: #FFD700">${playerProfile.telegramId || 'N/A'}</span></div>
+                    <div>• Auth date: <span style="color: #ACCCDD">${tg?.initDataUnsafe?.auth_date || 'N/A'}</span></div>
+                    <div>• Hash present: <span style="color: ${tg?.initDataUnsafe?.hash ? '#4ADE80' : '#F87171'}">${tg?.initDataUnsafe?.hash ? '✅ YES' : '❌ NO'}</span></div>
+                    <div style="margin-top: 8px; font-size: 11px; color: #888; word-break: break-all;">
+                        <div>Full initData: ${tg?.initData ? '✓ Present' : '✗ Missing'}</div>
+                        <div style="font-size: 9px;">${tg?.initData ? tg.initData.substring(0, 50) + '...' : ''}</div>
+                    </div>
                 </div>
             </div>
             
