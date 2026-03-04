@@ -1525,11 +1525,11 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- GOOGLE SHEETS LEADERBOARD WITH JSONP - UPDATED URL AND FIXED SAVE FUNCTION ----------
+// ---------- GOOGLE SHEETS LEADERBOARD WITH MODERN FETCH API ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxb816QBBx6q6kwIPMBHGghpUZX4554Etg2G-mcU5akYnhcUMNaAI9sdT2tlq7kzWH2Lw/exec';
 
-// New function with callback support
-function saveScoreToGoogleSheetsWithCallback(callback) {
+// Save score using fetch
+async function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
@@ -1548,39 +1548,24 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
     
     const playerId = playerProfile.telegramId || localId;
     
-    // Create a unique callback name
-    const callbackName = 'jsonp_callback_' + Date.now();
-    
-    // Create a temporary callback function
-    window[callbackName] = function(response) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        if (callback) callback(response);
-    };
-    
-    // Build the JSONP URL
-    const params = new URLSearchParams({
-        action: 'save',
-        player_name: playerName,
-        total_words: totalWords,
-        telegram_id: playerId,
-        display_name: playerProfile.displayName,
-        callback: callbackName
-    });
-    
-    // Create and inject script tag
-    const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
-    document.body.appendChild(script);
-    
-    // Timeout fallback
-    setTimeout(() => {
-        if (window[callbackName]) {
-            delete window[callbackName];
-            document.body.removeChild(script);
-            if (callback) callback();
-        }
-    }, 5000);
+    try {
+        // Build the URL with parameters (no callback needed)
+        const url = new URL(GOOGLE_SHEETS_URL);
+        url.searchParams.append('action', 'save');
+        url.searchParams.append('player_name', playerName);
+        url.searchParams.append('total_words', totalWords);
+        url.searchParams.append('telegram_id', playerId);
+        url.searchParams.append('display_name', playerProfile.displayName);
+        url.searchParams.append('_', Date.now()); // Cache buster
+        
+        const response = await fetch(url.toString());
+        const result = await response.json();
+        
+        if (callback) callback(result);
+    } catch (error) {
+        console.error('Error saving score:', error);
+        if (callback) callback(null);
+    }
 }
 
 // Keep original function for backward compatibility
@@ -1588,31 +1573,23 @@ function saveScoreToGoogleSheets() {
     saveScoreToGoogleSheetsWithCallback();
 }
 
-function loadLeaderboardFromSheets(callback) {
-    const callbackName = 'jsonp_load_' + Date.now();
-    
-    window[callbackName] = function(data) {
+// Load leaderboard using fetch
+async function loadLeaderboardFromSheets(callback) {
+    try {
+        // Build the URL with parameters (no callback needed)
+        const url = new URL(GOOGLE_SHEETS_URL);
+        url.searchParams.append('action', 'get');
+        url.searchParams.append('_', Date.now()); // Cache buster
+        
+        const response = await fetch(url.toString());
+        const data = await response.json();
+        
+        // Make sure we pass an array to the callback
         callback(Array.isArray(data) ? data : []);
-        delete window[callbackName];
-        document.body.removeChild(script);
-    };
-    
-    const params = new URLSearchParams({
-        action: 'get',
-        callback: callbackName
-    });
-    
-    const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
-    document.body.appendChild(script);
-    
-    setTimeout(() => {
-        if (window[callbackName]) {
-            callback([]);
-            delete window[callbackName];
-            document.body.removeChild(script);
-        }
-    }, 5000);
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        callback([]);
+    }
 }
 
 // ---------- HELPER FUNCTIONS ----------
@@ -2061,7 +2038,7 @@ function returnToPreviousScreen(returnToLeaderboard) {
     }
 }
 
-// ---------- LEADERBOARD POPUP WITH JSONP ----------
+// ---------- LEADERBOARD POPUP WITH FETCH ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
     
@@ -2070,7 +2047,7 @@ function showLeaderboardPopup(fromCompletion = false) {
             <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
             <div style="text-align: center; padding: 40px; color: #FFD700;">
                 <div style="margin-bottom: 15px;">Loading leaderboard...</div>
-                <div style="font-size: 14px; color: #ACCCDD;">If this takes too long, press BACK and try again</div>
+                <div style="font-size: 14px; color: #ACCCDD;">Connecting to the forge...</div>
             </div>
             <div class="button-group" style="margin-top: 20px;">
                 <button class="action-btn" id="loadingBackBtn">← BACK</button>
