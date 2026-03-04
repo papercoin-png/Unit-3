@@ -1712,12 +1712,15 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
-function saveScoreToGoogleSheets() {
+// ---------- UPDATED JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
+function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
-    if (totalWords === 0) return;
+    if (totalWords === 0) {
+        if (callback) callback();
+        return;
+    }
     
     // Get or create persistent local ID
     let localId = localStorage.getItem('spellforge_local_id');
@@ -1736,15 +1739,17 @@ function saveScoreToGoogleSheets() {
     window[callbackName] = function(response) {
         delete window[callbackName];
         document.body.removeChild(script);
+        if (callback) callback(response);
     };
     
-    // Build the JSONP URL
+    // Build the JSONP URL with cache-busting
     const params = new URLSearchParams({
         action: 'save',
         player_name: playerName,
         total_words: totalWords,
         telegram_id: playerId,
         display_name: playerProfile.displayName,
+        _: Date.now(), // Cache busting
         callback: callbackName
     });
     
@@ -1753,13 +1758,19 @@ function saveScoreToGoogleSheets() {
     script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
     document.body.appendChild(script);
     
-    // Timeout fallback to clean up
+    // Timeout fallback
     setTimeout(() => {
         if (window[callbackName]) {
             delete window[callbackName];
             document.body.removeChild(script);
+            if (callback) callback(); // Still continue even if timeout
         }
     }, 5000);
+}
+
+// Keep the old function name for backward compatibility
+function saveScoreToGoogleSheets() {
+    saveScoreToGoogleSheetsWithCallback();
 }
 
 function loadLeaderboardFromSheets(callback) {
@@ -1773,6 +1784,7 @@ function loadLeaderboardFromSheets(callback) {
     
     const params = new URLSearchParams({
         action: 'get',
+        _: Date.now(), // Cache busting
         callback: callbackName
     });
     
@@ -2263,6 +2275,7 @@ function showFailurePopup() {
     tg?.HapticFeedback?.notificationOccurred?.('error');
 }
 
+// ---------- UPDATED INGOT COMPLETE POPUP ----------
 function showIngotCompletePopup() {
     const overlay = document.getElementById('popupOverlay');
     const world = worlds[currentWorld];
@@ -2300,6 +2313,9 @@ function showIngotCompletePopup() {
             <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
             <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
         </div>
+        <div id="saveStatus" style="display: none; text-align: center; margin-top: 15px; color: #FFD700;">
+            ⏳ Saving your score...
+        </div>
     `;
     
     overlay.appendChild(card);
@@ -2311,21 +2327,32 @@ function showIngotCompletePopup() {
     });
     
     document.getElementById('continueBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-        if (allUnitsCompleted) {
-            setTimeout(() => showWorldArtifactPopup(), 100);
-        } else {
-            const nextIngotId = currentUnit + 1;
-            const nextUnit = world.units.find(u => u.id === nextIngotId);
-            if (nextUnit) {
-                nextUnit.unlocked = true;
-                setTimeout(() => showNextIngotPreview(), 100);
+        // Disable the button to prevent double-clicking
+        const continueBtn = document.getElementById('continueBtn');
+        continueBtn.disabled = true;
+        continueBtn.style.opacity = '0.5';
+        
+        // Show saving status
+        document.getElementById('saveStatus').style.display = 'block';
+        
+        // Save the score first, then continue
+        saveScoreToGoogleSheetsWithCallback(() => {
+            overlay.classList.add('hidden');
+            
+            const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+            if (allUnitsCompleted) {
+                setTimeout(() => showWorldArtifactPopup(), 100);
+            } else {
+                const nextIngotId = currentUnit + 1;
+                const nextUnit = world.units.find(u => u.id === nextIngotId);
+                if (nextUnit) {
+                    nextUnit.unlocked = true;
+                    setTimeout(() => showNextIngotPreview(), 100);
+                }
             }
-        }
-        saveProgress();
-        QUICK_RESUME.saveSession();
-        saveScoreToGoogleSheets();
+            saveProgress();
+            QUICK_RESUME.saveSession();
+        });
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
