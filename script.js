@@ -1525,207 +1525,18 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- FIXED GOOGLE SHEETS LEADERBOARD URL ----------
+// ---------- WORKING GOOGLE SHEETS LEADERBOARD URL ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzn9s0JHEqhxYPVAVhVfEly8-rK8_S0Yqh7rG0m5ZSwFRS7gBdHR13EuFUHv8UgDQ5xsA/exec';
 
-// ---------- HELPER FUNCTIONS ----------
-function calculateTotalWords() {
-    let total = 0;
-    for (let worldId = 1; worldId <= 6; worldId++) {
-        if (worlds[worldId]) {
-            total += worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-        }
-    }
-    return total;
-}
-
-function getWordsByWorld() {
-    const wordsByWorld = [];
-    for (let worldId = 1; worldId <= 6; worldId++) {
-        if (worlds[worldId]) {
-            const worldTotal = worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-            wordsByWorld.push(worldTotal);
-        } else {
-            wordsByWorld.push(0);
-        }
-    }
-    return wordsByWorld;
-}
-
-function getPlayerStats() {
-    const wordsByWorld = getWordsByWorld();
-    const totalWords = wordsByWorld.reduce((a, b) => a + b, 0);
-    const ingotsMastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
-    const totalAttempts = playerPerformance.ingotHistory.length;
-    const successfulAttempts = playerPerformance.ingotHistory.filter(h => h.success).length;
-    const successRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 100;
-    
-    return {
-        worlds: wordsByWorld,
-        totalWords: totalWords,
-        ingotsMastered: ingotsMastered,
-        successRate: successRate
-    };
-}
-
-// ---------- Always generates 30 tiles (6 rows × 5 columns) ----------
-function generateInitialLetters() {
-    const words = getCurrentUnitWords();
-    if (!words || words.length === 0) return [];
-    
-    let targetWord = '';
-    if (activeWordIndex !== null && words[activeWordIndex]) {
-        targetWord = words[activeWordIndex].word;
-    } else {
-        targetWord = words[0]?.word || '';
-    }
-    
-    if (!targetWord) return [];
-    
-    const TOTAL_TILES = 30;
-    const letters = targetWord.split('');
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    
-    while (letters.length < TOTAL_TILES) {
-        const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-        letters.push(randomLetter);
-    }
-    
-    for (let i = letters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [letters[i], letters[j]] = [letters[j], letters[i]];
-    }
-    
-    return letters;
-}
-
-function getCurrentUnitWords() {
-    try {
-        return MASTER_WORDS[`world${currentWorld}`].units[currentUnit].words || [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function getWorldTier() {
-    if (currentWorld === 1) {
-        if (currentUnit <= 10) return "Foundation";
-        if (currentUnit <= 20) return "Crafting";
-        return "Masterwork";
-    }
-    return "";
-}
-
-function updateHeaderForGameplay() {
-    const world = worlds[currentWorld];
-    const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
-    const unitName = unitData ? unitData.name : "Unknown";
-    document.getElementById('worldIcon').innerText = world.icon;
-    document.getElementById('worldName').innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitName}`;
-    document.getElementById('tierBadge').style.display = 'none';
-    document.getElementById('progressDisplay').innerText = `${completedWords.length}/20`;
-}
-
-function updateHeaderForSelection() {
-    const world = worlds[currentWorld];
-    const tier = getWorldTier();
-    const totalProgress = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-    document.getElementById('worldIcon').innerText = world.icon;
-    document.getElementById('worldName').innerText = world.name;
-    document.getElementById('tierBadge').style.display = 'inline-block';
-    document.getElementById('tierBadge').innerText = tier;
-    document.getElementById('progressDisplay').innerText = `${totalProgress}/${world.totalWords}`;
-}
-
-function setUnitSectionVisibility(visible) {
-    const unitSection = document.getElementById('unitSection');
-    if (visible) {
-        unitSection.classList.remove('hidden');
-    } else {
-        unitSection.classList.add('hidden');
-    }
-}
-
-function returnTempLetters() {
-    if (tempUsedLetters.length > 0) {
-        currentLetters.push(...tempUsedLetters);
-        tempUsedLetters = [];
-        currentPosition = 0;
-    }
-}
-
-function calculateRiskBonus(baseChance, actualChance, success) {
-    if (!success) return 0;
-    const riskFactor = 100 - actualChance;
-    return Math.min(riskFactor * 10, 1000);
-}
-
-function updateWorldDisplay() {
-    const world = worlds[currentWorld];
-    
-    const selector = document.getElementById('unitSelector');
-    selector.innerHTML = '';
-    world.units.forEach((unit) => {
-        if (unit.unlocked) {
-            const option = document.createElement('option');
-            option.value = unit.id;
-            const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
-            const unitName = unitData ? unitData.name : "???";
-            option.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}`;
-            if (unit.id === currentUnit) option.selected = true;
-            selector.appendChild(option);
-        }
-    });
-
-    const grid = document.getElementById('unitGrid');
-    grid.innerHTML = '';
-    world.units.forEach(unit => {
-        if (unit.unlocked) {
-            const unitData = MASTER_WORDS[`world${currentWorld}`].units[unit.id];
-            const unitName = unitData ? unitData.name : "???";
-            const card = document.createElement('div');
-            card.className = `unit-card ${unit.id === currentUnit ? 'active-unit' : ''} ${unit.wordsCompleted === 20 ? 'completed' : ''}`;
-            card.innerHTML = `
-                <div class="unit-number">${world.unitName} ${unit.id.toString().padStart(2, '0')}</div>
-                <div class="unit-name">${unitName}</div>
-                <div class="unit-progress">${unit.wordsCompleted}/20</div>
-                <div class="unit-progress-bar">
-                    <div class="unit-progress-fill" style="width: ${(unit.wordsCompleted/20)*100}%"></div>
-                </div>
-            `;
-            card.addEventListener('click', () => {
-                if (unit.id !== currentUnit) {
-                    currentUnit = unit.id;
-                    resetForNewUnit();
-                    updateWorldDisplay();
-                    saveProgress();
-                }
-            });
-            grid.appendChild(card);
-        }
-    });
-
-    if (activeWordIndex !== null) {
-        updateHeaderForGameplay();
-    } else {
-        updateHeaderForSelection();
-    }
-}
-
-// ---------- FIXED JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
-function saveScoreToGoogleSheetsWithCallback(callback) {
+// ---------- SIMPLE FETCH-BASED FUNCTIONS (NO JSONP) ----------
+async function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
-    console.log('🔍 SAVE ATTEMPT:', { 
-        totalWords, 
-        playerName, 
-        playerProfile,
-        telegramId: playerProfile.telegramId 
-    });
+    console.log('🔍 SAVE ATTEMPT:', { totalWords, playerName, playerProfile });
     
     if (totalWords === 0) {
-        console.log('⚠️ No words to save (totalWords = 0)');
+        console.log('⚠️ No words to save');
         if (callback) callback();
         return;
     }
@@ -1736,61 +1547,32 @@ function saveScoreToGoogleSheetsWithCallback(callback) {
         localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
                   Math.random().toString(36).substring(2, 15);
         localStorage.setItem('spellforge_local_id', localId);
-        console.log('🆕 Created new local ID:', localId);
     }
     
     const playerId = playerProfile.telegramId || localId;
-    console.log('🆔 Using player ID:', playerId);
     
-    // Create a unique callback name
-    const callbackName = 'jsonp_callback_' + Date.now();
-    console.log('📞 Callback name:', callbackName);
-    
-    // Create a temporary callback function
-    window[callbackName] = function(response) {
-        console.log('✅ Save successful! Response:', response);
-        delete window[callbackName];
-        const script = document.getElementById(callbackName);
-        if (script) document.body.removeChild(script);
-        if (callback) callback(response);
-    };
-    
-    // Build the JSONP URL with cache-busting
+    // Build URL with parameters
     const params = new URLSearchParams({
         action: 'save',
         player_name: playerName,
         total_words: totalWords,
         telegram_id: playerId,
         display_name: playerProfile.displayName,
-        _: Date.now(), // Cache busting
-        callback: callbackName
+        _: Date.now()
     });
     
-    const fullUrl = GOOGLE_SHEETS_URL + '?' + params.toString();
-    console.log('📡 Sending request to:', fullUrl);
+    const url = GOOGLE_SHEETS_URL + '?' + params.toString();
+    console.log('📡 Sending request to:', url);
     
-    // Create and inject script tag
-    const script = document.createElement('script');
-    script.id = callbackName;
-    script.src = fullUrl;
-    script.onerror = function(error) {
-        console.error('❌ Script load error:', error);
-        delete window[callbackName];
-        if (script.parentNode) script.parentNode.removeChild(script);
+    try {
+        // Use fetch with no-cors mode - this will send the request but we can't read response
+        await fetch(url, { mode: 'no-cors' });
+        console.log('✅ Save request sent (no-cors mode)');
         if (callback) callback();
-    };
-    document.body.appendChild(script);
-    
-    // Timeout fallback
-    setTimeout(() => {
-        if (window[callbackName]) {
-            console.error('❌ Save timeout after 5 seconds');
-            delete window[callbackName];
-            const script = document.getElementById(callbackName);
-            if (script) script.parentNode.removeChild(script);
-            if (callback) callback(); // Still continue even if timeout
-        }
-    }, 5000);
+    } catch (error) {
+        console.error('❌ Save failed:', error);
+        if (callback) callback();
+    }
 }
 
 // Keep the old function name for backward compatibility
@@ -1798,56 +1580,62 @@ function saveScoreToGoogleSheets() {
     saveScoreToGoogleSheetsWithCallback();
 }
 
-function loadLeaderboardFromSheets(callback) {
+async function loadLeaderboardFromSheets(callback) {
     console.log('📥 Loading leaderboard...');
-    
-    const callbackName = 'jsonp_load_' + Date.now();
-    
-    window[callbackName] = function(data) {
-        console.log('✅ Leaderboard loaded:', data);
-        callback(Array.isArray(data) ? data : []);
-        delete window[callbackName];
-        const script = document.getElementById(callbackName);
-        if (script) script.parentNode.removeChild(script);
-    };
     
     const params = new URLSearchParams({
         action: 'get',
-        _: Date.now(), // Cache busting
-        callback: callbackName
+        _: Date.now()
     });
     
-    const fullUrl = GOOGLE_SHEETS_URL + '?' + params.toString();
-    console.log('📡 Loading from:', fullUrl);
+    const url = GOOGLE_SHEETS_URL + '?' + params.toString();
+    console.log('📡 Fetching from:', url);
     
-    const script = document.createElement('script');
-    script.id = callbackName;
-    script.src = fullUrl;
-    script.onerror = function(error) {
-        console.error('❌ Leaderboard load error:', error);
-        callback([]);
-        delete window[callbackName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-    };
-    document.body.appendChild(script);
-    
-    setTimeout(() => {
-        if (window[callbackName]) {
-            console.error('❌ Leaderboard timeout');
-            callback([]);
+    try {
+        // Since this is a cross-origin request, we need to use a proxy or JSONP
+        // For now, let's use a simple JSONP approach for GET requests
+        const callbackName = 'jsonp_load_' + Date.now();
+        
+        window[callbackName] = function(data) {
+            console.log('✅ Leaderboard data received:', data);
+            callback(Array.isArray(data) ? data : []);
             delete window[callbackName];
             const script = document.getElementById(callbackName);
-            if (script) script.parentNode.removeChild(script);
-        }
-    }, 5000);
+            if (script) script.remove();
+        };
+        
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.src = url + '&callback=' + callbackName;
+        script.onerror = function() {
+            console.error('❌ Leaderboard script error');
+            callback([]);
+            delete window[callbackName];
+            script.remove();
+        };
+        document.body.appendChild(script);
+        
+        setTimeout(() => {
+            if (window[callbackName]) {
+                console.error('❌ Leaderboard timeout');
+                callback([]);
+                delete window[callbackName];
+                const script = document.getElementById(callbackName);
+                if (script) script.remove();
+            }
+        }, 5000);
+        
+    } catch (error) {
+        console.error('❌ Leaderboard fetch error:', error);
+        callback([]);
+    }
 }
 
-// ---------- TEST FUNCTION (with debouncing) ----------
+// ---------- TEST FUNCTION ----------
 let testButtonClickCount = 0;
 let lastTestClick = 0;
 
-function testManualSave() {
-    // Debounce clicks - prevent multiple rapid clicks
+async function testManualSave() {
     const now = Date.now();
     if (now - lastTestClick < 1000) {
         console.log('⚠️ Please wait 1 second between test clicks');
@@ -1858,14 +1646,7 @@ function testManualSave() {
     testButtonClickCount++;
     console.log(`🧪 Manual save test #${testButtonClickCount}`);
     
-    const testWords = 50 + testButtonClickCount; // Increment score each time
-    
-    const callbackName = 'test_save_' + Date.now();
-    window[callbackName] = function(response) {
-        console.log('✅ Test save response:', response);
-        alert(`Save test #${testButtonClickCount} complete! Score: ${testWords} - Check Google Sheets.`);
-        delete window[callbackName];
-    };
+    const testWords = 50 + testButtonClickCount;
     
     const params = new URLSearchParams({
         action: 'save',
@@ -1873,22 +1654,23 @@ function testManualSave() {
         total_words: testWords,
         telegram_id: 'test_manual_' + Date.now(),
         display_name: 'Test Player',
-        _: Date.now(),
-        callback: callbackName
+        _: Date.now()
     });
     
-    const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
-    script.onerror = function() {
-        console.error('❌ Test save script error');
+    const url = GOOGLE_SHEETS_URL + '?' + params.toString();
+    
+    try {
+        await fetch(url, { mode: 'no-cors' });
+        console.log('✅ Test save request sent');
+        alert(`Test save #${testButtonClickCount} sent! Score: ${testWords}. Check Google Sheets to confirm.`);
+    } catch (error) {
+        console.error('❌ Test save failed:', error);
         alert('Test save failed! Check console.');
-    };
-    document.body.appendChild(script);
+    }
 }
 
-// Add test button (only once)
+// Add test button
 window.addEventListener('load', () => {
-    // Check if button already exists
     if (document.getElementById('testSaveBtn')) return;
     
     setTimeout(() => {
@@ -2174,7 +1956,7 @@ function returnToPreviousScreen(returnToLeaderboard) {
     }
 }
 
-// ---------- LEADERBOARD POPUP WITH JSONP ----------
+// ---------- LEADERBOARD POPUP ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
     
@@ -2440,17 +2222,13 @@ function showIngotCompletePopup() {
     });
     
     document.getElementById('continueBtn').addEventListener('click', () => {
-        // Disable the button to prevent double-clicking
         const continueBtn = document.getElementById('continueBtn');
         continueBtn.disabled = true;
         continueBtn.style.opacity = '0.5';
-        
-        // Show saving status
         document.getElementById('saveStatus').style.display = 'block';
         
         console.log('💾 Attempting to save score...');
         
-        // Save the score first, then continue
         saveScoreToGoogleSheetsWithCallback(() => {
             console.log('✅ Save callback executed, continuing...');
             overlay.classList.add('hidden');
