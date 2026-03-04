@@ -1604,7 +1604,7 @@ function getPlayerStats() {
     };
 }
 
-// ---------- FIXED: Always generates 35 tiles (7 rows × 5 columns) ----------
+// ---------- FIXED: Always generates 30 tiles (6 rows × 5 columns) ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
     if (!words || words.length === 0) return [];
@@ -1619,13 +1619,13 @@ function generateInitialLetters() {
     
     if (!targetWord) return [];
     
-    // Total tiles needed: 35 (7 rows × 5 columns)
-    const TOTAL_TILES = 35;
+    // Total tiles needed: 30 (6 rows × 5 columns)
+    const TOTAL_TILES = 30;
     
     // Start with all letters from the target word
     const letters = targetWord.split('');
     
-    // Add random letters until we reach 35
+    // Add random letters until we reach 30
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     while (letters.length < TOTAL_TILES) {
         const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
