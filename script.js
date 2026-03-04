@@ -1604,30 +1604,41 @@ function getPlayerStats() {
     };
 }
 
+// ---------- FIXED: Always generates 35 tiles (7 rows × 5 columns) ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
     if (!words || words.length === 0) return [];
     
-    const letterCounts = {};
-    words.forEach(entry => {
-        entry.word.split('').forEach(letter => {
-            letterCounts[letter] = (letterCounts[letter] || 0) + 1;
-        });
-    });
-    
-    const letterBank = [];
-    Object.keys(letterCounts).forEach(letter => {
-        for (let i = 0; i < letterCounts[letter]; i++) {
-            letterBank.push(letter);
-        }
-    });
-    
-    for (let i = letterBank.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [letterBank[i], letterBank[j]] = [letterBank[j], letterBank[i]];
+    // Get the active word if one is selected, otherwise use the first word
+    let targetWord = '';
+    if (activeWordIndex !== null && words[activeWordIndex]) {
+        targetWord = words[activeWordIndex].word;
+    } else {
+        targetWord = words[0]?.word || '';
     }
     
-    return letterBank;
+    if (!targetWord) return [];
+    
+    // Total tiles needed: 35 (7 rows × 5 columns)
+    const TOTAL_TILES = 35;
+    
+    // Start with all letters from the target word
+    const letters = targetWord.split('');
+    
+    // Add random letters until we reach 35
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    while (letters.length < TOTAL_TILES) {
+        const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+        letters.push(randomLetter);
+    }
+    
+    // Shuffle thoroughly
+    for (let i = letters.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [letters[i], letters[j]] = [letters[j], letters[i]];
+    }
+    
+    return letters;
 }
 
 function getCurrentUnitWords() {
@@ -2579,7 +2590,7 @@ function handleLetterTap(letter, indexInGrid) {
         }, 150);
     }
     
-    // Haptic feedback (works great in Telegram)
+    // Haptic feedback
     tg?.HapticFeedback?.impactOccurred?.('light');
     
     // Update game state
@@ -2658,6 +2669,10 @@ function renderAll() {
                     if (activeWordIndex !== null && activeWordIndex !== idx) returnTempLetters();
                     activeWordIndex = idx;
                     currentPosition = 0;
+                    
+                    // IMPORTANT: When selecting a new word, regenerate letters
+                    currentLetters = generateInitialLetters();
+                    
                     setUnitSectionVisibility(false);
                     updateHeaderForGameplay();
                     renderAll();
@@ -2764,6 +2779,9 @@ document.addEventListener('click', (e) => {
         currentPosition = 0;
         setUnitSectionVisibility(true);
         updateHeaderForSelection();
+        
+        // Regenerate letters when returning to selection mode
+        currentLetters = generateInitialLetters();
         renderAll();
     }
 });
