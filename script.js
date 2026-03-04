@@ -1578,7 +1578,6 @@ function saveScoreToGoogleSheets() {
     
     fetch(GOOGLE_SHEETS_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
             'Content-Type': 'application/json',
         },
