@@ -1525,15 +1525,15 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- GOOGLE SHEETS LEADERBOARD WITH FETCH - COMPLETELY REWRITTEN ----------
+// ---------- GOOGLE SHEETS LEADERBOARD WITH FETCH - FIXED VERSION ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxb816QBBx6q6kwIPMBHGghpUZX4554Etg2G-mcU5akYnhcUMNaAI9sdT2tlq7kzWH2Lw/exec';
 
-// Save score using fetch
+// Save score using fetch - USING LOCALSTORAGE ID (FIXED)
 async function saveScoreToGoogleSheetsWithCallback(callback) {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
-    console.log('Saving score:', { totalWords, playerName, telegramId: playerProfile.telegramId });
+    console.log('Saving score:', { totalWords, playerName });
     
     if (totalWords === 0) {
         console.log('No words to save');
@@ -1541,26 +1541,26 @@ async function saveScoreToGoogleSheetsWithCallback(callback) {
         return;
     }
     
-    // Get or create persistent local ID
-    let localId = localStorage.getItem('spellforge_local_id');
-    if (!localId) {
-        localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
-                  Math.random().toString(36).substring(2, 15);
-        localStorage.setItem('spellforge_local_id', localId);
+    // Get or create persistent local ID (this is your permanent player ID)
+    let playerId = localStorage.getItem('spellforge_local_id');
+    if (!playerId) {
+        playerId = 'player_' + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('spellforge_local_id', playerId);
+        console.log('Created new player ID:', playerId);
+    } else {
+        console.log('Using existing player ID:', playerId);
     }
-    
-    const playerId = playerProfile.telegramId || localId;
     
     try {
         const url = new URL(GOOGLE_SHEETS_URL);
         url.searchParams.append('action', 'save');
         url.searchParams.append('player_name', playerName);
         url.searchParams.append('total_words', totalWords);
-        url.searchParams.append('telegram_id', playerId);
+        url.searchParams.append('telegram_id', playerId);  // Using localStorage ID
         url.searchParams.append('display_name', playerProfile.displayName);
         url.searchParams.append('_', Date.now()); // Cache buster
         
-        console.log('Fetching save URL:', url.toString());
+        console.log('Saving to URL:', url.toString());
         
         const response = await fetch(url.toString());
         const result = await response.json();
@@ -1578,7 +1578,7 @@ function saveScoreToGoogleSheets() {
     saveScoreToGoogleSheetsWithCallback();
 }
 
-// Load leaderboard using fetch - FIXED: No JSONP, no callback parameter
+// Load leaderboard using fetch
 async function loadLeaderboardFromSheets(callback) {
     try {
         console.log('Loading leaderboard...');
@@ -1593,7 +1593,6 @@ async function loadLeaderboardFromSheets(callback) {
         const data = await response.json();
         console.log('Leaderboard data received:', data);
         
-        // Ensure we pass an array to the callback
         callback(Array.isArray(data) ? data : []);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
@@ -1940,7 +1939,7 @@ function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
 
-// ---------- PROFILE POPUP ----------
+// ---------- PROFILE POPUP WITH LEADERBOARD TROPHY ----------
 function showProfilePopup(returnToLeaderboard = false) {
     const overlay = document.getElementById('popupOverlay');
     const stats = getPlayerStats();
@@ -1995,6 +1994,12 @@ function showProfilePopup(returnToLeaderboard = false) {
                 </div>
             </div>
             
+            <!-- Leaderboard Trophy Button -->
+            <div class="profile-trophy" id="profileTrophyBtn">
+                <span class="trophy-icon">🏆</span>
+                <span class="trophy-text">VIEW LEADERBOARD</span>
+            </div>
+            
             <div class="button-group">
                 <button class="action-btn" id="profileSaveBtn">💾 SAVE</button>
                 <button class="action-btn cancel" id="profileCancelBtn">✕ CANCEL</button>
@@ -2031,6 +2036,12 @@ function showProfilePopup(returnToLeaderboard = false) {
     });
     
     document.getElementById('profileSaveBtn').addEventListener('click', validateAndSave);
+    
+    // Trophy button event listener
+    document.getElementById('profileTrophyBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showLeaderboardPopup(false); // false = not from completion
+    });
     
     nameInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -2259,7 +2270,7 @@ function showFailurePopup() {
     tg?.HapticFeedback?.notificationOccurred?.('error');
 }
 
-// ---------- UPDATED INGOT COMPLETE POPUP WITH SAVE CALLBACK ----------
+// ---------- INGOT COMPLETE POPUP ----------
 function showIngotCompletePopup() {
     const overlay = document.getElementById('popupOverlay');
     const world = worlds[currentWorld];
