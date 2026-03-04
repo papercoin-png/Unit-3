@@ -1525,7 +1525,7 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- GOOGLE SHEETS LEADERBOARD ----------
+// ---------- GOOGLE SHEETS LEADERBOARD WITH JSONP ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzPM894XIU0OQttwV_2iROjISCTnw0jFGdup47jCMuEWgxxfvT8UoEMJrCcjViSOe5gEQ/exec';
 
 // ---------- HELPER FUNCTIONS ----------
@@ -1568,7 +1568,7 @@ function getPlayerStats() {
     };
 }
 
-// ---------- FIXED: Always generates 30 tiles (6 rows × 5 columns) ----------
+// ---------- Always generates 30 tiles (6 rows × 5 columns) ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
     if (!words || words.length === 0) return [];
@@ -1712,58 +1712,81 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- FIXED: GOOGLE SHEETS SAVE FUNCTION WITH PERSISTENT LOCAL ID ----------
+// ---------- JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
 function saveScoreToGoogleSheets() {
     const totalWords = calculateTotalWords();
     const playerName = playerProfile.displayName || "Forgemaster";
     
-    // Don't save if score is 0 (new players)
     if (totalWords === 0) return;
     
-    // Get or create a persistent local ID
+    // Get or create persistent local ID
     let localId = localStorage.getItem('spellforge_local_id');
     if (!localId) {
-        // Create a random ID that stays forever
         localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
                   Math.random().toString(36).substring(2, 15);
         localStorage.setItem('spellforge_local_id', localId);
     }
     
-    // Use Telegram ID if available, otherwise use persistent local ID
     const playerId = playerProfile.telegramId || localId;
     
-    const dataToSend = {
+    // Create a unique callback name
+    const callbackName = 'jsonp_callback_' + Date.now();
+    
+    // Create a temporary callback function
+    window[callbackName] = function(response) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
+    
+    // Build the JSONP URL
+    const params = new URLSearchParams({
         action: 'save',
         player_name: playerName,
         total_words: totalWords,
         telegram_id: playerId,
-        display_name: playerProfile.displayName
-    };
+        display_name: playerProfile.displayName,
+        callback: callbackName
+    });
     
-    fetch(GOOGLE_SHEETS_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-    }).catch(error => {});
+    // Create and inject script tag
+    const script = document.createElement('script');
+    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    document.body.appendChild(script);
+    
+    // Timeout fallback to clean up
+    setTimeout(() => {
+        if (window[callbackName]) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+        }
+    }, 5000);
 }
 
 function loadLeaderboardFromSheets(callback) {
-    const timeout = setTimeout(() => {
-        callback([]);
-    }, 5000);
+    const callbackName = 'jsonp_load_' + Date.now();
     
-    fetch(`${GOOGLE_SHEETS_URL}?action=get&t=${Date.now()}`)
-        .then(response => response.json())
-        .then(data => {
-            clearTimeout(timeout);
-            callback(Array.isArray(data) ? data : []);
-        })
-        .catch(() => {
-            clearTimeout(timeout);
+    window[callbackName] = function(data) {
+        callback(Array.isArray(data) ? data : []);
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
+    
+    const params = new URLSearchParams({
+        action: 'get',
+        callback: callbackName
+    });
+    
+    const script = document.createElement('script');
+    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    document.body.appendChild(script);
+    
+    setTimeout(() => {
+        if (window[callbackName]) {
             callback([]);
-        });
+            delete window[callbackName];
+            document.body.removeChild(script);
+        }
+    }, 5000);
 }
 
 // ---------- Show current ingot preview for FORGE AGAIN ----------
@@ -2028,7 +2051,7 @@ function returnToPreviousScreen(returnToLeaderboard) {
     }
 }
 
-// ---------- GOOGLE SHEETS LEADERBOARD POPUP ----------
+// ---------- LEADERBOARD POPUP WITH JSONP ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
     
