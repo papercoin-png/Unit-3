@@ -4,6 +4,9 @@ if (tg) {
     tg.expand();
     tg.enableClosingConfirmation?.();
     tg.setHeaderColor?.('#1a2f3f');
+    console.log('Telegram WebApp initialized:', tg); // Debug log
+} else {
+    console.log('Telegram WebApp not available - running in browser mode');
 }
 
 // ---------- LOADING SCREEN ----------
@@ -1330,7 +1333,7 @@ function onSuccess(ingotId) {
     saveProgress();
 }
 
-// ---------- PLAYER PROFILE ----------
+// ---------- FIXED PLAYER PROFILE ----------
 let playerProfile = {
     displayName: "Forgemaster",
     telegramId: null,
@@ -1341,23 +1344,69 @@ let playerProfile = {
 
 function loadProfile() {
     try {
-        const saved = localStorage.getItem('spellforge_profile');
-        if (saved) {
-            playerProfile = JSON.parse(saved);
+        // Get Telegram user data FIRST
+        let telegramUser = null;
+        if (tg?.initDataUnsafe?.user) {
+            telegramUser = tg.initDataUnsafe.user;
+            console.log('Telegram user found:', telegramUser.id); // Debug log
         } else {
-            const user = tg?.initDataUnsafe?.user;
-            if (user) {
+            console.log('No Telegram user data - are you testing outside Telegram?');
+        }
+        
+        // Try to load saved profile
+        const saved = localStorage.getItem('spellforge_profile');
+        
+        if (saved) {
+            // Load saved profile
+            playerProfile = JSON.parse(saved);
+            
+            // ALWAYS update with latest Telegram data if available
+            if (telegramUser) {
+                playerProfile.telegramId = telegramUser.id;
+                playerProfile.firstName = telegramUser.first_name || "";
+                playerProfile.lastName = telegramUser.last_name || "";
+                playerProfile.username = telegramUser.username || "";
+                
+                // Only update display name if it's still default or empty
+                if (!playerProfile.displayName || playerProfile.displayName === "Forgemaster") {
+                    playerProfile.displayName = telegramUser.first_name || "Forgemaster";
+                }
+            }
+        } else {
+            // No saved profile, create from Telegram user if available
+            if (telegramUser) {
                 playerProfile = {
-                    displayName: user.first_name || "Forgemaster",
-                    telegramId: user.id,
-                    firstName: user.first_name || "",
-                    lastName: user.last_name || "",
-                    username: user.username || ""
+                    displayName: telegramUser.first_name || "Forgemaster",
+                    telegramId: telegramUser.id,
+                    firstName: telegramUser.first_name || "",
+                    lastName: telegramUser.last_name || "",
+                    username: telegramUser.username || ""
+                };
+            } else {
+                // Fallback to default
+                playerProfile = {
+                    displayName: "Forgemaster",
+                    telegramId: null,
+                    firstName: "",
+                    lastName: "",
+                    username: ""
                 };
             }
         }
+        
+        // Save the updated profile
+        saveProfile();
+        console.log('Profile loaded:', playerProfile); // Debug log
+        
     } catch (e) {
-        console.log('Profile load error, using defaults');
+        console.log('Profile load error, using defaults', e);
+        playerProfile = {
+            displayName: "Forgemaster",
+            telegramId: null,
+            firstName: "",
+            lastName: "",
+            username: ""
+        };
     }
 }
 
@@ -1604,7 +1653,7 @@ function getPlayerStats() {
     };
 }
 
-// ---------- FIXED: Always generates 30 tiles (6 rows × 5 columns) ----------
+// ---------- Always generates 30 tiles (6 rows × 5 columns) ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
     if (!words || words.length === 0) return [];
@@ -1909,12 +1958,16 @@ function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
 
-// ---------- PROFILE POPUP ----------
+// ---------- DEBUG PROFILE POPUP with Telegram info ----------
 function showProfilePopup(returnToLeaderboard = false) {
     const overlay = document.getElementById('popupOverlay');
     const stats = getPlayerStats();
     const worldNames = ['Grand Forge', 'Enchanted Forest', 'Crystal Caverns', 'Sky Citadel', 'Dragon\'s Peak', 'Star Forge'];
     const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
+    
+    // DEBUG: Log current profile
+    console.log('Current profile when opening popup:', playerProfile);
+    console.log('Telegram user data:', tg?.initDataUnsafe?.user);
     
     let statsHtml = '';
     for (let i = 0; i < 6; i++) {
@@ -1943,6 +1996,13 @@ function showProfilePopup(returnToLeaderboard = false) {
             <div class="profile-field">
                 <div class="profile-label">TELEGRAM ID</div>
                 <div class="profile-id">${playerProfile.telegramId || 'Not available'}</div>
+                <!-- DEBUG INFO - REMOVE LATER -->
+                <div style="font-size: 10px; color: #888; margin-top: 5px; border-top: 1px solid #333; padding-top: 5px;">
+                    Debug: Telegram WebApp ${tg ? '✓ Loaded' : '✗ Missing'}<br>
+                    User Data: ${tg?.initDataUnsafe?.user ? '✓ Present' : '✗ None'}<br>
+                    User ID: ${tg?.initDataUnsafe?.user?.id || 'N/A'}<br>
+                    Profile ID: ${playerProfile.telegramId || 'N/A'}
+                </div>
             </div>
             
             <div class="profile-field">
