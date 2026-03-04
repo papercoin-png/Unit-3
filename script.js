@@ -1525,8 +1525,95 @@ let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
 
-// ---------- GOOGLE SHEETS LEADERBOARD WITH JSONP - UPDATED URL ----------
+// ---------- GOOGLE SHEETS LEADERBOARD WITH JSONP - UPDATED URL AND FIXED SAVE FUNCTION ----------
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxb816QBBx6q6kwIPMBHGghpUZX4554Etg2G-mcU5akYnhcUMNaAI9sdT2tlq7kzWH2Lw/exec';
+
+// New function with callback support
+function saveScoreToGoogleSheetsWithCallback(callback) {
+    const totalWords = calculateTotalWords();
+    const playerName = playerProfile.displayName || "Forgemaster";
+    
+    if (totalWords === 0) {
+        if (callback) callback();
+        return;
+    }
+    
+    // Get or create persistent local ID
+    let localId = localStorage.getItem('spellforge_local_id');
+    if (!localId) {
+        localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
+                  Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('spellforge_local_id', localId);
+    }
+    
+    const playerId = playerProfile.telegramId || localId;
+    
+    // Create a unique callback name
+    const callbackName = 'jsonp_callback_' + Date.now();
+    
+    // Create a temporary callback function
+    window[callbackName] = function(response) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        if (callback) callback(response);
+    };
+    
+    // Build the JSONP URL
+    const params = new URLSearchParams({
+        action: 'save',
+        player_name: playerName,
+        total_words: totalWords,
+        telegram_id: playerId,
+        display_name: playerProfile.displayName,
+        callback: callbackName
+    });
+    
+    // Create and inject script tag
+    const script = document.createElement('script');
+    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    document.body.appendChild(script);
+    
+    // Timeout fallback
+    setTimeout(() => {
+        if (window[callbackName]) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            if (callback) callback();
+        }
+    }, 5000);
+}
+
+// Keep original function for backward compatibility
+function saveScoreToGoogleSheets() {
+    saveScoreToGoogleSheetsWithCallback();
+}
+
+function loadLeaderboardFromSheets(callback) {
+    const callbackName = 'jsonp_load_' + Date.now();
+    
+    window[callbackName] = function(data) {
+        callback(Array.isArray(data) ? data : []);
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
+    
+    const params = new URLSearchParams({
+        action: 'get',
+        callback: callbackName
+    });
+    
+    const script = document.createElement('script');
+    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
+    document.body.appendChild(script);
+    
+    setTimeout(() => {
+        if (window[callbackName]) {
+            callback([]);
+            delete window[callbackName];
+            document.body.removeChild(script);
+        }
+    }, 5000);
+}
 
 // ---------- HELPER FUNCTIONS ----------
 function calculateTotalWords() {
@@ -1710,83 +1797,6 @@ function updateWorldDisplay() {
     } else {
         updateHeaderForSelection();
     }
-}
-
-// ---------- JSONP FUNCTIONS FOR GOOGLE SHEETS ----------
-function saveScoreToGoogleSheets() {
-    const totalWords = calculateTotalWords();
-    const playerName = playerProfile.displayName || "Forgemaster";
-    
-    if (totalWords === 0) return;
-    
-    // Get or create persistent local ID
-    let localId = localStorage.getItem('spellforge_local_id');
-    if (!localId) {
-        localId = 'player_' + Math.random().toString(36).substring(2, 15) + 
-                  Math.random().toString(36).substring(2, 15);
-        localStorage.setItem('spellforge_local_id', localId);
-    }
-    
-    const playerId = playerProfile.telegramId || localId;
-    
-    // Create a unique callback name
-    const callbackName = 'jsonp_callback_' + Date.now();
-    
-    // Create a temporary callback function
-    window[callbackName] = function(response) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-    };
-    
-    // Build the JSONP URL
-    const params = new URLSearchParams({
-        action: 'save',
-        player_name: playerName,
-        total_words: totalWords,
-        telegram_id: playerId,
-        display_name: playerProfile.displayName,
-        callback: callbackName
-    });
-    
-    // Create and inject script tag
-    const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
-    document.body.appendChild(script);
-    
-    // Timeout fallback to clean up
-    setTimeout(() => {
-        if (window[callbackName]) {
-            delete window[callbackName];
-            document.body.removeChild(script);
-        }
-    }, 5000);
-}
-
-function loadLeaderboardFromSheets(callback) {
-    const callbackName = 'jsonp_load_' + Date.now();
-    
-    window[callbackName] = function(data) {
-        callback(Array.isArray(data) ? data : []);
-        delete window[callbackName];
-        document.body.removeChild(script);
-    };
-    
-    const params = new URLSearchParams({
-        action: 'get',
-        callback: callbackName
-    });
-    
-    const script = document.createElement('script');
-    script.src = GOOGLE_SHEETS_URL + '?' + params.toString();
-    document.body.appendChild(script);
-    
-    setTimeout(() => {
-        if (window[callbackName]) {
-            callback([]);
-            delete window[callbackName];
-            document.body.removeChild(script);
-        }
-    }, 5000);
 }
 
 // ---------- Show current ingot preview for FORGE AGAIN ----------
@@ -2263,6 +2273,7 @@ function showFailurePopup() {
     tg?.HapticFeedback?.notificationOccurred?.('error');
 }
 
+// ---------- UPDATED INGOT COMPLETE POPUP WITH SAVE CALLBACK ----------
 function showIngotCompletePopup() {
     const overlay = document.getElementById('popupOverlay');
     const world = worlds[currentWorld];
@@ -2300,6 +2311,9 @@ function showIngotCompletePopup() {
             <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
             <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
         </div>
+        <div id="saveStatus" style="display: none; text-align: center; margin-top: 15px; color: #FFD700;">
+            ⏳ Saving your score...
+        </div>
     `;
     
     overlay.appendChild(card);
@@ -2311,21 +2325,32 @@ function showIngotCompletePopup() {
     });
     
     document.getElementById('continueBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-        if (allUnitsCompleted) {
-            setTimeout(() => showWorldArtifactPopup(), 100);
-        } else {
-            const nextIngotId = currentUnit + 1;
-            const nextUnit = world.units.find(u => u.id === nextIngotId);
-            if (nextUnit) {
-                nextUnit.unlocked = true;
-                setTimeout(() => showNextIngotPreview(), 100);
+        // Disable the button to prevent double-clicking
+        const continueBtn = document.getElementById('continueBtn');
+        continueBtn.disabled = true;
+        continueBtn.style.opacity = '0.5';
+        
+        // Show saving status
+        document.getElementById('saveStatus').style.display = 'block';
+        
+        // Save the score with a callback to ensure it completes before proceeding
+        saveScoreToGoogleSheetsWithCallback(() => {
+            overlay.classList.add('hidden');
+            
+            const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+            if (allUnitsCompleted) {
+                setTimeout(() => showWorldArtifactPopup(), 100);
+            } else {
+                const nextIngotId = currentUnit + 1;
+                const nextUnit = world.units.find(u => u.id === nextIngotId);
+                if (nextUnit) {
+                    nextUnit.unlocked = true;
+                    setTimeout(() => showNextIngotPreview(), 100);
+                }
             }
-        }
-        saveProgress();
-        QUICK_RESUME.saveSession();
-        saveScoreToGoogleSheets();
+            saveProgress();
+            QUICK_RESUME.saveSession();
+        });
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
