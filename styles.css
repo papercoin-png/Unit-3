@@ -1027,7 +1027,7 @@ body {
     font-size: 16px;
 }
 
-/* ---------- PROFILE TROPHY BUTTON (NEW) ---------- */
+/* ---------- PROFILE TROPHY BUTTON (ADDED FOR LEADERBOARD ACCESS) ---------- */
 .profile-trophy {
     display: flex;
     align-items: center;
