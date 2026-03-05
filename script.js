@@ -2270,7 +2270,7 @@ function showFailurePopup() {
     tg?.HapticFeedback?.notificationOccurred?.('error');
 }
 
-// ---------- INGOT COMPLETE POPUP ----------
+// ---------- INGOT COMPLETE POPUP (WITH AUTOMATIC SAVE) ----------
 function showIngotCompletePopup() {
     const overlay = document.getElementById('popupOverlay');
     const world = worlds[currentWorld];
@@ -2322,32 +2322,21 @@ function showIngotCompletePopup() {
     });
     
     document.getElementById('continueBtn').addEventListener('click', () => {
-        // Disable the button to prevent double-clicking
-        const continueBtn = document.getElementById('continueBtn');
-        continueBtn.disabled = true;
-        continueBtn.style.opacity = '0.5';
+        overlay.classList.add('hidden');
         
-        // Show saving status
-        document.getElementById('saveStatus').style.display = 'block';
-        
-        // Save the score with a callback to ensure it completes before proceeding
-        saveScoreToGoogleSheetsWithCallback(() => {
-            overlay.classList.add('hidden');
-            
-            const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-            if (allUnitsCompleted) {
-                setTimeout(() => showWorldArtifactPopup(), 100);
-            } else {
-                const nextIngotId = currentUnit + 1;
-                const nextUnit = world.units.find(u => u.id === nextIngotId);
-                if (nextUnit) {
-                    nextUnit.unlocked = true;
-                    setTimeout(() => showNextIngotPreview(), 100);
-                }
+        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+        if (allUnitsCompleted) {
+            setTimeout(() => showWorldArtifactPopup(), 100);
+        } else {
+            const nextIngotId = currentUnit + 1;
+            const nextUnit = world.units.find(u => u.id === nextIngotId);
+            if (nextUnit) {
+                nextUnit.unlocked = true;
+                setTimeout(() => showNextIngotPreview(), 100);
             }
-            saveProgress();
-            QUICK_RESUME.saveSession();
-        });
+        }
+        saveProgress();
+        QUICK_RESUME.saveSession();
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
@@ -2533,7 +2522,7 @@ function showWorldUnlockPopup(worldId) {
     });
 }
 
-// ---------- handleWordCompletion FUNCTION ----------
+// ---------- handleWordCompletion FUNCTION (WITH AUTOMATIC SAVE) ----------
 function handleWordCompletion(wordIndex) {
     if (!completedWords.includes(wordIndex)) {
         completedWords.push(wordIndex);
@@ -2581,6 +2570,11 @@ function handleWordCompletion(wordIndex) {
             hideForgeMessage();
             
             if (success) {
+                // Save score automatically when ingot completes
+                saveScoreToGoogleSheetsWithCallback(() => {
+                    console.log('Score saved automatically on ingot completion');
+                });
+                
                 playerPerformance.currentStreak++;
                 playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
                 playerPerformance.lastAccuracy = accuracy;
