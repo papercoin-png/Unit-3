@@ -1301,30 +1301,206 @@ for (let i = 1; i <= 180; i++) {
     ingotGrace[i] = 0;
 }
 
+// ---------- DEVOTION SYSTEM - NEW ----------
+const DEVOTION = {
+    MAX_DAYS: 365,
+    MAX_BONUS: 30,
+    
+    // Calculate bonus percentage based on days
+    calculateBonus(days) {
+        return Math.min(Math.round((days / this.MAX_DAYS) * this.MAX_BONUS * 100) / 100, this.MAX_BONUS);
+    },
+    
+    // Get tier based on days
+    getTier(days) {
+        if (days >= 365) return { name: "Crystal", icon: "💎", color: "#88CCFF", svg: "icon-anvil-crystal" };
+        if (days >= 200) return { name: "Gold", icon: "🥇", color: "#FFD700", svg: "icon-anvil-gold" };
+        if (days >= 100) return { name: "Silver", icon: "🥈", color: "#C0C0C0", svg: "icon-anvil-silver" };
+        if (days >= 30) return { name: "Bronze", icon: "🥉", color: "#CD7F32", svg: "icon-anvil-bronze" };
+        return { name: "None", icon: "⚒️", color: "#6A6A6A", svg: "icon-anvil" };
+    },
+    
+    // Check if milestone achieved
+    checkMilestones(days, oldDays) {
+        const milestones = [];
+        if (oldDays < 30 && days >= 30) milestones.push(30);
+        if (oldDays < 100 && days >= 100) milestones.push(100);
+        if (oldDays < 200 && days >= 200) milestones.push(200);
+        if (oldDays < 365 && days >= 365) milestones.push(365);
+        return milestones;
+    }
+};
+
+// ---------- PLAYER PERFORMANCE TRACKING - UPDATED with Devotion ----------
+let playerPerformance = {
+    currentStreak: 0,
+    bestStreak: 0,
+    lastAccuracy: 100,
+    lastAttemptFailed: false,
+    lastPlayedDate: new Date().toISOString(),
+    totalRiskBonus: 0,
+    ingotHistory: [],
+    worldProgress: {
+        1: { completed: 0, failed: 0, bestTime: null },
+        2: { completed: 0, failed: 0, bestTime: null },
+        3: { completed: 0, failed: 0, bestTime: null },
+        4: { completed: 0, failed: 0, bestTime: null },
+        5: { completed: 0, failed: 0, bestTime: null },
+        6: { completed: 0, failed: 0, bestTime: null }
+    },
+    // Devotion data
+    devotion: {
+        days: 0,
+        lastLogin: null,
+        bonus: 0,
+        tier: "None",
+        milestones: {
+            day30: false,
+            day100: false,
+            day200: false,
+            day365: false
+        }
+    }
+};
+
+// ---------- UPDATE DEVOTION FUNCTION - NEW ----------
+function updateDevotion() {
+    const today = new Date().toDateString();
+    const lastLogin = playerPerformance.devotion.lastLogin ? new Date(playerPerformance.devotion.lastLogin).toDateString() : null;
+    const oldDays = playerPerformance.devotion.days;
+    
+    if (!lastLogin) {
+        // First time playing
+        playerPerformance.devotion.days = 1;
+        playerPerformance.devotion.lastLogin = new Date().toISOString();
+    } else if (lastLogin !== today) {
+        // Calculate days since last login
+        const lastDate = new Date(playerPerformance.devotion.lastLogin);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === 1) {
+            // Consecutive day - add one
+            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+        } else if (daysDiff > 1) {
+            // Missed days - cool down by the number of missed days (but not below 0)
+            playerPerformance.devotion.days = Math.max(playerPerformance.devotion.days - (daysDiff - 1), 0);
+            // Then add today
+            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+        }
+        
+        playerPerformance.devotion.lastLogin = new Date().toISOString();
+    }
+    
+    // Calculate bonus and tier
+    playerPerformance.devotion.bonus = DEVOTION.calculateBonus(playerPerformance.devotion.days);
+    const tier = DEVOTION.getTier(playerPerformance.devotion.days);
+    playerPerformance.devotion.tier = tier.name;
+    
+    // Check for milestones
+    const newMilestones = DEVOTION.checkMilestones(playerPerformance.devotion.days, oldDays);
+    newMilestones.forEach(day => {
+        const milestoneKey = `day${day}`;
+        if (!playerPerformance.devotion.milestones[milestoneKey]) {
+            playerPerformance.devotion.milestones[milestoneKey] = true;
+            showMilestoneNotification(day, tier);
+        }
+    });
+    
+    // Show daily devotion notification if days changed
+    if (playerPerformance.devotion.days !== oldDays) {
+        showDevotionNotification();
+    }
+    
+    saveProgress();
+}
+
+// ---------- DEVOTION NOTIFICATION - NEW ----------
+function showDevotionNotification() {
+    const days = playerPerformance.devotion.days;
+    const bonus = playerPerformance.devotion.bonus.toFixed(1);
+    const tier = DEVOTION.getTier(days);
+    const daysToNext = days < 30 ? 30 - days : 
+                       days < 100 ? 100 - days : 
+                       days < 200 ? 200 - days : 
+                       days < 365 ? 365 - days : 0;
+    
+    const nextTier = days < 30 ? "Bronze" : 
+                     days < 100 ? "Silver" : 
+                     days < 200 ? "Gold" : 
+                     days < 365 ? "Crystal" : "Master";
+    
+    const notification = document.createElement('div');
+    notification.className = 'devotion-notification';
+    notification.innerHTML = `
+        <div class="devotion-content">
+            <span class="devotion-icon">${tier.icon}</span>
+            <div class="devotion-text">
+                <strong>Devotion: Day ${days} · +${bonus}%</strong>
+                <small>${daysToNext > 0 ? `${daysToNext} days to ${nextTier}` : '✨ Master Forgemaster ✨'}</small>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// ---------- MILESTONE NOTIFICATION - NEW ----------
+function showMilestoneNotification(day, tier) {
+    const messages = {
+        30: { text: "Bronze Anvil Unlocked!", desc: "Your devotion begins to show" },
+        100: { text: "Silver Anvil Unlocked!", desc: "The forge glows with your rhythm" },
+        200: { text: "Gold Anvil Unlocked!", desc: "Your strikes are true and powerful" },
+        365: { text: "CRYSTAL ANVIL ACHIEVED!", desc: "Forgemaster of Eternal Flame" }
+    };
+    
+    const msg = messages[day] || { text: "Milestone Reached!", desc: "Your devotion grows" };
+    
+    const notification = document.createElement('div');
+    notification.className = 'devotion-notification milestone';
+    notification.innerHTML = `
+        <div class="devotion-content" style="border-color: ${tier.color}; box-shadow: 0 0 20px ${tier.color};">
+            <span class="devotion-icon" style="font-size: 40px;">${tier.icon}</span>
+            <div class="devotion-text">
+                <strong style="font-size: 20px;">${msg.text}</strong>
+                <small>${msg.desc}</small>
+                <small style="margin-top: 5px;">+${DEVOTION.calculateBonus(day).toFixed(1)}% bonus earned</small>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 5000);
+    }, 5000);
+}
+
+// ---------- MODIFIED: calculateSuccessChance with Devotion ----------
 function calculateSuccessChance(ingotId) {
     const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
     const grace = ingotGrace[ingotId] || 0;
-    const finalChance = Math.min(difficulty.baseChance + grace, 99);
+    const devotionBonus = playerPerformance.devotion?.bonus || 0;
+    
+    const finalChance = Math.min(difficulty.baseChance + grace + devotionBonus, 99);
     
     return {
         final: finalChance,
         base: difficulty.baseChance,
         grace: grace,
+        devotion: devotionBonus,
+        devotionDays: playerPerformance.devotion?.days || 0,
         tier: difficulty.tier,
         maxed: finalChance === 99
     };
-}
-
-function onFailure(ingotId) {
-    if (ingotGrace[ingotId] < 98) {
-        ingotGrace[ingotId]++;
-    }
-    saveProgress();
-}
-
-function onSuccess(ingotId) {
-    ingotGrace[ingotId] = 0;
-    saveProgress();
 }
 
 // ---------- PLAYER PROFILE ----------
@@ -1368,23 +1544,7 @@ function validateDisplayName(name) {
 }
 
 // ---------- PLAYER PERFORMANCE TRACKING ----------
-let playerPerformance = {
-    currentStreak: 0,
-    bestStreak: 0,
-    lastAccuracy: 100,
-    lastAttemptFailed: false,
-    lastPlayedDate: new Date().toISOString(),
-    totalRiskBonus: 0,
-    ingotHistory: [],
-    worldProgress: {
-        1: { completed: 0, failed: 0, bestTime: null },
-        2: { completed: 0, failed: 0, bestTime: null },
-        3: { completed: 0, failed: 0, bestTime: null },
-        4: { completed: 0, failed: 0, bestTime: null },
-        5: { completed: 0, failed: 0, bestTime: null },
-        6: { completed: 0, failed: 0, bestTime: null }
-    }
-};
+// Already updated above with devotion
 
 // ---------- WORLD DATA STRUCTURE ----------
 const worlds = {
@@ -1784,7 +1944,7 @@ function updateWorldDisplay() {
     }
 }
 
-// ---------- Show current ingot preview for FORGE AGAIN ----------
+// ---------- Show current ingot preview for FORGE AGAIN - UPDATED with Devotion ----------
 function showCurrentIngotPreview() {
     const world = worlds[currentWorld];
     const unitData = MASTER_WORDS[`world${currentWorld}`].units[currentUnit];
@@ -1799,6 +1959,8 @@ function showCurrentIngotPreview() {
     const graceMessage = chance.grace > 0 
         ? `+${chance.grace}% from ${chance.grace} failed attempt${chance.grace > 1 ? 's' : ''}` 
         : 'No failures yet';
+    
+    const devotionTier = DEVOTION.getTier(chance.devotionDays);
     
     const overlay = document.getElementById('popupOverlay');
     overlay.innerHTML = '';
@@ -1815,8 +1977,10 @@ function showCurrentIngotPreview() {
                 <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
             </div>
             <div class="grace-info">
-                Base: ${chance.base}% · Grace: +${chance.grace}%
-                <div class="grace-badge">${graceMessage}</div>
+                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
+                <div class="grace-badge">
+                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
+                </div>
                 ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
             </div>
         </div>
@@ -1883,9 +2047,10 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+// ---------- SAVE PROGRESS - UPDATED with Devotion ----------
 function saveProgress() {
     const saveData = {
-        version: "1.0",
+        version: "1.1",
         lastUpdated: new Date().toISOString(),
         currentWorld: currentWorld,
         currentUnit: currentUnit,
@@ -1899,17 +2064,36 @@ function saveProgress() {
     } catch (e) {}
 }
 
+// ---------- LOAD PROGRESS - UPDATED with Devotion ----------
 function loadProgress() {
     try {
         const saved = localStorage.getItem('spellforge_save');
         if (saved) {
             const saveData = JSON.parse(saved);
+            
+            // Handle old save versions
+            if (!saveData.playerPerformance.devotion) {
+                saveData.playerPerformance.devotion = {
+                    days: 0,
+                    lastLogin: null,
+                    bonus: 0,
+                    tier: "None",
+                    milestones: {
+                        day30: false,
+                        day100: false,
+                        day200: false,
+                        day365: false
+                    }
+                };
+            }
+            
             if (saveData.worlds) {
                 Object.keys(saveData.worlds).forEach(key => {
                     if (worlds[key]) {
                         const savedWorld = saveData.worlds[key];
                         worlds[key].unlocked = savedWorld.unlocked;
                         worlds[key].completed = savedWorld.completed;
+                        
                         savedWorld.units.forEach(savedUnit => {
                             const unit = worlds[key].units.find(u => u.id === savedUnit.id);
                             if (unit) {
@@ -1939,7 +2123,7 @@ function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
 
-// ---------- PROFILE POPUP WITH LEADERBOARD TROPHY ----------
+// ---------- PROFILE POPUP WITH LEADERBOARD TROPHY AND DEVOTION SECTION - UPDATED ----------
 function showProfilePopup(returnToLeaderboard = false) {
     const overlay = document.getElementById('popupOverlay');
     const stats = getPlayerStats();
@@ -1955,6 +2139,20 @@ function showProfilePopup(returnToLeaderboard = false) {
             </div>
         `;
     }
+    
+    // Devotion data
+    const devotionDays = playerPerformance.devotion?.days || 0;
+    const devotionBonus = playerPerformance.devotion?.bonus || 0;
+    const devotionTier = DEVOTION.getTier(devotionDays);
+    const daysToNext = devotionDays < 30 ? 30 - devotionDays : 
+                       devotionDays < 100 ? 100 - devotionDays : 
+                       devotionDays < 200 ? 200 - devotionDays : 
+                       devotionDays < 365 ? 365 - devotionDays : 0;
+    const nextTier = devotionDays < 30 ? "Bronze" : 
+                     devotionDays < 100 ? "Silver" : 
+                     devotionDays < 200 ? "Gold" : 
+                     devotionDays < 365 ? "Crystal" : "Master";
+    const progressPercent = (devotionDays / 365) * 100;
     
     overlay.innerHTML = `
         <div class="profile-card">
@@ -1973,6 +2171,50 @@ function showProfilePopup(returnToLeaderboard = false) {
             <div class="profile-field">
                 <div class="profile-label">TELEGRAM ID</div>
                 <div class="profile-id">${playerProfile.telegramId || 'Not available'}</div>
+            </div>
+            
+            <!-- DEVOTION SECTION - NEW -->
+            <div class="devotion-section">
+                <div class="devotion-header">
+                    <span class="devotion-title">
+                        <span class="devotion-tier-badge ${devotionTier.name.toLowerCase()}">${devotionTier.icon}</span>
+                        DEVOTION BONUS
+                    </span>
+                    <span class="devotion-percent">+${devotionBonus.toFixed(1)}%</span>
+                </div>
+                
+                <div class="devotion-stats">
+                    <span>Day ${devotionDays}</span>
+                    <span>${devotionTier.name} Anvil</span>
+                </div>
+                
+                <div class="devotion-bar-container">
+                    <div class="devotion-bar-fill" style="width: ${progressPercent}%"></div>
+                </div>
+                
+                <div class="devotion-footer">
+                    <span>${devotionDays} / 365 days</span>
+                    <span>${daysToNext > 0 ? `${daysToNext} to ${nextTier}` : 'MAX'}</span>
+                </div>
+                
+                <div class="devotion-milestones">
+                    <div class="milestone-item ${devotionDays >= 30 ? 'achieved' : ''}">
+                        <div class="milestone-icon">🥉</div>
+                        <div>30</div>
+                    </div>
+                    <div class="milestone-item ${devotionDays >= 100 ? 'achieved' : ''}">
+                        <div class="milestone-icon">🥈</div>
+                        <div>100</div>
+                    </div>
+                    <div class="milestone-item ${devotionDays >= 200 ? 'achieved' : ''}">
+                        <div class="milestone-icon">🥇</div>
+                        <div>200</div>
+                    </div>
+                    <div class="milestone-item ${devotionDays >= 365 ? 'achieved' : ''}">
+                        <div class="milestone-icon">💎</div>
+                        <div>365</div>
+                    </div>
+                </div>
             </div>
             
             <div class="profile-field">
@@ -2058,7 +2300,7 @@ function returnToPreviousScreen(returnToLeaderboard) {
     }
 }
 
-// ---------- LEADERBOARD POPUP WITH FETCH ----------
+// ---------- LEADERBOARD POPUP WITH FETCH AND DEVOTION BADGES - UPDATED ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
     
@@ -2093,28 +2335,7 @@ function showLeaderboardPopup(fromCompletion = false) {
     });
 }
 
-function handleLeaderboardReturn(fromCompletion) {
-    if (fromCompletion) {
-        const world = worlds[currentWorld];
-        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-        if (allUnitsCompleted) {
-            setTimeout(() => showWorldArtifactPopup(), 100);
-        } else {
-            const nextIngotId = currentUnit + 1;
-            const nextUnit = world.units.find(u => u.id === nextIngotId);
-            if (nextUnit && nextUnit.unlocked) {
-                setTimeout(() => showNextIngotPreview(), 100);
-            } else {
-                renderAll();
-                setUnitSectionVisibility(true);
-                updateHeaderForSelection();
-            }
-        }
-    } else {
-        renderAll();
-    }
-}
-
+// ---------- DISPLAY LEADERBOARD - UPDATED with Devotion Badges ----------
 function displayLeaderboard(leaderboard, fromCompletion) {
     const overlay = document.getElementById('popupOverlay');
     const playerTotal = calculateTotalWords();
@@ -2126,6 +2347,16 @@ function displayLeaderboard(leaderboard, fromCompletion) {
     const playerRank = safeLeaderboard.findIndex(e => e.name === playerProfile.displayName) + 1;
     const playerAhead = playerRank > 1 ? safeLeaderboard[playerRank - 2] : null;
     const wordsToCatch = playerAhead ? playerAhead.score - playerTotal : 0;
+    
+    // For demo purposes, we'll add devotion badges based on score (in real implementation, this would come from the server)
+    // This is a placeholder - actual devotion data would need to be stored and retrieved from the server
+    const getDevotionBadge = (score) => {
+        if (score > 2000) return { icon: "💎", tier: "Crystal" };
+        if (score > 1500) return { icon: "🥇", tier: "Gold" };
+        if (score > 1000) return { icon: "🥈", tier: "Silver" };
+        if (score > 500) return { icon: "🥉", tier: "Bronze" };
+        return { icon: "⚒️", tier: "None" };
+    };
     
     let leaderboardHtml = '';
     if (safeLeaderboard.length === 0) {
@@ -2139,11 +2370,14 @@ function displayLeaderboard(leaderboard, fromCompletion) {
             else if (rank === 2) crownEmoji = '⚡';
             else if (rank === 3) crownEmoji = '🥉';
             
+            const devotionBadge = getDevotionBadge(entry.score || 0);
+            
             leaderboardHtml += `
                 <div class="leaderboard-row${youClass}">
                     <span class="rank">${rank}.</span>
                     <span class="player-name">${entry.name || 'Unknown'}</span>
                     <span class="score">${entry.score || 0}</span>
+                    <span class="devotion-badge" title="${devotionBadge.tier} Devotion">${devotionBadge.icon}</span>
                     <span class="crown">${crownEmoji}</span>
                 </div>
             `;
@@ -2342,6 +2576,7 @@ function showIngotCompletePopup() {
     tg?.HapticFeedback?.notificationOccurred?.('success');
 }
 
+// ---------- NEXT INGOT PREVIEW - UPDATED with Devotion ----------
 function showNextIngotPreview() {
     const nextIngotId = currentUnit + 1;
     const world = worlds[currentWorld];
@@ -2360,6 +2595,8 @@ function showNextIngotPreview() {
         ? `+${chance.grace}% from ${chance.grace} failed attempt${chance.grace > 1 ? 's' : ''}` 
         : 'First attempt';
     
+    const devotionTier = DEVOTION.getTier(chance.devotionDays);
+    
     const overlay = document.getElementById('popupOverlay');
     overlay.innerHTML = '';
     
@@ -2375,8 +2612,10 @@ function showNextIngotPreview() {
                 <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
             </div>
             <div class="grace-info">
-                Base: ${chance.base}% · Grace: +${chance.grace}%
-                <div class="grace-badge">${graceMessage}</div>
+                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
+                <div class="grace-badge">
+                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
+                </div>
                 ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
             </div>
         </div>
@@ -2782,8 +3021,11 @@ function handleReset() {
     }
 }
 
-// ---------- INITIALIZATION FUNCTION ----------
+// ---------- INITIALIZATION FUNCTION - UPDATED with Devotion ----------
 function initializeGame() {
+    // Update devotion on game start
+    updateDevotion();
+    
     const savedSession = QUICK_RESUME.loadSession();
     
     if (savedSession) {
