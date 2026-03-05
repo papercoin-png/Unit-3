@@ -2168,6 +2168,48 @@ button:hover .icon {
     border: 3px solid var(--forge-bronze);
 }
 
+/* ---------- PROFILE TROPHY BUTTON (ADDED FOR LEADERBOARD ACCESS) ---------- */
+.profile-trophy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #2A3F4F, #1A2F3F);
+    border: 2px solid var(--forge-gold);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin: 15px auto 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    max-width: 250px;
+    box-shadow: 0 4px 0 #0F1A1F;
+}
+
+.profile-trophy:hover {
+    transform: scale(1.02);
+    background: linear-gradient(135deg, #3A4F5F, #2A3F4F);
+    border-color: #FFED4A;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3), 0 4px 0 #0F1A1F;
+}
+
+.profile-trophy:active {
+    transform: scale(0.98) translateY(2px);
+    box-shadow: 0 2px 0 #0F1A1F;
+}
+
+.trophy-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.trophy-text {
+    color: var(--forge-gold);
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
 .profile-field {
     text-align: left;
     margin-bottom: 20px;
