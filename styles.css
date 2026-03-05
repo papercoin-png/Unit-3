@@ -183,6 +183,86 @@ button:hover .icon {
     75% { transform: rotate(5deg); }
 }
 
+/* ---------- DEVOTION NOTIFICATION (NEW) ---------- */
+.devotion-notification {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 2400;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.devotion-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.devotion-notification.milestone {
+    z-index: 2600;
+}
+
+.devotion-notification.milestone .devotion-content {
+    border-width: 3px;
+    animation: milestonePulse 2s infinite;
+}
+
+@keyframes milestonePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.devotion-content {
+    background: linear-gradient(145deg, var(--iron-deep), var(--iron-dark));
+    border: 2px solid var(--forge-gold);
+    border-radius: 60px;
+    padding: 12px 25px 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 0 2px rgba(212, 175, 55, 0.3);
+    backdrop-filter: blur(8px);
+    max-width: 450px;
+    width: 90%;
+}
+
+.devotion-icon {
+    font-size: 32px;
+    animation: devotionGlow 3s infinite;
+}
+
+@keyframes devotionGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px currentColor); }
+    50% { filter: drop-shadow(0 0 15px currentColor); }
+}
+
+.devotion-text {
+    flex: 1;
+    color: var(--forge-glow);
+}
+
+.devotion-text strong {
+    display: block;
+    font-size: 18px;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 2px;
+}
+
+.devotion-text small {
+    display: block;
+    font-size: 13px;
+    color: var(--steel-light);
+    line-height: 1.4;
+}
+
 /* ---------- LOADING SCREEN ---------- */
 .loading-screen {
     position: fixed;
@@ -2048,8 +2128,39 @@ button:hover .icon {
     text-align: right;
 }
 
-.you .score {
-    color: #2D1905;
+/* Devotion Badge in Leaderboard (NEW) */
+.devotion-badge {
+    font-size: 16px;
+    min-width: 24px;
+    text-align: center;
+    margin: 0 2px;
+    filter: drop-shadow(0 0 3px currentColor);
+}
+
+.devotion-badge[title*="Crystal"] {
+    color: #88CCFF;
+    animation: crystalPulse 3s infinite;
+}
+
+.devotion-badge[title*="Gold"] {
+    color: #FFD700;
+}
+
+.devotion-badge[title*="Silver"] {
+    color: #C0C0C0;
+}
+
+.devotion-badge[title*="Bronze"] {
+    color: #CD7F32;
+}
+
+.you .devotion-badge {
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+@keyframes crystalPulse {
+    0%, 100% { filter: drop-shadow(0 0 3px #88CCFF); }
+    50% { filter: drop-shadow(0 0 10px #AADDFF); }
 }
 
 .crown {
@@ -2057,6 +2168,10 @@ button:hover .icon {
     margin-left: 4px;
     min-width: 22px;
     text-align: right;
+}
+
+.you .score {
+    color: #2D1905;
 }
 
 .leaderboard-footer {
@@ -2168,7 +2283,145 @@ button:hover .icon {
     border: 3px solid var(--forge-bronze);
 }
 
-/* ---------- PROFILE TROPHY BUTTON (ADDED FOR LEADERBOARD ACCESS) ---------- */
+/* ---------- DEVOTION SECTION IN PROFILE (NEW) ---------- */
+.devotion-section {
+    background: #0E2938;
+    border-radius: 40px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px solid #B8944A;
+}
+
+.devotion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.devotion-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forge-glow);
+    font-family: 'Cinzel', serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.devotion-tier-badge {
+    font-size: 24px;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.devotion-tier-badge.bronze { color: #CD7F32; }
+.devotion-tier-badge.silver { color: #C0C0C0; }
+.devotion-tier-badge.gold { color: #FFD700; }
+.devotion-tier-badge.crystal { 
+    color: #88CCFF;
+    animation: crystalPulse 3s infinite;
+}
+
+.devotion-percent {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--forge-glow);
+    font-family: 'Cinzel', serif;
+}
+
+.devotion-stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #FFDCAA;
+}
+
+.devotion-bar-container {
+    width: 100%;
+    height: 12px;
+    background: #1D3F4F;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.devotion-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-bronze), var(--forge-gold), #FFD700);
+    border-radius: 30px;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.devotion-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%);
+    animation: liquidShimmer 2s infinite;
+}
+
+.devotion-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #ACCCDD;
+}
+
+.devotion-milestones {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #1D3F4F;
+}
+
+.milestone-item {
+    text-align: center;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.milestone-item.achieved {
+    opacity: 1;
+}
+
+.milestone-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 3px currentColor);
+}
+
+.milestone-item.achieved .milestone-icon {
+    animation: milestoneGlow 2s infinite;
+}
+
+@keyframes milestoneGlow {
+    0%, 100% { filter: drop-shadow(0 0 3px gold); }
+    50% { filter: drop-shadow(0 0 10px gold); }
+}
+
+.milestone-item div:last-child {
+    font-size: 12px;
+    color: #ACCCDD;
+}
+
+.milestone-item.achieved div:last-child {
+    color: #FFDCAA;
+    font-weight: 600;
+}
+
+/* ---------- PROFILE TROPHY BUTTON ---------- */
 .profile-trophy {
     display: flex;
     align-items: center;
@@ -2332,6 +2585,23 @@ button:hover .icon {
     .resume-text strong {
         font-size: 14px;
     }
+    
+    /* Responsive devotion section */
+    .devotion-section {
+        padding: 15px;
+    }
+    
+    .devotion-title {
+        font-size: 16px;
+    }
+    
+    .devotion-percent {
+        font-size: 18px;
+    }
+    
+    .milestone-icon {
+        font-size: 18px;
+    }
 }
 
 @media (max-width: 400px) {
@@ -2370,6 +2640,15 @@ button:hover .icon {
     .resume-content {
         padding: 8px 12px;
     }
+    
+    /* Responsive devotion */
+    .devotion-milestones {
+        gap: 5px;
+    }
+    
+    .milestone-item div:last-child {
+        font-size: 10px;
+    }
 }
 
 /* Reduce motion for accessibility */
@@ -2386,7 +2665,11 @@ button:hover .icon {
     .unit-progress-fill::after,
     .forge-progress-fill::after,
     .chance-bar-fill::after,
-    .resume-icon {
+    .resume-icon,
+    .devotion-icon,
+    .devotion-bar-fill::after,
+    .crystalPulse,
+    .milestone-item.achieved .milestone-icon {
         animation: none !important;
     }
 }
