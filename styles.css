@@ -103,7 +103,6 @@ button:hover .icon {
 .icon-md { width: 24px; height: 24px; }
 .icon-lg { width: 32px; height: 32px; }
 .icon-xl { width: 48px; height: 48px; }
-
 /* ---------- RESUME NOTIFICATION ---------- */
 .resume-notification {
     position: fixed;
@@ -441,52 +440,6 @@ button:hover .icon {
     }
 }
 
-/* ---------- MAIN GAME CONTAINER ---------- */
-.game-container {
-    max-width: 600px;
-    width: 100%;
-    margin: var(--space-md) auto;
-    padding: var(--space-lg) var(--space-md) var(--space-xl);
-    background: rgba(26, 18, 11, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 2px solid var(--forge-bronze);
-    border-radius: 48px 48px 48px 48px;
-    box-shadow: 
-        0 25px 40px -10px rgba(0, 0, 0, 0.8),
-        inset 0 1px 3px rgba(255, 215, 140, 0.2);
-    position: relative;
-    z-index: 1;
-}
-
-.game-container::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 1px dashed rgba(184, 134, 11, 0.2);
-    border-radius: 38px;
-    pointer-events: none;
-}
-
-.game-container::after {
-    content: '';
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, 
-        rgba(255, 107, 53, 0.2) 0%,
-        transparent 70%);
-    border-radius: 50%;
-    filter: blur(20px);
-    pointer-events: none;
-    z-index: -1;
-}
-
 /* ---------- FORGE MESSAGE OVERLAY ---------- */
 .forge-message-overlay {
     position: fixed;
@@ -582,7 +535,6 @@ button:hover .icon {
     from { width: 0%; }
     to { width: 100%; }
 }
-
 /* ---------- HOME SCREEN ---------- */
 .home-screen {
     max-width: 600px;
@@ -607,6 +559,7 @@ button:hover .icon {
     display: inline-flex;
 }
 
+/* ---------- STREAK CARD (with timer) ---------- */
 .streak-card {
     background: linear-gradient(145deg, #4A3E32, #2A1E12);
     border-radius: 38px;
@@ -642,8 +595,20 @@ button:hover .icon {
     font-size: 20px;
     color: var(--forge-glow);
     font-weight: 600;
+    margin-bottom: var(--space-xs);
 }
 
+/* NEW: Streak Timer */
+.streak-timer {
+    font-size: 16px;
+    color: var(--warning-yellow);
+    font-weight: 500;
+    margin-top: var(--space-xs);
+    padding-top: var(--space-xs);
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+/* ---------- CURRENT INGOT CARD ---------- */
 .ingot-card-home {
     background: linear-gradient(145deg, 
         rgba(42, 30, 20, 0.9), 
@@ -760,6 +725,7 @@ button:hover .icon {
     text-align: right;
 }
 
+/* ---------- CODEX SUMMARY CARD ---------- */
 .codex-summary-card {
     background: linear-gradient(145deg, #1E3B4A, #16323F);
     border-radius: 38px;
@@ -786,7 +752,6 @@ button:hover .icon {
     font-weight: 700;
     font-family: 'Cinzel', serif;
 }
-
 /* ---------- QUICK ACTIONS - CORRECT ORDER ---------- */
 .quick-actions {
     display: flex;
@@ -903,6 +868,52 @@ button:hover .icon {
     color: var(--forge-glow);
 }
 
+/* ---------- MAIN GAME CONTAINER ---------- */
+.game-container {
+    max-width: 600px;
+    width: 100%;
+    margin: var(--space-md) auto;
+    padding: var(--space-lg) var(--space-md) var(--space-xl);
+    background: rgba(26, 18, 11, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid var(--forge-bronze);
+    border-radius: 48px 48px 48px 48px;
+    box-shadow: 
+        0 25px 40px -10px rgba(0, 0, 0, 0.8),
+        inset 0 1px 3px rgba(255, 215, 140, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.game-container::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 1px dashed rgba(184, 134, 11, 0.2);
+    border-radius: 38px;
+    pointer-events: none;
+}
+
+.game-container::after {
+    content: '';
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, 
+        rgba(255, 107, 53, 0.2) 0%,
+        transparent 70%);
+    border-radius: 50%;
+    filter: blur(20px);
+    pointer-events: none;
+    z-index: -1;
+}
+
 /* ---------- HEADER ---------- */
 .header {
     display: flex;
@@ -911,6 +922,27 @@ button:hover .icon {
     margin-bottom: var(--space-lg);
     color: white;
     padding: 0 var(--space-xs);
+}
+
+.game-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--forge-glow);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0 10px 0 0;
+    transition: all 0.1s ease;
+}
+
+.back-btn:hover {
+    transform: scale(1.1);
+    color: var(--forge-gold);
 }
 
 .world-info {
@@ -965,244 +997,6 @@ button:hover .icon {
     backdrop-filter: blur(4px);
     font-family: 'Cinzel', serif;
 }
-
-.back-btn {
-    background: none;
-    border: none;
-    color: var(--forge-glow);
-    font-size: 28px;
-    cursor: pointer;
-    padding: 0 10px 0 0;
-    transition: all 0.1s ease;
-}
-
-.back-btn:hover {
-    transform: scale(1.1);
-    color: var(--forge-gold);
-}
-
-.game-header-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-/* ---------- UNIT SELECTOR SECTION ---------- */
-.unit-section {
-    background: linear-gradient(145deg, 
-        rgba(42, 30, 20, 0.9), 
-        rgba(26, 18, 11, 0.95));
-    border-radius: 38px;
-    padding: var(--space-lg) var(--space-md);
-    margin-bottom: var(--space-lg);
-    border: 2px solid var(--forge-bronze);
-    box-shadow: 
-        inset 0 2px 5px rgba(0, 0, 0, 0.8),
-        0 8px 0 var(--iron-dark);
-    transition: opacity 0.3s ease, max-height 0.3s ease;
-    overflow: hidden;
-    position: relative;
-}
-
-.unit-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-        transparent,
-        var(--forge-gold),
-        transparent);
-}
-
-.unit-section.hidden {
-    opacity: 0;
-    max-height: 0;
-    padding: 0;
-    margin: 0;
-    pointer-events: none;
-}
-
-.unit-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-md);
-    padding: 0 var(--space-xs);
-}
-
-.unit-label {
-    color: var(--steel-light);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-}
-
-.unit-label svg {
-    fill: var(--forge-glow);
-}
-
-.unit-selector {
-    background: var(--iron-deep);
-    border: 2px solid var(--forge-bronze);
-    border-radius: 40px;
-    padding: 8px 16px;
-    color: var(--forge-glow);
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    outline: none;
-    font-family: 'Cinzel', serif;
-}
-
-.unit-selector option {
-    background: var(--iron-deep);
-    color: white;
-}
-
-.unit-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: var(--space-xs);
-    scrollbar-width: thin;
-    scrollbar-color: var(--forge-bronze) var(--iron-deep);
-}
-
-.unit-grid::-webkit-scrollbar {
-    width: 6px;
-}
-
-.unit-grid::-webkit-scrollbar-track {
-    background: var(--iron-deep);
-    border-radius: 10px;
-}
-
-.unit-grid::-webkit-scrollbar-thumb {
-    background: var(--forge-bronze);
-    border-radius: 10px;
-}
-
-.unit-card {
-    background: linear-gradient(145deg, #4A3E32, #2A1E12);
-    border-radius: 20px 5px 20px 5px;
-    padding: 12px 15px;
-    min-width: 140px;
-    flex: 1 0 auto;
-    max-width: 160px;
-    border: 2px solid var(--forge-bronze);
-    box-shadow: 
-        0 8px 0 var(--iron-dark),
-        0 12px 20px rgba(0, 0, 0, 0.5),
-        inset 0 1px 3px rgba(255, 215, 0, 0.2);
-    cursor: pointer;
-    transition: all 0.15s var(--strike-timing);
-    position: relative;
-    overflow: hidden;
-}
-
-.unit-card::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 30%, 
-        rgba(255, 255, 255, 0.1), 
-        transparent 70%);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.unit-card:hover::after {
-    opacity: 0.3;
-}
-
-.unit-card.active-unit {
-    background: linear-gradient(145deg, var(--forge-orange), #B84A1A);
-    border-color: var(--forge-gold);
-    box-shadow: 
-        0 0 20px var(--forge-orange),
-        0 8px 0 #6B2E0A,
-        0 12px 25px rgba(0, 0, 0, 0.6);
-    transform: translateY(-2px);
-}
-
-.unit-card.completed {
-    background: linear-gradient(145deg, #2A5A2A, #1A3A1A);
-    border-color: #4CAF50;
-    opacity: 0.9;
-    box-shadow: 0 4px 0 #0A2A0A;
-}
-
-.unit-number {
-    font-size: 14px;
-    color: var(--steel-light);
-    margin-bottom: 4px;
-    font-family: 'Cinzel', serif;
-}
-
-.unit-name {
-    font-weight: 700;
-    font-size: 18px;
-    color: white;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: 'Cinzel', serif;
-}
-
-.active-unit .unit-name {
-    color: var(--iron-dark);
-}
-
-.unit-progress {
-    font-size: 14px;
-    color: var(--forge-glow);
-}
-
-.unit-progress-bar {
-    width: 100%;
-    height: 6px;
-    background: var(--iron-dark);
-    border-radius: 10px;
-    margin-top: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(184, 134, 11, 0.3);
-}
-
-.unit-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
-    border-radius: 10px;
-    transition: width 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.unit-progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 100%);
-    animation: liquidShimmer 2s infinite;
-}
-
 /* ---------- WORD SECTION ---------- */
 .word-section {
     background: linear-gradient(145deg, 
@@ -1505,7 +1299,6 @@ button:hover .icon {
         opacity: 0.2;
     }
 }
-
 /* ---------- ARTIFACT BOX ---------- */
 .artifact-box {
     background: linear-gradient(145deg, 
@@ -1597,6 +1390,11 @@ button:hover .icon {
     box-shadow: 
         0 3px 0 var(--iron-dark),
         0 6px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- UNIT SECTION - KEPT FOR COMPATIBILITY BUT HIDDEN ---------- */
+.unit-section {
+    display: none; /* Hidden as agreed - unit section removed from game screen */
 }
 
 /* ---------- POPUP OVERLAY BASE ---------- */
@@ -1729,7 +1527,6 @@ button:hover .icon {
     transform: translateY(3px);
     box-shadow: 0 2px 0 #9E691F;
 }
-
 /* ---------- INGOT COMPLETE POPUP ---------- */
 .ingot-card {
     max-width: 420px;
@@ -1834,6 +1631,16 @@ button:hover .icon {
     color: white;
 }
 
+/* ---------- PRACTICE COMPLETE POPUP ---------- */
+.ingot-card.practice .ingot-emoji {
+    font-size: 90px;
+}
+
+.ingot-card.practice .ingot-title {
+    color: #88CCFF;
+    text-shadow: 5px 5px 0 #2A4A6A;
+}
+
 /* ---------- FAILURE POPUP ---------- */
 .failure-card {
     max-width: 420px;
@@ -1913,7 +1720,7 @@ button:hover .icon {
     color: white;
 }
 
-/* ---------- PREVIEW POPUP ---------- */
+/* ---------- PREVIEW POPUP (Ready/Reset/Next) ---------- */
 .preview-card {
     max-width: 440px;
     width: 100%;
@@ -2055,8 +1862,7 @@ button:hover .icon {
     box-shadow: 0 5px 0 #2E4A57;
     color: white;
 }
-
-/* ---------- TRAINING UI - COMPLETE NEW STYLES ---------- */
+/* ---------- TRAINING UI - COMPLETE STYLES ---------- */
 .training-card {
     max-width: 480px;
     width: 100%;
@@ -2104,16 +1910,7 @@ button:hover .icon {
     filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
 }
 
-.training-sentence {
-    font-size: 18px;
-    background: #0E2938;
-    padding: 15px;
-    border-radius: 40px;
-    color: #FFDCAA;
-    margin: 20px 0;
-    border: 2px solid #B8944A;
-    line-height: 1.5;
-}
+/* Sentence removed as agreed - no styles needed */
 
 .training-input {
     width: 100%;
@@ -2253,6 +2050,11 @@ button:hover .icon {
     overflow-y: auto;
 }
 
+.practice-card.fullscreen {
+    max-width: 500px;
+    max-height: 90vh;
+}
+
 .practice-title {
     font-size: 32px;
     font-weight: 800;
@@ -2269,6 +2071,25 @@ button:hover .icon {
     border: 2px solid #AA873F;
     max-height: 300px;
     overflow-y: auto;
+}
+
+.practice-list.fullscreen-list {
+    max-height: 60vh;
+}
+
+.practice-world-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--forge-gold);
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--forge-bronze);
+    text-align: left;
+    font-family: 'Cinzel', serif;
+}
+
+.practice-world-header:first-of-type {
+    margin-top: 5px;
 }
 
 .practice-item {
@@ -2312,7 +2133,6 @@ button:hover .icon {
     background: rgba(0, 0, 0, 0.3);
     color: var(--forge-glow);
 }
-
 /* ---------- WORLD COMPLETE POPUP ---------- */
 .world-card {
     max-width: 420px;
@@ -2691,7 +2511,6 @@ button:hover .icon {
     background: #557A8B;
     box-shadow: 0 5px 0 #2E4A57;
 }
-
 /* ---------- PROFILE POPUP ---------- */
 .profile-card {
     max-width: 480px;
@@ -3078,8 +2897,7 @@ button:hover .icon {
         padding: var(--space-md) var(--space-sm) var(--space-lg);
     }
     
-    .word-grid,
-    .unit-grid {
+    .word-grid {
         max-height: 150px;
     }
     
@@ -3201,9 +3019,17 @@ button:hover .icon {
     .milestone-item div:last-child {
         font-size: 10px;
     }
+    
+    .streak-days {
+        font-size: 48px;
+    }
+    
+    .streak-timer {
+        font-size: 14px;
+    }
 }
 
-/* Reduce motion for accessibility */
+/* ---------- ACCESSIBILITY - REDUCE MOTION ---------- */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -3222,7 +3048,42 @@ button:hover .icon {
     .devotion-bar-fill::after,
     .training-progress-fill::after,
     .crystalPulse,
-    .milestone-item.achieved .milestone-icon {
+    .milestone-item.achieved .milestone-icon,
+    .forge-message-icon,
+    .letter-tile,
+    .word-chip,
+    .ready-btn,
+    .home-action-btn,
+    .reset-btn,
+    .preview-btn,
+    .ingot-btn,
+    .failure-btn,
+    .action-btn,
+    .collect-btn,
+    .practice-item,
+    .leaderboard-row,
+    .profile-trophy,
+    .footer-icon {
         animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    .letter-tile:hover,
+    .word-chip:hover,
+    .ready-btn:hover,
+    .home-action-btn:hover,
+    .reset-btn:hover,
+    .preview-btn:hover,
+    .ingot-btn:hover,
+    .failure-btn:hover,
+    .action-btn:hover,
+    .collect-btn:hover,
+    .practice-item:hover,
+    .leaderboard-row:hover,
+    .profile-trophy:hover,
+    .footer-icon:hover {
+        transform: none !important;
+        filter: brightness(1.2) !important;
     }
 }
