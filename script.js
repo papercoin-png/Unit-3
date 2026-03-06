@@ -89,6 +89,11 @@ function showForgeMessage(text, icon = '⚒️', duration = 3000) {
     forgeProgressFill.style.animation = 'none';
     forgeProgressFill.offsetHeight;
     forgeProgressFill.style.animation = 'progressFill ' + (duration/1000) + 's linear forwards';
+    
+    // Auto-hide after duration
+    setTimeout(() => {
+        hideForgeMessage();
+    }, duration);
 }
 
 function updateForgeMessage(text, icon = '⚒️') {
@@ -1632,7 +1637,8 @@ let playerPerformance = {
             day200: false,
             day365: false
         }
-    }
+    },
+    lastStreakUpdate: null // Track when streak was last updated
 };
 
 // ---------- PLAYER PROFILE ----------
@@ -1784,9 +1790,10 @@ let wordCardQueue = [];
 let showingWordCard = false;
 let isPracticeMode = false;
 
-// ---------- TRAINING TIMER CONSTANTS ----------
+// ---------- TIMER CONSTANTS ----------
 const TRAINING_COOLDOWN = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 const FORTY_HOURS = 40 * 60 * 60 * 1000; // 40 hours for streak grace period
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours for streak update
 // ---------- HELPER FUNCTIONS ----------
 function calculateTotalWords() {
     let total = 0;
@@ -1883,8 +1890,37 @@ function updateTrainTimerDisplay() {
     }
 }
 
-// ---------- BACKFILL CODEX FROM PROGRESS ----------
+// ---------- STREAK TIMER FUNCTIONS (NEW) ----------
+function updateStreakTimerDisplay() {
+    const timerEl = document.getElementById('streakTimer');
+    if (!timerEl) return;
+    
+    const now = Date.now();
+    const lastUpdate = playerPerformance.lastStreakUpdate ? new Date(playerPerformance.lastStreakUpdate).getTime() : null;
+    
+    if (!lastUpdate) {
+        timerEl.innerText = 'Next in: --h --m';
+        return;
+    }
+    
+    const nextUpdate = lastUpdate + TWENTY_FOUR_HOURS;
+    const timeRemaining = nextUpdate - now;
+    
+    if (timeRemaining <= 0) {
+        timerEl.innerText = 'Ready!';
+        timerEl.style.color = '#4ADE80';
+    } else {
+        const hours = Math.floor(timeRemaining / (60 * 60 * 1000));
+        const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
+        timerEl.innerText = `Next in: ${hours}h ${minutes}m`;
+        timerEl.style.color = '#FFB347';
+    }
+}
+
+// ---------- UPDATED: BACKFILL CODEX FROM PROGRESS (NO CREDIT) ----------
 function backfillCodexFromProgress() {
+    console.log("Backfilling Codex from progress...");
+    
     for (let worldId = 1; worldId <= 6; worldId++) {
         const world = worlds[worldId];
         if (!world || !world.unlocked) continue;
@@ -1895,51 +1931,37 @@ function backfillCodexFromProgress() {
             const unitWords = MASTER_WORDS[`world${worldId}`]?.units[unit.id]?.words;
             if (!unitWords) return;
             
+            console.log(`Adding words from World ${worldId}, ${world.unitName} ${unit.id} (${unit.wordsCompleted}/20 completed)`);
+            
+            // Add ALL words from this unit to Codex
             unitWords.forEach((wordData, wordIndex) => {
                 const wordId = `w${worldId}u${unit.id}w${wordIndex}`;
+                let wordMemory = codex.getWord(wordId);
                 
-                // Check if this word was completed based on progress
-                const isCompleted = (worldId === currentWorld && 
-                                     unit.id === currentUnit && 
-                                     completedWords.includes(wordIndex)) ||
-                                    unit.wordsCompleted > wordIndex;
-                
-                if (isCompleted) {
-                    let wordMemory = codex.getWord(wordId);
-                    if (!wordMemory) {
-                        wordMemory = codex.addWord(wordId, {
-                            ...wordData,
-                            world: worldId,
-                            ingot: unit.id
-                        });
-                    }
+                if (!wordMemory) {
+                    wordMemory = codex.addWord(wordId, {
+                        ...wordData,
+                        world: worldId,
+                        ingot: unit.id
+                    });
                     
-                    // Give credit for completed words (but not full mastery)
-                    if (wordMemory.correctCount === 0) {
-                        wordMemory.correctCount = 1;
-                        wordMemory.recordTraining(1, 3000, true, 'good');
-                    }
-                    
-                    // For fully completed ingots, give partial credit (up to 15)
-                    if (unit.wordsCompleted === 20) {
-                        const baseProgress = Math.min(15, Math.floor(unit.wordsCompleted / 2));
-                        if (wordMemory.correctCount < baseProgress) {
-                            wordMemory.correctCount = baseProgress;
-                        }
-                    }
+                    // Words start at 0 correct count - ready for training
+                    // NO automatic credit given
+                    console.log(`  Added word: ${wordData.word} (0/30)`);
                 }
             });
         });
     }
     
     saveProgress();
+    console.log("Codex backfill complete. Total words in Codex:", codex.getAllWords().length);
 }
 
 // ---------- UPDATE HOME SCREEN STATS ----------
 function updateHomeScreenStats() {
     const streakDaysEl = document.getElementById('streakDays');
     if (streakDaysEl) {
-        streakDaysEl.innerText = playerPerformance.currentStreak || 0;
+        streakDaysEl.innerText = playerPerformance.devotion?.days || 0;
     }
     
     const streakBonusEl = document.getElementById('streakBonus');
@@ -1950,7 +1972,7 @@ function updateHomeScreenStats() {
     
     const codexCountEl = document.getElementById('codexMasteredCount');
     if (codexCountEl) {
-        const mastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
+        const mastered = codex.getMasteredCount();
         codexCountEl.innerText = `${mastered}⭐ mastered`;
     }
     
@@ -1968,6 +1990,9 @@ function updateHomeScreenStats() {
         currentIngotProgressEl.style.width = `${(unit.wordsCompleted/20)*100}%`;
         currentIngotCountEl.innerText = `${unit.wordsCompleted}/20`;
     }
+    
+    // Update streak timer
+    updateStreakTimerDisplay();
 }
 
 // ---------- GOOGLE SHEETS LEADERBOARD ----------
@@ -2027,7 +2052,7 @@ async function loadLeaderboardFromSheets(callback) {
     }
 }
 
-// ---------- GET HIGHEST UNLOCKED INGOT (NEW) ----------
+// ---------- GET HIGHEST UNLOCKED INGOT ----------
 function getHighestUnlockedIngot() {
     // Start from World 6 down to World 1
     for (let worldId = 6; worldId >= 1; worldId--) {
@@ -2046,6 +2071,31 @@ function getHighestUnlockedIngot() {
     }
     // Fallback to World 1, Ingot 1
     return { world: 1, unit: 1 };
+}
+
+// ---------- SCROLL FUNCTIONS ----------
+function scrollToLetterGrid() {
+    setTimeout(() => {
+        const letterGrid = document.getElementById('letterGridContainer');
+        if (letterGrid) {
+            letterGrid.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+    }, 100);
+}
+
+function scrollToWordGrid() {
+    setTimeout(() => {
+        const wordGrid = document.getElementById('wordListContainer');
+        if (wordGrid) {
+            wordGrid.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }, 100);
 }
 // ---------- generateInitialLetters ----------
 function generateInitialLetters() {
@@ -2125,15 +2175,10 @@ function updateHeaderForSelection() {
     document.getElementById('progressDisplay').innerText = `${totalProgress}/${world.totalWords}`;
 }
 
+// Unit section removed from game screen - function kept empty
 function setUnitSectionVisibility(visible) {
-    const unitSection = document.getElementById('unitSection');
-    if (unitSection) {
-        if (visible) {
-            unitSection.classList.remove('hidden');
-        } else {
-            unitSection.classList.add('hidden');
-        }
-    }
+    // Unit section removed - do nothing
+    return;
 }
 
 function returnTempLetters() {
@@ -2154,6 +2199,7 @@ function calculateRiskBonus(baseChance, actualChance, success) {
 function updateWorldDisplay() {
     const world = worlds[currentWorld];
     
+    // Unit selector and grid are kept for compatibility but hidden in UI
     const selector = document.getElementById('unitSelector');
     if (selector) {
         selector.innerHTML = '';
@@ -2231,7 +2277,6 @@ function resetForNewUnit() {
     isPracticeMode = false;
     renderAll();
     saveProgress();
-    setUnitSectionVisibility(true);
     updateHeaderForSelection();
     updateHomeScreenStats();
     
@@ -2295,7 +2340,7 @@ function updateActiveWordDisplay(targetWord) {
         (currentPosition < targetWord.length) ? targetWord[currentPosition].toUpperCase() : '✅';
 }
 
-// ---------- renderAll ----------
+// ---------- UPDATED: renderAll with auto-scroll ----------
 function renderAll() {
     const words = getCurrentUnitWords();
     
@@ -2318,9 +2363,12 @@ function renderAll() {
                     
                     currentLetters = generateInitialLetters();
                     
-                    setUnitSectionVisibility(false);
                     updateHeaderForGameplay();
                     renderAll();
+                    
+                    // Auto-scroll to letter grid when word selected
+                    scrollToLetterGrid();
+                    
                     tg?.HapticFeedback?.selectionChanged?.();
                 });
                 wordContainer.appendChild(chip);
@@ -2530,71 +2578,48 @@ function showResetIngotPopup() {
     });
 }
 
-// ---------- PRACTICE MODE POPUP (from PRACTICE button) - UPDATED: Full screen, all worlds ----------
-function showPracticeModePopup() {
-    const overlay = document.getElementById('popupOverlay');
+// ---------- NEW: RANDOM PRACTICE MODE (from PRACTICE button) ----------
+function startRandomPractice() {
+    // Collect all completed units from all worlds
+    const completedUnits = [];
     
-    let practiceIngotsHtml = '';
-    
-    // Loop through all worlds 1-6
     for (let worldId = 1; worldId <= 6; worldId++) {
         const world = worlds[worldId];
         if (!world || !world.unlocked) continue;
         
-        const worldCompletedIngots = world.units.filter(unit => unit.wordsCompleted === 20);
-        if (worldCompletedIngots.length === 0) continue;
-        
-        // Add world header
-        practiceIngotsHtml += `<div class="practice-world-header">${world.icon} ${world.name}</div>`;
-        
-        // Add ingots from this world
-        worldCompletedIngots.forEach(unit => {
-            const unitData = MASTER_WORDS[`world${worldId}`]?.units[unit.id];
-            const unitName = unitData ? unitData.name : "Unknown";
-            practiceIngotsHtml += `
-                <div class="practice-item" data-world="${worldId}" data-id="${unit.id}">
-                    <span class="practice-icon">🔨</span>
-                    <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')}: ${unitName}</span>
-                </div>
-            `;
+        world.units.forEach(unit => {
+            if (unit.wordsCompleted === 20) {
+                completedUnits.push({
+                    world: worldId,
+                    unit: unit.id,
+                    displayName: `${world.unitName} ${unit.id.toString().padStart(2, '0')}`
+                });
+            }
         });
     }
     
-    overlay.innerHTML = `
-        <div class="practice-card fullscreen">
-            <div class="preview-title">🔨 PRACTICE INGOT</div>
-            <div class="close-x" id="closePopupBtn">✕</div>
-            <div class="practice-list fullscreen-list" id="practiceList">
-                ${practiceIngotsHtml || '<div style="padding: 20px; text-align: center; color: #ACCCDD;">No completed ingots yet</div>'}
-            </div>
-            <div class="preview-buttons">
-                <button class="preview-btn secondary" id="cancelBtn">CANCEL</button>
-            </div>
-        </div>
-    `;
+    // If no completed units, show message
+    if (completedUnits.length === 0) {
+        showForgeMessage('No completed ingots yet!', '🔨', 2000);
+        return;
+    }
     
-    overlay.classList.remove('hidden');
+    // Select random completed unit
+    const randomIndex = Math.floor(Math.random() * completedUnits.length);
+    const selected = completedUnits[randomIndex];
     
-    document.querySelectorAll('.practice-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const worldId = parseInt(item.dataset.world);
-            const practiceId = parseInt(item.dataset.id);
-            overlay.classList.add('hidden');
-            currentWorld = worldId;
-            currentUnit = practiceId;
-            isPracticeMode = true;
-            showGameScreen();
-            tg?.HapticFeedback?.selectionChanged?.();
-        });
-    });
+    // Set game state to practice mode
+    currentWorld = selected.world;
+    currentUnit = selected.unit;
+    isPracticeMode = true;
     
-    document.getElementById('closePopupBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-    });
+    // Start game screen
+    showGameScreen();
     
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-    });
+    // Show brief notification
+    showForgeMessage(`Practicing ${selected.displayName}`, '🔨', 1500);
+    
+    tg?.HapticFeedback?.impactOccurred?.('light');
 }
 
 // ---------- WORD CARD POPUP ----------
@@ -2603,6 +2628,7 @@ function showWordCard(wordData) {
     processWordCardQueue();
 }
 
+// ---------- UPDATED: processWordCardQueue with auto-scroll to top ----------
 function processWordCardQueue() {
     if (showingWordCard || wordCardQueue.length === 0) return;
     showingWordCard = true;
@@ -2629,6 +2655,10 @@ function processWordCardQueue() {
     document.getElementById('collectWordBtn').addEventListener('click', () => {
         overlay.classList.add('hidden');
         showingWordCard = false;
+        
+        // Auto-scroll to word grid after collecting
+        scrollToWordGrid();
+        
         processWordCardQueue();
         saveProgress();
     });
@@ -2847,6 +2877,7 @@ function startTrainingSession(difficulty) {
     showTrainingWord();
 }
 
+// ---------- UPDATED: showTrainingWord without sentence ----------
 function showTrainingWord() {
     const overlay = document.getElementById('popupOverlay');
     const word = currentTrainingSession.getCurrentWord();
@@ -2860,7 +2891,7 @@ function showTrainingWord() {
     else if (elapsedSeconds < 4) timerColorClass += ' medium';
     else timerColorClass += ' slow';
     
-    // UPDATED: Removed sentence, only word and emoji
+    // Removed sentence - only word and emoji
     overlay.innerHTML = `
         <div class="training-card">
             <div class="close-x" id="closePopupBtn">✕</div>
@@ -3777,6 +3808,10 @@ function loadProgress() {
                 saveData.playerPerformance.trainingHistory = [];
             }
             
+            if (!saveData.playerPerformance.lastStreakUpdate) {
+                saveData.playerPerformance.lastStreakUpdate = null;
+            }
+            
             if (saveData.worlds) {
                 Object.keys(saveData.worlds).forEach(key => {
                     if (worlds[key]) {
@@ -3816,16 +3851,18 @@ function startAutoSave() {
     setInterval(saveProgress, 60000);
 }
 
-// ---------- UPDATED: updateDevotion with 40-hour grace period ----------
+// ---------- UPDATED: updateDevotion with 40-hour grace period and 24-hour streak ----------
 function updateDevotion() {
     const today = new Date().toDateString();
     const lastLogin = playerPerformance.devotion.lastLogin ? new Date(playerPerformance.devotion.lastLogin).toDateString() : null;
     const oldDays = playerPerformance.devotion.days;
+    const now = Date.now();
     
     if (!lastLogin) {
         // First time playing
         playerPerformance.devotion.days = 1;
         playerPerformance.devotion.lastLogin = new Date().toISOString();
+        playerPerformance.lastStreakUpdate = now;
     } else if (lastLogin !== today) {
         // Calculate time since last login
         const lastDate = new Date(playerPerformance.devotion.lastLogin);
@@ -3833,15 +3870,21 @@ function updateDevotion() {
         const timeDiffMs = currentDate - lastDate;
         const hoursDiff = timeDiffMs / (1000 * 60 * 60);
         
-        if (hoursDiff <= 40) {
-            // Within 40 hours - add one
-            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
-        } else {
-            // Missed the 40-hour window - decrease by number of missed days
-            const daysMissed = Math.floor(hoursDiff / 24);
-            playerPerformance.devotion.days = Math.max(playerPerformance.devotion.days - daysMissed, 0);
-            // Add today
-            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+        // Check if 24 hours have passed since last streak update
+        if (!playerPerformance.lastStreakUpdate || (now - playerPerformance.lastStreakUpdate) >= TWENTY_FOUR_HOURS) {
+            
+            if (hoursDiff <= 40) {
+                // Within 40 hours - add one
+                playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+            } else {
+                // Missed the 40-hour window - decrease by number of missed days
+                const daysMissed = Math.floor(hoursDiff / 24);
+                playerPerformance.devotion.days = Math.max(playerPerformance.devotion.days - daysMissed, 0);
+                // Add today
+                playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+            }
+            
+            playerPerformance.lastStreakUpdate = now;
         }
         
         playerPerformance.devotion.lastLogin = new Date().toISOString();
@@ -3928,10 +3971,7 @@ function handleWordCompletion(wordIndex) {
     currentPosition = 0;
     tempUsedLetters = [];
     
-    if (activeWordIndex === null) {
-        setUnitSectionVisibility(true);
-        updateHeaderForSelection();
-    }
+    updateHeaderForSelection();
     
     renderAll();
     updateWorldDisplay();
@@ -4028,15 +4068,14 @@ function showHomeScreen() {
     
     document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('gameContainer').classList.add('hidden');
-    document.getElementById('unitSection').classList.add('hidden');
     updateHomeScreenStats();
     updateTrainTimerDisplay();
+    updateStreakTimerDisplay();
 }
 
 function showGameScreen() {
     document.getElementById('homeScreen').classList.add('hidden');
     document.getElementById('gameContainer').classList.remove('hidden');
-    document.getElementById('unitSection').classList.remove('hidden');
     resetForNewUnit();
 }
 
@@ -4054,12 +4093,14 @@ function initializeGame() {
     resetForNewUnit();
     showHomeScreen();
     updateTrainTimerDisplay();
+    updateStreakTimerDisplay();
     
     setInterval(() => {
         if (!gameCompleted && activeWordIndex !== null) {
             QUICK_RESUME.saveSession();
         }
         updateTrainTimerDisplay();
+        updateStreakTimerDisplay();
     }, 60000);
 }
 
@@ -4101,10 +4142,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 2. Practice (second) - button text changed to PRACTICE in HTML
+    // 2. Practice (second) - RANDOM PRACTICE MODE
     const forgeSelectedBtn = document.getElementById('forgeSelectedBtn');
     if (forgeSelectedBtn) {
-        forgeSelectedBtn.addEventListener('click', showPracticeModePopup);
+        forgeSelectedBtn.addEventListener('click', startRandomPractice);
     }
     
     // 3. Leaderboard (third)
@@ -4146,22 +4187,6 @@ document.addEventListener('DOMContentLoaded', function() {
             saveProgress();
         });
     }
-    
-    // Click outside to return to selection
-    document.addEventListener('click', (e) => {
-        if (activeWordIndex !== null && 
-            !e.target.closest('.word-chip') && 
-            !e.target.closest('.letter-tile')) {
-            returnTempLetters();
-            activeWordIndex = null;
-            currentPosition = 0;
-            setUnitSectionVisibility(true);
-            updateHeaderForSelection();
-            
-            currentLetters = generateInitialLetters();
-            renderAll();
-        }
-    });
     
     // Load profile and initialize
     loadProfile();
