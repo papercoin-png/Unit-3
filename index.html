@@ -70,14 +70,15 @@
                 </div>
             </div>
 
-            <!-- Streak Card - Prominent -->
+            <!-- Streak Card - Prominent with timer -->
             <div class="streak-card">
                 <div class="streak-title">🔥 STREAK 🔥</div>
                 <div class="streak-days" id="streakDays">0</div>
                 <div class="streak-bonus" id="streakBonus">+0.0% BONUS</div>
+                <div class="streak-timer" id="streakTimer">Next in: --h --m</div>
             </div>
 
-            <!-- Current Ingot Card with READY button (dropdown REMOVED per agreement) -->
+            <!-- Current Ingot Card with READY button -->
             <div class="ingot-card-home">
                 <div class="ingot-header">
                     <span class="ingot-label">CURRENT INGOT</span>
@@ -92,8 +93,6 @@
                     </div>
                     <span class="progress-text" id="currentIngotCount">0/20</span>
                 </div>
-                
-                <!-- DROPDOWN REMOVED - as agreed -->
             </div>
 
             <!-- Codex Summary Card -->
@@ -102,7 +101,7 @@
                 <span class="codex-count" id="codexMasteredCount">0⭐ mastered</span>
             </div>
 
-            <!-- Quick Actions - CORRECT ORDER as agreed: Daily Train, Practice, Leaderboard, View Codex -->
+            <!-- Quick Actions - CORRECT ORDER: Daily Train, Practice, Leaderboard, View Codex -->
             <div class="quick-actions">
                 <!-- 1. Daily Train (first) -->
                 <div class="train-action-container">
@@ -113,7 +112,7 @@
                     <span class="train-timer" id="trainTimer">READY!</span>
                 </div>
                 
-                <!-- 2. Practice (second) - CHANGED from "FORGE SELECTED" to "PRACTICE" -->
+                <!-- 2. Practice (second) - Random practice mode -->
                 <button class="home-action-btn" id="forgeSelectedBtn">
                     <span class="action-icon">⚒️</span>
                     <span class="action-text">PRACTICE</span>
@@ -132,7 +131,7 @@
                 </button>
             </div>
 
-            <!-- Footer Icons - Profile button ONLY in footer (top right removed per agreement) -->
+            <!-- Footer Icons - Profile button ONLY in footer -->
             <div class="footer-icons">
                 <button class="footer-icon" id="homeFooterProfileBtn" title="Profile">
                     <svg width="32" height="32">
@@ -220,26 +219,10 @@
                 FORGE AGAIN
             </button>
             
-            <!-- FOOTER REMOVED - as agreed (Telegram text deleted) -->
+            <!-- FOOTER REMOVED - Telegram text deleted -->
         </div>
 
-        <!-- UNIT SECTION - hidden by default, appears in game screen -->
-        <div class="unit-section hidden" id="unitSection">
-            <div class="unit-header">
-                <span class="unit-label">
-                    <svg width="20" height="20" style="margin-right: 8px;">
-                        <use href="assets/icons.svg#icon-ingot"/>
-                    </svg>
-                    SELECT INGOT
-                </span>
-                <select class="unit-selector" id="unitSelector">
-                    <option value="1">INGOT 01 · First Spark</option>
-                </select>
-            </div>
-            <div class="unit-grid" id="unitGrid">
-                <!-- Populated by JavaScript -->
-            </div>
-        </div>
+        <!-- UNIT SECTION REMOVED COMPLETELY - as agreed -->
 
         <!-- Popup Overlay - Used for all modals -->
         <div id="popupOverlay" class="popup-overlay hidden"></div>
