@@ -81,7 +81,7 @@ const forgeMessageIcon = document.getElementById('forgeMessageIcon');
 const forgeMessageText = document.getElementById('forgeMessageText');
 const forgeProgressFill = document.getElementById('forgeProgressFill');
 
-function showForgeMessage(text, icon = '⚒️', duration = 4000) {
+function showForgeMessage(text, icon = '⚒️', duration = 3000) {
     forgeMessageIcon.innerText = icon;
     forgeMessageText.innerText = text;
     forgeMessageOverlay.style.display = 'flex';
@@ -222,7 +222,6 @@ const QUICK_RESUME = {
         localStorage.removeItem('spellforge_quicksave');
     }
 };
-
 // ---------- MASTER WORD BANK · 3,600 WORDS ----------
 const MASTER_WORDS = {
     // WORLD 1: GRAND FORGE (600 words)
@@ -1059,7 +1058,6 @@ for (let i = 151; i <= 180; i++) {
         words: []
     };
 }
-
 // ---------- INGOT DIFFICULTY DATABASE ----------
 const ingotDifficulty = {
     // WORLD 1: Grand Forge (Ingots 1-30)
@@ -1287,7 +1285,6 @@ const DEVOTION = {
         return milestones;
     }
 };
-
 // ---------- CODEX SYSTEM ----------
 class WordMemory {
     constructor(wordId, wordData) {
@@ -1331,6 +1328,7 @@ class WordMemory {
             this.bestTime = responseTime;
         }
         
+        // Only flash 1 counts toward mastery (30 exposures needed)
         if (flashNumber === 1 && isCorrect && rating !== 'again') {
             this.correctCount++;
             
@@ -1516,6 +1514,7 @@ class TrainingSession {
         this.currentIndex = 0;
         this.currentFlash = 0;
         this.results = [];
+        this.startTime = null;
     }
     
     start() {
@@ -1526,6 +1525,7 @@ class TrainingSession {
             this.words.push(...extra);
         }
         
+        this.startTime = Date.now();
         return {
             totalWords: this.words.length,
             firstWord: this.words[0]
@@ -1602,7 +1602,6 @@ class TrainingSession {
 // Initialize Codex and FSRS
 const codex = new Codex();
 const fsrsManager = new FSRSManager();
-
 // ---------- PLAYER PERFORMANCE TRACKING ----------
 let playerPerformance = {
     currentStreak: 0,
@@ -1636,139 +1635,6 @@ let playerPerformance = {
     }
 };
 
-// ---------- UPDATE DEVOTION FUNCTION ----------
-function updateDevotion() {
-    const today = new Date().toDateString();
-    const lastLogin = playerPerformance.devotion.lastLogin ? new Date(playerPerformance.devotion.lastLogin).toDateString() : null;
-    const oldDays = playerPerformance.devotion.days;
-    
-    if (!lastLogin) {
-        playerPerformance.devotion.days = 1;
-        playerPerformance.devotion.lastLogin = new Date().toISOString();
-    } else if (lastLogin !== today) {
-        const lastDate = new Date(playerPerformance.devotion.lastLogin);
-        const currentDate = new Date();
-        const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
-        
-        if (daysDiff === 1) {
-            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
-        } else if (daysDiff > 1) {
-            playerPerformance.devotion.days = Math.max(playerPerformance.devotion.days - (daysDiff - 1), 0);
-            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
-        }
-        
-        playerPerformance.devotion.lastLogin = new Date().toISOString();
-    }
-    
-    playerPerformance.devotion.bonus = DEVOTION.calculateBonus(playerPerformance.devotion.days);
-    const tier = DEVOTION.getTier(playerPerformance.devotion.days);
-    playerPerformance.devotion.tier = tier.name;
-    
-    const newMilestones = DEVOTION.checkMilestones(playerPerformance.devotion.days, oldDays);
-    newMilestones.forEach(day => {
-        const milestoneKey = `day${day}`;
-        if (!playerPerformance.devotion.milestones[milestoneKey]) {
-            playerPerformance.devotion.milestones[milestoneKey] = true;
-            showMilestoneNotification(day, tier);
-        }
-    });
-    
-    if (playerPerformance.devotion.days !== oldDays) {
-        showDevotionNotification();
-    }
-    
-    saveProgress();
-    updateHomeScreenStats();
-}
-
-// ---------- DEVOTION NOTIFICATION ----------
-function showDevotionNotification() {
-    const days = playerPerformance.devotion.days;
-    const bonus = playerPerformance.devotion.bonus.toFixed(1);
-    const tier = DEVOTION.getTier(days);
-    const daysToNext = days < 30 ? 30 - days : 
-                       days < 100 ? 100 - days : 
-                       days < 200 ? 200 - days : 
-                       days < 365 ? 365 - days : 0;
-    
-    const nextTier = days < 30 ? "Bronze" : 
-                     days < 100 ? "Silver" : 
-                     days < 200 ? "Gold" : 
-                     days < 365 ? "Crystal" : "Master";
-    
-    const notification = document.createElement('div');
-    notification.className = 'devotion-notification';
-    notification.innerHTML = `
-        <div class="devotion-content">
-            <span class="devotion-icon">${tier.icon}</span>
-            <div class="devotion-text">
-                <strong>Devotion: Day ${days} · +${bonus}%</strong>
-                <small>${daysToNext > 0 ? `${daysToNext} days to ${nextTier}` : '✨ Master Forgemaster ✨'}</small>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 100);
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
-
-// ---------- MILESTONE NOTIFICATION ----------
-function showMilestoneNotification(day, tier) {
-    const messages = {
-        30: { text: "Bronze Anvil Unlocked!", desc: "Your devotion begins to show" },
-        100: { text: "Silver Anvil Unlocked!", desc: "The forge glows with your rhythm" },
-        200: { text: "Gold Anvil Unlocked!", desc: "Your strikes are true and powerful" },
-        365: { text: "CRYSTAL ANVIL ACHIEVED!", desc: "Forgemaster of Eternal Flame" }
-    };
-    
-    const msg = messages[day] || { text: "Milestone Reached!", desc: "Your devotion grows" };
-    
-    const notification = document.createElement('div');
-    notification.className = 'devotion-notification milestone';
-    notification.innerHTML = `
-        <div class="devotion-content" style="border-color: ${tier.color}; box-shadow: 0 0 20px ${tier.color};">
-            <span class="devotion-icon" style="font-size: 40px;">${tier.icon}</span>
-            <div class="devotion-text">
-                <strong style="font-size: 20px;">${msg.text}</strong>
-                <small>${msg.desc}</small>
-                <small style="margin-top: 5px;">+${DEVOTION.calculateBonus(day).toFixed(1)}% bonus earned</small>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 100);
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 5000);
-    }, 5000);
-}
-
-// ---------- calculateSuccessChance ----------
-function calculateSuccessChance(ingotId) {
-    const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
-    const grace = ingotGrace[ingotId] || 0;
-    const devotionBonus = playerPerformance.devotion?.bonus || 0;
-    
-    const finalChance = Math.min(difficulty.baseChance + grace + devotionBonus, 99);
-    
-    return {
-        final: finalChance,
-        base: difficulty.baseChance,
-        grace: grace,
-        devotion: devotionBonus,
-        devotionDays: playerPerformance.devotion?.days || 0,
-        tier: difficulty.tier,
-        maxed: finalChance === 99
-    };
-}
-
 // ---------- PLAYER PROFILE ----------
 let playerProfile = {
     displayName: "Forgemaster",
@@ -1777,37 +1643,6 @@ let playerProfile = {
     lastName: "",
     username: ""
 };
-
-function loadProfile() {
-    try {
-        const saved = localStorage.getItem('spellforge_profile');
-        if (saved) {
-            playerProfile = JSON.parse(saved);
-        } else {
-            const user = tg?.initDataUnsafe?.user;
-            if (user) {
-                playerProfile = {
-                    displayName: user.first_name || "Forgemaster",
-                    telegramId: user.id,
-                    firstName: user.first_name || "",
-                    lastName: user.last_name || "",
-                    username: user.username || ""
-                };
-            }
-        }
-    } catch (e) {}
-}
-
-function saveProfile() {
-    localStorage.setItem('spellforge_profile', JSON.stringify(playerProfile));
-}
-
-function validateDisplayName(name) {
-    name = name.trim();
-    if (name.length < 3 || name.length > 20) return false;
-    if (!/^[a-zA-Z0-9 ]+$/.test(name)) return false;
-    return true;
-}
 
 // ---------- WORLD DATA STRUCTURE ----------
 const worlds = {
@@ -1947,16 +1782,59 @@ let correctTaps = 0;
 let gameCompleted = false;
 let wordCardQueue = [];
 let showingWordCard = false;
+let isPracticeMode = false;
 
 // ---------- TRAINING TIMER CONSTANTS ----------
 const TRAINING_COOLDOWN = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+const FORTY_HOURS = 40 * 60 * 60 * 1000; // 40 hours for streak grace period
+// ---------- HELPER FUNCTIONS ----------
+function calculateTotalWords() {
+    let total = 0;
+    for (let worldId = 1; worldId <= 6; worldId++) {
+        if (worlds[worldId]) {
+            total += worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+        }
+    }
+    return total;
+}
 
+function getWordsByWorld() {
+    const wordsByWorld = [];
+    for (let worldId = 1; worldId <= 6; worldId++) {
+        if (worlds[worldId]) {
+            const worldTotal = worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+            wordsByWorld.push(worldTotal);
+        } else {
+            wordsByWorld.push(0);
+        }
+    }
+    return wordsByWorld;
+}
+
+function getPlayerStats() {
+    const wordsByWorld = getWordsByWorld();
+    const totalWords = wordsByWorld.reduce((a, b) => a + b, 0);
+    const ingotsMastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
+    const totalAttempts = playerPerformance.ingotHistory.length;
+    const successfulAttempts = playerPerformance.ingotHistory.filter(h => h.success).length;
+    const successRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 100;
+    
+    return {
+        worlds: wordsByWorld,
+        totalWords: totalWords,
+        ingotsMastered: ingotsMastered,
+        successRate: successRate
+    };
+}
+
+// ---------- TRAINING TIMER FUNCTIONS ----------
 function isTrainingAvailable() {
     if (!playerPerformance.lastTrainingTime) return true;
     
     const now = Date.now();
     const timeSinceLast = now - playerPerformance.lastTrainingTime;
     
+    // Sanity check for clock manipulation
     if (timeSinceLast < 0 || timeSinceLast > 7 * 24 * 60 * 60 * 1000) {
         playerPerformance.lastTrainingTime = now - TRAINING_COOLDOWN;
         saveProgress();
@@ -2002,6 +1880,93 @@ function updateTrainTimerDisplay() {
         }
         timerEl.style.color = '#FFB347';
         trainBtn.disabled = false;
+    }
+}
+
+// ---------- BACKFILL CODEX FROM PROGRESS ----------
+function backfillCodexFromProgress() {
+    for (let worldId = 1; worldId <= 6; worldId++) {
+        const world = worlds[worldId];
+        if (!world || !world.unlocked) continue;
+        
+        world.units.forEach(unit => {
+            if (unit.wordsCompleted === 0) return;
+            
+            const unitWords = MASTER_WORDS[`world${worldId}`]?.units[unit.id]?.words;
+            if (!unitWords) return;
+            
+            unitWords.forEach((wordData, wordIndex) => {
+                const wordId = `w${worldId}u${unit.id}w${wordIndex}`;
+                
+                // Check if this word was completed based on progress
+                const isCompleted = (worldId === currentWorld && 
+                                     unit.id === currentUnit && 
+                                     completedWords.includes(wordIndex)) ||
+                                    unit.wordsCompleted > wordIndex;
+                
+                if (isCompleted) {
+                    let wordMemory = codex.getWord(wordId);
+                    if (!wordMemory) {
+                        wordMemory = codex.addWord(wordId, {
+                            ...wordData,
+                            world: worldId,
+                            ingot: unit.id
+                        });
+                    }
+                    
+                    // Give credit for completed words (but not full mastery)
+                    if (wordMemory.correctCount === 0) {
+                        wordMemory.correctCount = 1;
+                        wordMemory.recordTraining(1, 3000, true, 'good');
+                    }
+                    
+                    // For fully completed ingots, give partial credit (up to 15)
+                    if (unit.wordsCompleted === 20) {
+                        const baseProgress = Math.min(15, Math.floor(unit.wordsCompleted / 2));
+                        if (wordMemory.correctCount < baseProgress) {
+                            wordMemory.correctCount = baseProgress;
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    saveProgress();
+}
+
+// ---------- UPDATE HOME SCREEN STATS ----------
+function updateHomeScreenStats() {
+    const streakDaysEl = document.getElementById('streakDays');
+    if (streakDaysEl) {
+        streakDaysEl.innerText = playerPerformance.currentStreak || 0;
+    }
+    
+    const streakBonusEl = document.getElementById('streakBonus');
+    if (streakBonusEl) {
+        const bonus = playerPerformance.devotion?.bonus || 0;
+        streakBonusEl.innerText = `+${bonus.toFixed(1)}% BONUS`;
+    }
+    
+    const codexCountEl = document.getElementById('codexMasteredCount');
+    if (codexCountEl) {
+        const mastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
+        codexCountEl.innerText = `${mastered}⭐ mastered`;
+    }
+    
+    const world = worlds[currentWorld];
+    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
+    const currentIngotNameEl = document.getElementById('currentIngotName');
+    if (currentIngotNameEl && unitData) {
+        currentIngotNameEl.innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitData.name}`;
+    }
+    
+    const currentIngotProgressEl = document.getElementById('currentIngotProgress');
+    const currentIngotCountEl = document.getElementById('currentIngotCount');
+    const unit = world.units.find(u => u.id === currentUnit);
+    if (currentIngotProgressEl && currentIngotCountEl && unit) {
+        currentIngotProgressEl.style.width = `${(unit.wordsCompleted/20)*100}%`;
+        currentIngotCountEl.innerText = `${unit.wordsCompleted}/20`;
     }
 }
 
@@ -2062,162 +2027,26 @@ async function loadLeaderboardFromSheets(callback) {
     }
 }
 
-// ---------- HELPER FUNCTIONS ----------
-function calculateTotalWords() {
-    let total = 0;
-    for (let worldId = 1; worldId <= 6; worldId++) {
-        if (worlds[worldId]) {
-            total += worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-        }
-    }
-    return total;
-}
-
-function getWordsByWorld() {
-    const wordsByWorld = [];
-    for (let worldId = 1; worldId <= 6; worldId++) {
-        if (worlds[worldId]) {
-            const worldTotal = worlds[worldId].units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
-            wordsByWorld.push(worldTotal);
-        } else {
-            wordsByWorld.push(0);
-        }
-    }
-    return wordsByWorld;
-}
-
-function getPlayerStats() {
-    const wordsByWorld = getWordsByWorld();
-    const totalWords = wordsByWorld.reduce((a, b) => a + b, 0);
-    const ingotsMastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
-    const totalAttempts = playerPerformance.ingotHistory.length;
-    const successfulAttempts = playerPerformance.ingotHistory.filter(h => h.success).length;
-    const successRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 100;
-    
-    return {
-        worlds: wordsByWorld,
-        totalWords: totalWords,
-        ingotsMastered: ingotsMastered,
-        successRate: successRate
-    };
-}
-
-// ---------- BACKFILL CODEX FROM PROGRESS ----------
-function backfillCodexFromProgress() {
-    for (let worldId = 1; worldId <= 6; worldId++) {
+// ---------- GET HIGHEST UNLOCKED INGOT (NEW) ----------
+function getHighestUnlockedIngot() {
+    // Start from World 6 down to World 1
+    for (let worldId = 6; worldId >= 1; worldId--) {
         const world = worlds[worldId];
         if (!world || !world.unlocked) continue;
         
-        world.units.forEach(unit => {
-            if (unit.wordsCompleted === 0) return;
-            
-            const unitWords = MASTER_WORDS[`world${worldId}`]?.units[unit.id]?.words;
-            if (!unitWords) return;
-            
-            unitWords.forEach((wordData, wordIndex) => {
-                const wordId = `w${worldId}u${unit.id}w${wordIndex}`;
-                
-                const isCompleted = (worldId === currentWorld && 
-                                     unit.id === currentUnit && 
-                                     completedWords.includes(wordIndex)) ||
-                                    unit.wordsCompleted > wordIndex;
-                
-                if (isCompleted) {
-                    let wordMemory = codex.getWord(wordId);
-                    if (!wordMemory) {
-                        wordMemory = codex.addWord(wordId, {
-                            ...wordData,
-                            world: worldId,
-                            ingot: unit.id
-                        });
-                    }
-                    
-                    if (wordMemory.correctCount === 0) {
-                        wordMemory.correctCount = 1;
-                        wordMemory.recordTraining(1, 3000, true, 'good');
-                    }
-                    
-                    if (unit.wordsCompleted === 20) {
-                        const baseProgress = Math.min(15, Math.floor(unit.wordsCompleted / 2));
-                        if (wordMemory.correctCount < baseProgress) {
-                            wordMemory.correctCount = baseProgress;
-                        }
-                    }
-                }
-            });
-        });
-    }
-    
-    saveProgress();
-}
-
-// ---------- UPDATE HOME SCREEN STATS ----------
-function updateHomeScreenStats() {
-    const streakDaysEl = document.getElementById('streakDays');
-    if (streakDaysEl) {
-        streakDaysEl.innerText = playerPerformance.currentStreak || 0;
-    }
-    
-    const streakBonusEl = document.getElementById('streakBonus');
-    if (streakBonusEl) {
-        const bonus = playerPerformance.devotion?.bonus || 0;
-        streakBonusEl.innerText = `+${bonus.toFixed(1)}% BONUS`;
-    }
-    
-    const codexCountEl = document.getElementById('codexMasteredCount');
-    if (codexCountEl) {
-        const mastered = worlds[1].units.filter(u => u.wordsCompleted === 20).length;
-        codexCountEl.innerText = `${mastered}⭐ mastered`;
-    }
-    
-    const world = worlds[currentWorld];
-    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
-    const currentIngotNameEl = document.getElementById('currentIngotName');
-    if (currentIngotNameEl && unitData) {
-        currentIngotNameEl.innerText = `${world.unitName} ${currentUnit.toString().padStart(2, '0')}: ${unitData.name}`;
-    }
-    
-    const currentIngotProgressEl = document.getElementById('currentIngotProgress');
-    const currentIngotCountEl = document.getElementById('currentIngotCount');
-    const unit = world.units.find(u => u.id === currentUnit);
-    if (currentIngotProgressEl && currentIngotCountEl && unit) {
-        currentIngotProgressEl.style.width = `${(unit.wordsCompleted/20)*100}%`;
-        currentIngotCountEl.innerText = `${unit.wordsCompleted}/20`;
-    }
-}
-
-// ---------- POPULATE INGOT DROPDOWN ----------
-function populateIngotDropdown() {
-    const dropdownMenu = document.getElementById('ingotDropdownMenu');
-    if (!dropdownMenu) return;
-    
-    const world = worlds[currentWorld];
-    dropdownMenu.innerHTML = '';
-    
-    world.units.forEach(unit => {
-        if (unit.unlocked) {
-            const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[unit.id];
-            const unitName = unitData ? unitData.name : "???";
-            const item = document.createElement('div');
-            item.className = 'dropdown-item';
-            if (unit.id === currentUnit) {
-                item.classList.add('active');
+        // In this world, find highest unlocked ingot
+        for (let i = world.units.length - 1; i >= 0; i--) {
+            if (world.units[i].unlocked) {
+                return {
+                    world: worldId,
+                    unit: world.units[i].id
+                };
             }
-            item.innerText = `${world.unitName} ${unit.id.toString().padStart(2, '0')}: ${unitName}`;
-            item.addEventListener('click', () => {
-                if (unit.id !== currentUnit) {
-                    currentUnit = unit.id;
-                    resetForNewUnit();
-                    updateWorldDisplay();
-                    saveProgress();
-                }
-                dropdownMenu.classList.add('hidden');
-            });
-            dropdownMenu.appendChild(item);
         }
-    });
+    }
+    // Fallback to World 1, Ingot 1
+    return { world: 1, unit: 1 };
 }
-
 // ---------- generateInitialLetters ----------
 function generateInitialLetters() {
     const words = getCurrentUnitWords();
@@ -2298,10 +2127,12 @@ function updateHeaderForSelection() {
 
 function setUnitSectionVisibility(visible) {
     const unitSection = document.getElementById('unitSection');
-    if (visible) {
-        unitSection.classList.remove('hidden');
-    } else {
-        unitSection.classList.add('hidden');
+    if (unitSection) {
+        if (visible) {
+            unitSection.classList.remove('hidden');
+        } else {
+            unitSection.classList.add('hidden');
+        }
     }
 }
 
@@ -2375,7 +2206,6 @@ function updateWorldDisplay() {
     const homeTierBadge = document.getElementById('homeTierBadge');
     if (homeTierBadge) homeTierBadge.innerText = getWorldTier();
     
-    populateIngotDropdown();
     updateHomeScreenStats();
 
     if (activeWordIndex !== null) {
@@ -2383,62 +2213,6 @@ function updateWorldDisplay() {
     } else {
         updateHeaderForSelection();
     }
-}
-
-// ---------- Show current ingot preview for FORGE AGAIN ----------
-function showCurrentIngotPreview() {
-    const world = worlds[currentWorld];
-    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
-    if (!unitData) return;
-    
-    const chance = calculateSuccessChance(currentUnit);
-    let chanceColorClass = 'chance-medium';
-    if (chance.final >= 80) chanceColorClass = 'chance-high';
-    else if (chance.final < 50) chanceColorClass = 'chance-low';
-    
-    const unitName = unitData.name || "Unknown";
-    const devotionTier = DEVOTION.getTier(chance.devotionDays);
-    
-    const overlay = document.getElementById('popupOverlay');
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'preview-card';
-    card.innerHTML = `
-        <div class="preview-title">⚒️ FORGE AGAIN?</div>
-        <div class="preview-ingot">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitName}</div>
-        <div class="chance-container">
-            <div class="chance-label">CURRENT SUCCESS CHANCE</div>
-            <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
-            <div class="chance-bar">
-                <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
-            </div>
-            <div class="grace-info">
-                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
-                <div class="grace-badge">
-                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
-                </div>
-                ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
-            </div>
-        </div>
-        <div class="preview-buttons">
-            <button class="preview-btn" id="confirmResetBtn">⚒️ FORGE AGAIN</button>
-            <button class="preview-btn secondary" id="cancelResetBtn">✕ CANCEL</button>
-        </div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.getElementById('confirmResetBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        resetForNewUnit();
-        tg?.HapticFeedback?.impactOccurred?.('heavy');
-    });
-    
-    document.getElementById('cancelResetBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-    });
 }
 
 // ---------- resetForNewUnit ----------
@@ -2454,6 +2228,7 @@ function resetForNewUnit() {
     gameCompleted = false;
     wordCardQueue = [];
     showingWordCard = false;
+    isPracticeMode = false;
     renderAll();
     saveProgress();
     setUnitSectionVisibility(true);
@@ -2485,93 +2260,530 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// ---------- SAVE PROGRESS ----------
-function saveProgress() {
-    const saveData = {
-        version: "1.3",
-        lastUpdated: new Date().toISOString(),
-        currentWorld: currentWorld,
-        currentUnit: currentUnit,
-        completedWords: completedWords,
-        playerPerformance: playerPerformance,
-        worlds: worlds,
-        ingotGrace: ingotGrace,
-        codex: codex.export()
-    };
-    try {
-        localStorage.setItem('spellforge_save', JSON.stringify(saveData));
-    } catch (e) {}
+// ---------- updateLetterGridOnly ----------
+function updateLetterGridOnly() {
+    const gridContainer = document.getElementById('letterGridContainer');
+    if (!gridContainer) return;
+    
+    gridContainer.innerHTML = '';
+    
+    if (currentLetters.length > 0) {
+        currentLetters.forEach((letter, idx) => {
+            const tile = document.createElement('div');
+            tile.className = 'letter-tile';
+            tile.innerText = letter.toUpperCase();
+            tile.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLetterTap(letter, idx);
+            });
+            gridContainer.appendChild(tile);
+        });
+    }
 }
 
-// ---------- LOAD PROGRESS ----------
-function loadProgress() {
-    try {
-        const saved = localStorage.getItem('spellforge_save');
-        if (saved) {
-            const saveData = JSON.parse(saved);
-            
-            if (!saveData.playerPerformance.devotion) {
-                saveData.playerPerformance.devotion = {
-                    days: 0,
-                    lastLogin: null,
-                    bonus: 0,
-                    tier: "None",
-                    milestones: {
-                        day30: false,
-                        day100: false,
-                        day200: false,
-                        day365: false
-                    }
-                };
-            }
-            
-            if (!saveData.playerPerformance.lastTrainingTime) {
-                saveData.playerPerformance.lastTrainingTime = null;
-            }
-            
-            if (!saveData.playerPerformance.trainingHistory) {
-                saveData.playerPerformance.trainingHistory = [];
-            }
-            
-            if (saveData.worlds) {
-                Object.keys(saveData.worlds).forEach(key => {
-                    if (worlds[key]) {
-                        const savedWorld = saveData.worlds[key];
-                        worlds[key].unlocked = savedWorld.unlocked;
-                        worlds[key].completed = savedWorld.completed;
-                        
-                        savedWorld.units.forEach(savedUnit => {
-                            const unit = worlds[key].units.find(u => u.id === savedUnit.id);
-                            if (unit) {
-                                unit.wordsCompleted = savedUnit.wordsCompleted;
-                                unit.unlocked = savedUnit.unlocked;
-                            }
-                        });
-                    }
+// ---------- updateActiveWordDisplay ----------
+function updateActiveWordDisplay(targetWord) {
+    const progressWord = targetWord.split('').map((l, i) => 
+        i < currentPosition ? l.toUpperCase() : '_'
+    ).join(' ');
+    
+    const activeWordDisplay = document.getElementById('activeWordDisplay');
+    const nextLetterDisplay = document.getElementById('nextLetterDisplay');
+    
+    if (activeWordDisplay) activeWordDisplay.innerText = progressWord || '—';
+    if (nextLetterDisplay) nextLetterDisplay.innerText = 
+        (currentPosition < targetWord.length) ? targetWord[currentPosition].toUpperCase() : '✅';
+}
+
+// ---------- renderAll ----------
+function renderAll() {
+    const words = getCurrentUnitWords();
+    
+    const wordContainer = document.getElementById('wordListContainer');
+    if (wordContainer) {
+        wordContainer.innerHTML = '';
+        if (words && words.length > 0) {
+            words.forEach((w, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'word-chip';
+                if (completedWords.includes(idx)) chip.classList.add('completed');
+                else if (activeWordIndex === idx) chip.classList.add('active-word');
+                chip.innerText = w.word;
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (completedWords.includes(idx) || gameCompleted) return;
+                    if (activeWordIndex !== null && activeWordIndex !== idx) returnTempLetters();
+                    activeWordIndex = idx;
+                    currentPosition = 0;
+                    
+                    currentLetters = generateInitialLetters();
+                    
+                    setUnitSectionVisibility(false);
+                    updateHeaderForGameplay();
+                    renderAll();
+                    tg?.HapticFeedback?.selectionChanged?.();
                 });
-            }
-            if (saveData.ingotGrace) {
-                Object.keys(saveData.ingotGrace).forEach(key => {
-                    ingotGrace[key] = saveData.ingotGrace[key];
-                });
-            }
-            if (saveData.currentWorld) currentWorld = saveData.currentWorld;
-            if (saveData.currentUnit) currentUnit = saveData.currentUnit;
-            if (saveData.completedWords) completedWords = saveData.completedWords;
-            if (saveData.playerPerformance) {
-                playerPerformance = { ...playerPerformance, ...saveData.playerPerformance };
-            }
-            if (saveData.codex) {
-                codex.import(saveData.codex);
+                wordContainer.appendChild(chip);
+            });
+        } else {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'word-chip';
+            placeholder.innerText = "Coming Soon";
+            wordContainer.appendChild(placeholder);
+        }
+    }
+
+    if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted && words && words.length > 0) {
+        const w = words[activeWordIndex].word;
+        updateActiveWordDisplay(w);
+    } else {
+        const activeWordDisplay = document.getElementById('activeWordDisplay');
+        const nextLetterDisplay = document.getElementById('nextLetterDisplay');
+        if (activeWordDisplay) activeWordDisplay.innerText = '—';
+        if (nextLetterDisplay) nextLetterDisplay.innerText = '?';
+    }
+
+    updateLetterGridOnly();
+
+    const artifactEl = document.getElementById('artifactText');
+    const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
+    if (artifactEl && unit) {
+        artifactEl.innerText = unit.wordsCompleted === 20 ? '🌟 UNIT COMPLETE! 🌟' : `🔒 ${unit.wordsCompleted}/20`;
+    }
+}
+
+// ---------- handleLetterTap ----------
+function handleLetterTap(letter, indexInGrid) {
+    if (gameCompleted) return;
+    totalTaps++;
+    
+    if (activeWordIndex === null) {
+        tg?.HapticFeedback?.notificationOccurred?.('warning');
+        return;
+    }
+    
+    if (completedWords.includes(activeWordIndex)) {
+        activeWordIndex = null;
+        currentPosition = 0;
+        renderAll();
+        return;
+    }
+
+    const words = getCurrentUnitWords();
+    if (!words || words.length === 0) return;
+    
+    const targetWord = words[activeWordIndex].word;
+    const neededLetter = targetWord[currentPosition];
+
+    if (letter.toLowerCase() !== neededLetter.toLowerCase()) {
+        tg?.HapticFeedback?.notificationOccurred?.('error');
+        renderAll();
+        return;
+    }
+
+    const tile = document.querySelector(`.letter-tile:nth-child(${indexInGrid + 1})`);
+    if (tile) {
+        const originalBg = tile.style.backgroundColor;
+        const originalTransform = tile.style.transform;
+        const originalBoxShadow = tile.style.boxShadow;
+        
+        tile.style.backgroundColor = '#A5D6A5';
+        tile.style.transform = 'translateY(4px)';
+        tile.style.boxShadow = '0 4px 0 #2A5A2A, 0 8px 15px rgba(0, 0, 0, 0.5)';
+        tile.style.transition = 'all 0.1s ease';
+        
+        setTimeout(() => {
+            tile.style.backgroundColor = originalBg;
+            tile.style.transform = originalTransform;
+            tile.style.boxShadow = originalBoxShadow;
+            tile.style.transition = '';
+        }, 150);
+    }
+    
+    tg?.HapticFeedback?.impactOccurred?.('light');
+    
+    correctTaps++;
+    const removed = currentLetters.splice(indexInGrid, 1)[0];
+    tempUsedLetters.push(removed);
+    currentPosition++;
+    
+    updateLetterGridOnly();
+    updateActiveWordDisplay(targetWord);
+    
+    setTimeout(() => {
+        QUICK_RESUME.saveSession();
+    }, 50);
+
+    if (currentPosition === targetWord.length) {
+        handleWordCompletion(activeWordIndex);
+    }
+}
+// ---------- HOME SCREEN READY POPUP (from READY button) ----------
+function showReadyToForgePopup() {
+    const world = worlds[currentWorld];
+    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
+    if (!unitData) return;
+    
+    const chance = calculateSuccessChance(currentUnit);
+    let chanceColorClass = 'chance-medium';
+    if (chance.final >= 80) chanceColorClass = 'chance-high';
+    else if (chance.final < 50) chanceColorClass = 'chance-low';
+    
+    const unitName = unitData.name || "Unknown";
+    const devotionTier = DEVOTION.getTier(chance.devotionDays);
+    
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.innerHTML = `
+        <div class="preview-title">⚒️ READY TO FORGE?</div>
+        <div class="close-x" id="closePopupBtn">✕</div>
+        <div class="preview-ingot">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitName}</div>
+        <div class="chance-container">
+            <div class="chance-label">CURRENT SUCCESS CHANCE</div>
+            <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
+            <div class="chance-bar">
+                <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+            </div>
+            <div class="grace-info">
+                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
+                <div class="grace-badge">
+                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
+                </div>
+                ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
+            </div>
+        </div>
+        <div class="preview-buttons">
+            <button class="preview-btn" id="startForgingBtn">⚒️ START FORGING</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('startForgingBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showGameScreen();
+        tg?.HapticFeedback?.impactOccurred?.('heavy');
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+}
+
+// ---------- RESET INGOT POPUP (from FORGE AGAIN button) ----------
+function showResetIngotPopup() {
+    const world = worlds[currentWorld];
+    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
+    if (!unitData) return;
+    
+    const chance = calculateSuccessChance(currentUnit);
+    let chanceColorClass = 'chance-medium';
+    if (chance.final >= 80) chanceColorClass = 'chance-high';
+    else if (chance.final < 50) chanceColorClass = 'chance-low';
+    
+    const unitName = unitData.name || "Unknown";
+    const devotionTier = DEVOTION.getTier(chance.devotionDays);
+    
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.innerHTML = `
+        <div class="preview-title">⚒️ RESET INGOT?</div>
+        <div class="close-x" id="closePopupBtn">✕</div>
+        <div class="preview-ingot">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitName}</div>
+        <div class="chance-container">
+            <div class="chance-label">CURRENT SUCCESS CHANCE</div>
+            <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
+            <div class="chance-bar">
+                <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+            </div>
+            <div class="grace-info">
+                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
+                <div class="grace-badge">
+                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
+                </div>
+                ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
+            </div>
+        </div>
+        <div class="preview-buttons">
+            <button class="preview-btn" id="resetAndForgeBtn">⚒️ RESET AND FORGE</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('resetAndForgeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resetForNewUnit();
+        tg?.HapticFeedback?.impactOccurred?.('heavy');
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+}
+
+// ---------- PRACTICE MODE POPUP (from PRACTICE button) - UPDATED: Full screen, all worlds ----------
+function showPracticeModePopup() {
+    const overlay = document.getElementById('popupOverlay');
+    
+    let practiceIngotsHtml = '';
+    
+    // Loop through all worlds 1-6
+    for (let worldId = 1; worldId <= 6; worldId++) {
+        const world = worlds[worldId];
+        if (!world || !world.unlocked) continue;
+        
+        const worldCompletedIngots = world.units.filter(unit => unit.wordsCompleted === 20);
+        if (worldCompletedIngots.length === 0) continue;
+        
+        // Add world header
+        practiceIngotsHtml += `<div class="practice-world-header">${world.icon} ${world.name}</div>`;
+        
+        // Add ingots from this world
+        worldCompletedIngots.forEach(unit => {
+            const unitData = MASTER_WORDS[`world${worldId}`]?.units[unit.id];
+            const unitName = unitData ? unitData.name : "Unknown";
+            practiceIngotsHtml += `
+                <div class="practice-item" data-world="${worldId}" data-id="${unit.id}">
+                    <span class="practice-icon">🔨</span>
+                    <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')}: ${unitName}</span>
+                </div>
+            `;
+        });
+    }
+    
+    overlay.innerHTML = `
+        <div class="practice-card fullscreen">
+            <div class="preview-title">🔨 PRACTICE INGOT</div>
+            <div class="close-x" id="closePopupBtn">✕</div>
+            <div class="practice-list fullscreen-list" id="practiceList">
+                ${practiceIngotsHtml || '<div style="padding: 20px; text-align: center; color: #ACCCDD;">No completed ingots yet</div>'}
+            </div>
+            <div class="preview-buttons">
+                <button class="preview-btn secondary" id="cancelBtn">CANCEL</button>
+            </div>
+        </div>
+    `;
+    
+    overlay.classList.remove('hidden');
+    
+    document.querySelectorAll('.practice-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const worldId = parseInt(item.dataset.world);
+            const practiceId = parseInt(item.dataset.id);
+            overlay.classList.add('hidden');
+            currentWorld = worldId;
+            currentUnit = practiceId;
+            isPracticeMode = true;
+            showGameScreen();
+            tg?.HapticFeedback?.selectionChanged?.();
+        });
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+}
+
+// ---------- WORD CARD POPUP ----------
+function showWordCard(wordData) {
+    wordCardQueue.push(wordData);
+    processWordCardQueue();
+}
+
+function processWordCardQueue() {
+    if (showingWordCard || wordCardQueue.length === 0) return;
+    showingWordCard = true;
+    const wordData = wordCardQueue.shift();
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    
+    const wordLength = wordData.word.length;
+    const fontSize = Math.max(32, Math.min(58, 58 - (wordLength * 2)));
+    
+    card.innerHTML = `
+        <div class="word-emoji">${wordData.emoji}</div>
+        <div class="word-title" style="font-size: ${fontSize}px;">${wordData.word.toUpperCase()}</div>
+        <div class="word-sentence">${wordData.sentence}</div>
+        <button class="collect-btn" id="collectWordBtn">✨ COLLECT</button>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('collectWordBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showingWordCard = false;
+        processWordCardQueue();
+        saveProgress();
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('success');
+}
+
+// ---------- INGOT COMPLETE POPUP ----------
+function showIngotCompletePopup() {
+    const overlay = document.getElementById('popupOverlay');
+    const world = worlds[currentWorld];
+    const unit = world.units.find(u => u.id === currentUnit);
+    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
+    
+    const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+    const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
+    const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
+    const playerRating = getRatingFromScore(playerSFR);
+    
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'ingot-card';
+    card.innerHTML = `
+        <div class="ingot-emoji">⚒️</div>
+        <div class="ingot-title">INGOT COMPLETE!</div>
+        <div class="ingot-sub">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitData?.name || 'Unknown'}</div>
+        <div class="ingot-stats">
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${playerSFR}</div>
+                <div class="ingot-stat-label">SFR</div>
+            </div>
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${playerRating.emoji}</div>
+                <div class="ingot-stat-label">${playerRating.title}</div>
+            </div>
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${formatTime(timeElapsed)}</div>
+                <div class="ingot-stat-label">TIME</div>
+            </div>
+        </div>
+        <div class="ingot-buttons">
+            <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
+            <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        setTimeout(() => showLeaderboardPopup(true), 100);
+    });
+    
+    document.getElementById('continueBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        
+        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
+        if (allUnitsCompleted) {
+            setTimeout(() => showWorldArtifactPopup(), 100);
+        } else {
+            const nextIngotId = currentUnit + 1;
+            const nextUnit = world.units.find(u => u.id === nextIngotId);
+            if (nextUnit) {
+                nextUnit.unlocked = true;
+                // Set currentUnit to the next ingot so home screen updates
+                currentUnit = nextIngotId;
+                setTimeout(() => showNextIngotPreview(), 100);
             }
         }
-    } catch (e) {}
+        saveProgress();
+        QUICK_RESUME.saveSession();
+        updateHomeScreenStats();
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('success');
 }
 
-function startAutoSave() {
-    setInterval(saveProgress, 60000);
+// ---------- PRACTICE COMPLETE POPUP ----------
+function showPracticeCompletePopup() {
+    const overlay = document.getElementById('popupOverlay');
+    const world = worlds[currentWorld];
+    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
+    
+    const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+    const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
+    
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'ingot-card';
+    card.innerHTML = `
+        <div class="ingot-emoji">🔨</div>
+        <div class="ingot-title">PRACTICE COMPLETE!</div>
+        <div class="ingot-sub">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitData?.name || 'Unknown'}</div>
+        <div class="ingot-stats">
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${formatTime(timeElapsed)}</div>
+                <div class="ingot-stat-label">TIME</div>
+            </div>
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${accuracy}%</div>
+                <div class="ingot-stat-label">ACCURACY</div>
+            </div>
+        </div>
+        <div class="ingot-buttons">
+            <button class="ingot-btn secondary" id="continueBtn">⏩ DONE</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('continueBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showHomeScreen();
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('success');
 }
 
+// ---------- FAILURE POPUP ----------
+function showFailurePopup() {
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'failure-card';
+    card.innerHTML = `
+        <div class="failure-emoji">💔</div>
+        <div class="failure-title">INGOT CRACKED</div>
+        <div class="failure-sub">The forge was not kind today</div>
+        <div class="failure-buttons">
+            <button class="failure-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
+            <button class="failure-btn secondary" id="tryAgainBtn">🔄 TRY AGAIN</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        setTimeout(() => showLeaderboardPopup(true), 100);
+    });
+    
+    document.getElementById('tryAgainBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resetForNewUnit();
+        QUICK_RESUME.clearSession();
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('error');
+}
 // ---------- TRAINING DIFFICULTY POPUP ----------
 function showTrainingDifficultyPopup() {
     const overlay = document.getElementById('popupOverlay');
@@ -2579,6 +2791,7 @@ function showTrainingDifficultyPopup() {
     overlay.innerHTML = `
         <div class="preview-card">
             <div class="preview-title">📖 DAILY TRAINING</div>
+            <div class="close-x" id="closePopupBtn">✕</div>
             <div style="color: #FFDCAA; margin: 20px 0; text-align: center;">
                 Select difficulty:
             </div>
@@ -2587,7 +2800,7 @@ function showTrainingDifficultyPopup() {
                 <button class="preview-btn" id="mediumBtn">📘 MEDIUM · 10 words</button>
                 <button class="preview-btn" id="hardBtn">⚡ HARD · 20 words</button>
                 <button class="preview-btn" id="insaneBtn">🔥 INSANE · 50 words</button>
-                <button class="preview-btn secondary" id="cancelBtn">✕ CANCEL</button>
+                <button class="preview-btn secondary" id="cancelBtn">CANCEL</button>
             </div>
         </div>
     `;
@@ -2614,6 +2827,10 @@ function showTrainingDifficultyPopup() {
         startTrainingSession('insane');
     });
     
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
     document.getElementById('cancelBtn').addEventListener('click', () => {
         overlay.classList.add('hidden');
     });
@@ -2621,11 +2838,12 @@ function showTrainingDifficultyPopup() {
 
 // ---------- TRAINING SESSION UI ----------
 let currentTrainingSession = null;
+let trainingStartTime = null;
 
 function startTrainingSession(difficulty) {
     currentTrainingSession = new TrainingSession(codex, fsrsManager, difficulty);
     const sessionInfo = currentTrainingSession.start();
-    
+    trainingStartTime = Date.now();
     showTrainingWord();
 }
 
@@ -2635,40 +2853,52 @@ function showTrainingWord() {
     const flashNumber = currentTrainingSession.currentFlash + 1;
     const wordIndex = currentTrainingSession.currentIndex + 1;
     const totalWords = currentTrainingSession.words.length;
+    const elapsedSeconds = ((Date.now() - trainingStartTime) / 1000).toFixed(1);
     
+    let timerColorClass = 'timer-display';
+    if (elapsedSeconds < 2) timerColorClass += ' fast';
+    else if (elapsedSeconds < 4) timerColorClass += ' medium';
+    else timerColorClass += ' slow';
+    
+    // UPDATED: Removed sentence, only word and emoji
     overlay.innerHTML = `
         <div class="training-card">
+            <div class="close-x" id="closePopupBtn">✕</div>
             <div class="training-header">
                 <span>Word ${wordIndex}/${totalWords}</span>
-                <span>Flash ${flashNumber}/3</span>
+                <span>Flash ${flashNumber}/3 <span class="${timerColorClass}">${elapsedSeconds}s</span></span>
             </div>
             <div class="training-word">${word.word}</div>
             <div class="training-emoji">${word.emoji}</div>
-            <div class="training-sentence">${word.sentence}</div>
             <input type="text" class="training-input" id="trainingInput" placeholder="Type the word..." autofocus>
             <div class="training-progress">
                 <div class="training-progress-bar">
                     <div class="training-progress-fill" style="width: ${word.getMasteryPercent()}%"></div>
                 </div>
-                <div class="training-progress-text">Mastery: ${Math.round(word.getMasteryPercent())}%</div>
+                <div class="training-progress-text">Mastery: ${Math.round(word.getMasteryPercent())}% (${word.correctCount}/30)</div>
             </div>
             <div class="preview-buttons">
                 <button class="preview-btn" id="submitBtn">✓ SUBMIT</button>
-                <button class="preview-btn secondary" id="cancelBtn">✕ CANCEL</button>
+                <button class="preview-btn secondary" id="cancelBtn">CANCEL</button>
             </div>
         </div>
     `;
     
     overlay.classList.remove('hidden');
     
-    const startTime = Date.now();
+    const wordStartTime = Date.now();
     const input = document.getElementById('trainingInput');
     input.focus();
     
     document.getElementById('submitBtn').addEventListener('click', () => {
-        const responseTime = (Date.now() - startTime) / 1000;
+        const responseTime = (Date.now() - wordStartTime) / 1000;
         const typedWord = input.value.trim();
         processTrainingResponse(typedWord, responseTime);
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        currentTrainingSession = null;
     });
     
     document.getElementById('cancelBtn').addEventListener('click', () => {
@@ -2678,22 +2908,25 @@ function showTrainingWord() {
     
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            const responseTime = (Date.now() - startTime) / 1000;
+            const responseTime = (Date.now() - wordStartTime) / 1000;
             const typedWord = input.value.trim();
             processTrainingResponse(typedWord, responseTime);
         }
     });
 }
 
+// ---------- FIXED: processTrainingResponse - Properly advances flashes ----------
 function processTrainingResponse(typedWord, responseTime) {
     const result = currentTrainingSession.processFlash(typedWord, responseTime);
     
     tg?.HapticFeedback?.impactOccurred?.(result.isCorrect ? 'light' : 'heavy');
     
     if (result.nextFlash) {
-        currentTrainingSession.currentFlash = result.nextFlash - 1;
+        // Advance to next flash
+        currentTrainingSession.currentFlash = result.nextFlash;
         showTrainingWord();
     } else {
+        // Move to next word
         const next = currentTrainingSession.nextWord();
         if (next.completed) {
             completeTraining(next.results);
@@ -2741,6 +2974,75 @@ function completeTraining(results) {
     });
     
     tg?.HapticFeedback?.notificationOccurred?.('success');
+}
+
+// ---------- DEVOTION NOTIFICATION ----------
+function showDevotionNotification() {
+    const days = playerPerformance.devotion.days;
+    const bonus = playerPerformance.devotion.bonus.toFixed(1);
+    const tier = DEVOTION.getTier(days);
+    const daysToNext = days < 30 ? 30 - days : 
+                       days < 100 ? 100 - days : 
+                       days < 200 ? 200 - days : 
+                       days < 365 ? 365 - days : 0;
+    
+    const nextTier = days < 30 ? "Bronze" : 
+                     days < 100 ? "Silver" : 
+                     days < 200 ? "Gold" : 
+                     days < 365 ? "Crystal" : "Master";
+    
+    const notification = document.createElement('div');
+    notification.className = 'devotion-notification';
+    notification.innerHTML = `
+        <div class="devotion-content">
+            <span class="devotion-icon">${tier.icon}</span>
+            <div class="devotion-text">
+                <strong>Devotion: Day ${days} · +${bonus}%</strong>
+                <small>${daysToNext > 0 ? `${daysToNext} days to ${nextTier}` : '✨ Master Forgemaster ✨'}</small>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// ---------- MILESTONE NOTIFICATION ----------
+function showMilestoneNotification(day, tier) {
+    const messages = {
+        30: { text: "Bronze Anvil Unlocked!", desc: "Your devotion begins to show" },
+        100: { text: "Silver Anvil Unlocked!", desc: "The forge glows with your rhythm" },
+        200: { text: "Gold Anvil Unlocked!", desc: "Your strikes are true and powerful" },
+        365: { text: "CRYSTAL ANVIL ACHIEVED!", desc: "Forgemaster of Eternal Flame" }
+    };
+    
+    const msg = messages[day] || { text: "Milestone Reached!", desc: "Your devotion grows" };
+    
+    const notification = document.createElement('div');
+    notification.className = 'devotion-notification milestone';
+    notification.innerHTML = `
+        <div class="devotion-content" style="border-color: ${tier.color}; box-shadow: 0 0 20px ${tier.color};">
+            <span class="devotion-icon" style="font-size: 40px;">${tier.icon}</span>
+            <div class="devotion-text">
+                <strong style="font-size: 20px;">${msg.text}</strong>
+                <small>${msg.desc}</small>
+                <small style="margin-top: 5px;">+${DEVOTION.calculateBonus(day).toFixed(1)}% bonus earned</small>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 5000);
+    }, 5000);
 }
 
 // ---------- PROFILE POPUP ----------
@@ -2861,7 +3163,7 @@ function showProfilePopup(returnToLeaderboard = false) {
             
             <div class="button-group">
                 <button class="action-btn" id="profileSaveBtn">💾 SAVE</button>
-                <button class="action-btn cancel" id="profileCancelBtn">✕ CANCEL</button>
+                <button class="action-btn cancel" id="profileCancelBtn">CANCEL</button>
             </div>
         </div>
     `;
@@ -2908,15 +3210,6 @@ function showProfilePopup(returnToLeaderboard = false) {
     });
 }
 
-function returnToPreviousScreen(returnToLeaderboard) {
-    if (returnToLeaderboard) {
-        showLeaderboardPopup(true);
-    } else {
-        renderAll();
-        updateHomeScreenStats();
-    }
-}
-
 // ---------- LEADERBOARD POPUP ----------
 function showLeaderboardPopup(fromCompletion = false) {
     const overlay = document.getElementById('popupOverlay');
@@ -2924,6 +3217,7 @@ function showLeaderboardPopup(fromCompletion = false) {
     overlay.innerHTML = `
         <div class="leaderboard-card">
             <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
+            <div class="close-x" id="closePopupBtn">✕</div>
             <div style="text-align: center; padding: 40px; color: #FFD700;">
                 <div style="margin-bottom: 15px;">Loading leaderboard...</div>
                 <div style="font-size: 14px; color: #ACCCDD;">Connecting to the forge...</div>
@@ -2935,6 +3229,11 @@ function showLeaderboardPopup(fromCompletion = false) {
         </div>
     `;
     overlay.classList.remove('hidden');
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        handleLeaderboardReturn(fromCompletion);
+    });
     
     document.getElementById('loadingBackBtn')?.addEventListener('click', () => {
         overlay.classList.add('hidden');
@@ -3002,6 +3301,7 @@ function displayLeaderboard(leaderboard, fromCompletion) {
     overlay.innerHTML = `
         <div class="leaderboard-card">
             <div class="leaderboard-title">🏆 FORGEMASTER RANKINGS</div>
+            <div class="close-x" id="closePopupBtn">✕</div>
             
             <div class="world-stats-row">
                 ${worldIcons.map((icon, i) => `
@@ -3037,6 +3337,11 @@ function displayLeaderboard(leaderboard, fromCompletion) {
         </div>
     `;
     
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        handleLeaderboardReturn(fromCompletion);
+    });
+    
     document.getElementById('backBtn').addEventListener('click', () => {
         overlay.classList.add('hidden');
         handleLeaderboardReturn(fromCompletion);
@@ -3047,631 +3352,7 @@ function displayLeaderboard(leaderboard, fromCompletion) {
     });
 }
 
-function handleLeaderboardReturn(fromCompletion) {
-    if (fromCompletion) {
-        showIngotCompletePopup();
-    } else {
-        renderAll();
-        updateHomeScreenStats();
-    }
-}
-
-// ---------- POPUP FUNCTIONS ----------
-function showWordCard(wordData) {
-    wordCardQueue.push(wordData);
-    processWordCardQueue();
-}
-
-function processWordCardQueue() {
-    if (showingWordCard || wordCardQueue.length === 0) return;
-    showingWordCard = true;
-    const wordData = wordCardQueue.shift();
-    const overlay = document.getElementById('popupOverlay');
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'word-card';
-    
-    const wordLength = wordData.word.length;
-    const fontSize = Math.max(32, Math.min(58, 58 - (wordLength * 2)));
-    
-    card.innerHTML = `
-        <div class="word-emoji">${wordData.emoji}</div>
-        <div class="word-title" style="font-size: ${fontSize}px;">${wordData.word.toUpperCase()}</div>
-        <div class="word-sentence">${wordData.sentence}</div>
-        <button class="collect-btn" id="collectWordBtn">✨ COLLECT</button>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.getElementById('collectWordBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        showingWordCard = false;
-        processWordCardQueue();
-        saveProgress();
-    });
-    
-    tg?.HapticFeedback?.notificationOccurred?.('success');
-}
-
-function showFailurePopup() {
-    const overlay = document.getElementById('popupOverlay');
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'failure-card';
-    card.innerHTML = `
-        <div class="failure-emoji">💔</div>
-        <div class="failure-title">INGOT CRACKED</div>
-        <div class="failure-sub">The forge was not kind today</div>
-        <div class="failure-buttons">
-            <button class="failure-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
-            <button class="failure-btn secondary" id="tryAgainBtn">🔄 TRY AGAIN</button>
-        </div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        setTimeout(() => showLeaderboardPopup(true), 100);
-    });
-    
-    document.getElementById('tryAgainBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        resetForNewUnit();
-        QUICK_RESUME.clearSession();
-    });
-    
-    tg?.HapticFeedback?.notificationOccurred?.('error');
-}
-
-// ---------- INGOT COMPLETE POPUP ----------
-function showIngotCompletePopup() {
-    const overlay = document.getElementById('popupOverlay');
-    const world = worlds[currentWorld];
-    const unit = world.units.find(u => u.id === currentUnit);
-    const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[currentUnit];
-    
-    const timeElapsed = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
-    const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
-    const playerSFR = calculateSFR(timeElapsed, accuracy, totalTaps, correctTaps);
-    const playerRating = getRatingFromScore(playerSFR);
-    
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'ingot-card';
-    card.innerHTML = `
-        <div class="ingot-emoji">⚒️</div>
-        <div class="ingot-title">INGOT COMPLETE!</div>
-        <div class="ingot-sub">${world.unitName} ${currentUnit.toString().padStart(2, '0')} · ${unitData?.name || 'Unknown'}</div>
-        <div class="ingot-stats">
-            <div class="ingot-stat">
-                <div class="ingot-stat-value">${playerSFR}</div>
-                <div class="ingot-stat-label">SFR</div>
-            </div>
-            <div class="ingot-stat">
-                <div class="ingot-stat-value">${playerRating.emoji}</div>
-                <div class="ingot-stat-label">${playerRating.title}</div>
-            </div>
-            <div class="ingot-stat">
-                <div class="ingot-stat-value">${formatTime(timeElapsed)}</div>
-                <div class="ingot-stat-label">TIME</div>
-            </div>
-        </div>
-        <div class="ingot-buttons">
-            <button class="ingot-btn" id="viewLeaderboardBtn">🏆 LEADERBOARD</button>
-            <button class="ingot-btn secondary" id="continueBtn">⏩ CONTINUE</button>
-        </div>
-        <div id="saveStatus" style="display: none; text-align: center; margin-top: 15px; color: #FFD700;">
-            ⏳ Saving your score...
-        </div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        setTimeout(() => showLeaderboardPopup(true), 100);
-    });
-    
-    document.getElementById('continueBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        
-        const allUnitsCompleted = world.units.every(u => u.wordsCompleted === 20);
-        if (allUnitsCompleted) {
-            setTimeout(() => showWorldArtifactPopup(), 100);
-        } else {
-            const nextIngotId = currentUnit + 1;
-            const nextUnit = world.units.find(u => u.id === nextIngotId);
-            if (nextUnit) {
-                nextUnit.unlocked = true;
-                setTimeout(() => showNextIngotPreview(), 100);
-            }
-        }
-        saveProgress();
-        QUICK_RESUME.saveSession();
-        updateHomeScreenStats();
-    });
-    
-    tg?.HapticFeedback?.notificationOccurred?.('success');
-}
-
-// ---------- NEXT INGOT PREVIEW ----------
-function showNextIngotPreview() {
-    const nextIngotId = currentUnit + 1;
-    const world = worlds[currentWorld];
-    if (!world) return;
-    
-    const nextUnitData = MASTER_WORDS[`world${currentWorld}`]?.units[nextIngotId];
-    if (!nextUnitData) return;
-    
-    const chance = calculateSuccessChance(nextIngotId);
-    let chanceColorClass = 'chance-medium';
-    if (chance.final >= 80) chanceColorClass = 'chance-high';
-    else if (chance.final < 50) chanceColorClass = 'chance-low';
-    
-    const unitName = nextUnitData.name || "Unknown";
-    const devotionTier = DEVOTION.getTier(chance.devotionDays);
-    
-    const overlay = document.getElementById('popupOverlay');
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'preview-card';
-    card.innerHTML = `
-        <div class="preview-title">⚒️ NEXT INGOT</div>
-        <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${unitName}</div>
-        <div class="chance-container">
-            <div class="chance-label">CHANCE OF SUCCESS</div>
-            <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
-            <div class="chance-bar">
-                <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
-            </div>
-            <div class="grace-info">
-                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
-                <div class="grace-badge">
-                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
-                </div>
-                ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
-            </div>
-        </div>
-        <div class="preview-buttons">
-            <button class="preview-btn" id="forgeAheadBtn">⚒️ FORGE AHEAD</button>
-            <button class="preview-btn secondary" id="practiceBtn">🔨 PRACTICE</button>
-        </div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.getElementById('forgeAheadBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        currentUnit = nextIngotId;
-        resetForNewUnit();
-        updateWorldDisplay();
-        saveProgress();
-    });
-    
-    document.getElementById('practiceBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        showPracticeMode();
-    });
-    
-    tg?.HapticFeedback?.notificationOccurred?.('success');
-}
-
-function showPracticeMode() {
-    const world = worlds[currentWorld];
-    const overlay = document.getElementById('popupOverlay');
-    const completedIngots = world.units.filter(u => u.wordsCompleted === 20 && u.id !== currentUnit);
-    
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'practice-card';
-    card.innerHTML = `
-        <div class="practice-title">🔨 PRACTICE MODE</div>
-        <div class="practice-list" id="practiceList">
-            ${completedIngots.map(unit => {
-                const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[unit.id];
-                const unitName = unitData ? unitData.name : "Unknown";
-                return `
-                    <div class="practice-item" data-id="${unit.id}">
-                        <div class="practice-item-left">
-                            <span class="practice-icon">⚒️</span>
-                            <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}</span>
-                        </div>
-                        <span class="practice-chance">${unit.wordsCompleted}/20</span>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-        <div class="preview-buttons">
-            <button class="preview-btn secondary" id="backBtn">← BACK</button>
-        </div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    document.querySelectorAll('.practice-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const practiceId = parseInt(item.dataset.id);
-            overlay.classList.add('hidden');
-            currentUnit = practiceId;
-            resetForNewUnit();
-            updateWorldDisplay();
-            saveProgress();
-        });
-    });
-    
-    document.getElementById('backBtn').addEventListener('click', () => {
-        overlay.classList.add('hidden');
-        showNextIngotPreview();
-    });
-}
-
-function showWorldArtifactPopup() {
-    const overlay = document.getElementById('popupOverlay');
-    const world = worlds[currentWorld];
-    
-    overlay.innerHTML = '';
-    
-    const card = document.createElement('div');
-    card.className = 'world-card';
-    card.innerHTML = `
-        <div class="world-emoji">🏆</div>
-        <div class="world-title">WORLD COMPLETE!</div>
-        <div class="world-sub">${world.name}</div>
-        <div class="ingot-stats">
-            <div class="ingot-stat">
-                <div class="ingot-stat-value">${world.totalWords}</div>
-                <div class="ingot-stat-label">WORDS</div>
-            </div>
-            <div class="ingot-stat">
-                <div class="ingot-stat-value">30</div>
-                <div class="ingot-stat-label">INGOTS</div>
-            </div>
-        </div>
-        <div class="artifact-tap">✨ All 30 ingots forged · tap for leaderboard ✨</div>
-    `;
-    
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        overlay.classList.add('hidden');
-        if (currentWorld < 6) {
-            worlds[currentWorld + 1].unlocked = true;
-            setTimeout(() => showWorldUnlockPopup(currentWorld + 1), 100);
-        } else {
-            showLeaderboardPopup();
-        }
-        saveProgress();
-    });
-    
-    tg?.HapticFeedback?.notificationOccurred?.('success');
-}
-
-function showWorldUnlockPopup(worldId) {
-    const world = worlds[worldId];
-    const overlay = document.getElementById('popupOverlay');
-    
-    const card = document.createElement('div');
-    card.className = 'artifact-card';
-    card.innerHTML = `
-        <div class="artifact-emoji">${world.icon}</div>
-        <div class="artifact-title">NEW WORLD</div>
-        <div class="artifact-title">UNLOCKED!</div>
-        <div class="artifact-sub">${world.name}</div>
-        <div class="artifact-tap">✨ tap to continue ✨</div>
-    `;
-    
-    overlay.innerHTML = '';
-    overlay.appendChild(card);
-    overlay.classList.remove('hidden');
-    
-    card.addEventListener('click', () => {
-        overlay.classList.add('hidden');
-    });
-}
-
-// ---------- handleWordCompletion ----------
-function handleWordCompletion(wordIndex) {
-    if (!completedWords.includes(wordIndex)) {
-        completedWords.push(wordIndex);
-        const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-        if (unit) unit.wordsCompleted = completedWords.length;
-        
-        const words = getCurrentUnitWords();
-        if (words && words.length > 0 && words[wordIndex]) {
-            const wordData = words[wordIndex];
-            showWordCard(wordData);
-            
-            const wordId = `w${currentWorld}u${currentUnit}w${wordIndex}`;
-            let wordMemory = codex.getWord(wordId);
-            if (!wordMemory) {
-                wordMemory = codex.addWord(wordId, {
-                    ...wordData,
-                    world: currentWorld,
-                    ingot: currentUnit
-                });
-            }
-            
-            const responseTime = 3.0;
-            wordMemory.recordTraining(1, responseTime, true, 'good');
-            fsrsManager.processResult(wordMemory, 'good', responseTime);
-        }
-        
-        QUICK_RESUME.saveSession();
-        updateHomeScreenStats();
-    }
-
-    activeWordIndex = null;
-    currentPosition = 0;
-    tempUsedLetters = [];
-    
-    if (activeWordIndex === null) {
-        setUnitSectionVisibility(true);
-        updateHeaderForSelection();
-    }
-    
-    renderAll();
-    updateWorldDisplay();
-    
-    const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-    if (unit && unit.wordsCompleted === 20) {
-        const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
-        const chance = calculateSuccessChance(currentUnit);
-        const roll = Math.random() * 100;
-        const success = roll <= chance.final;
-        
-        tg?.HapticFeedback?.impactOccurred?.('heavy');
-        showForgeMessage('Hammer strikes the anvil...', '⚒️', 4000);
-        document.body.style.transition = 'background-color 0.5s';
-        document.body.style.backgroundColor = success ? '#4ade80' : '#f87171';
-        
-        setTimeout(() => {
-            updateForgeMessage(success ? 'The metal holds...' : 'A crack forms...', success ? '✨' : '💔');
-        }, 2000);
-        
-        setTimeout(() => {
-            document.body.style.backgroundColor = '';
-            hideForgeMessage();
-            
-            if (success) {
-                saveScoreToGoogleSheetsWithCallback(() => {});
-                
-                playerPerformance.currentStreak++;
-                playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
-                playerPerformance.lastAccuracy = accuracy;
-                playerPerformance.lastAttemptFailed = false;
-                playerPerformance.lastPlayedDate = new Date().toISOString();
-                playerPerformance.worldProgress[currentWorld].completed++;
-                playerPerformance.totalRiskBonus += calculateRiskBonus(chance.base, chance.final, true);
-                playerPerformance.ingotHistory.push({
-                    id: currentUnit,
-                    success: true,
-                    accuracy: accuracy,
-                    time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
-                    sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
-                    date: new Date().toISOString()
-                });
-                onSuccess(currentUnit);
-                showIngotCompletePopup();
-                const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
-                if (nextUnit) nextUnit.unlocked = true;
-                saveProgress();
-            } else {
-                onFailure(currentUnit);
-                playerPerformance.lastAttemptFailed = true;
-                playerPerformance.lastPlayedDate = new Date().toISOString();
-                playerPerformance.worldProgress[currentWorld].failed++;
-                playerPerformance.ingotHistory.push({
-                    id: currentUnit,
-                    success: false,
-                    accuracy: accuracy,
-                    time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
-                    sfr: 0,
-                    date: new Date().toISOString()
-                });
-                showFailurePopup();
-            }
-            updateHomeScreenStats();
-        }, 4000);
-    }
-}
-
-function onSuccess(unitId) {
-    ingotGrace[unitId] = 0;
-}
-
-function onFailure(unitId) {
-    ingotGrace[unitId] = (ingotGrace[unitId] || 0) + 5;
-    ingotGrace[unitId] = Math.min(ingotGrace[unitId], 25);
-}
-
-// ---------- handleLetterTap ----------
-function handleLetterTap(letter, indexInGrid) {
-    if (gameCompleted) return;
-    totalTaps++;
-    
-    if (activeWordIndex === null) {
-        tg?.HapticFeedback?.notificationOccurred?.('warning');
-        return;
-    }
-    
-    if (completedWords.includes(activeWordIndex)) {
-        activeWordIndex = null;
-        currentPosition = 0;
-        renderAll();
-        return;
-    }
-
-    const words = getCurrentUnitWords();
-    if (!words || words.length === 0) return;
-    
-    const targetWord = words[activeWordIndex].word;
-    const neededLetter = targetWord[currentPosition];
-
-    if (letter.toLowerCase() !== neededLetter.toLowerCase()) {
-        tg?.HapticFeedback?.notificationOccurred?.('error');
-        renderAll();
-        return;
-    }
-
-    const tile = document.querySelector(`.letter-tile:nth-child(${indexInGrid + 1})`);
-    if (tile) {
-        const originalBg = tile.style.backgroundColor;
-        const originalTransform = tile.style.transform;
-        const originalBoxShadow = tile.style.boxShadow;
-        
-        tile.style.backgroundColor = '#A5D6A5';
-        tile.style.transform = 'translateY(4px)';
-        tile.style.boxShadow = '0 4px 0 #2A5A2A, 0 8px 15px rgba(0, 0, 0, 0.5)';
-        tile.style.transition = 'all 0.1s ease';
-        
-        setTimeout(() => {
-            tile.style.backgroundColor = originalBg;
-            tile.style.transform = originalTransform;
-            tile.style.boxShadow = originalBoxShadow;
-            tile.style.transition = '';
-        }, 150);
-    }
-    
-    tg?.HapticFeedback?.impactOccurred?.('light');
-    
-    correctTaps++;
-    const removed = currentLetters.splice(indexInGrid, 1)[0];
-    tempUsedLetters.push(removed);
-    currentPosition++;
-    
-    updateLetterGridOnly();
-    updateActiveWordDisplay(targetWord);
-    
-    setTimeout(() => {
-        QUICK_RESUME.saveSession();
-    }, 50);
-
-    if (currentPosition === targetWord.length) {
-        handleWordCompletion(activeWordIndex);
-    }
-}
-
-// ---------- updateLetterGridOnly ----------
-function updateLetterGridOnly() {
-    const gridContainer = document.getElementById('letterGridContainer');
-    if (!gridContainer) return;
-    
-    gridContainer.innerHTML = '';
-    
-    if (currentLetters.length > 0) {
-        currentLetters.forEach((letter, idx) => {
-            const tile = document.createElement('div');
-            tile.className = 'letter-tile';
-            tile.innerText = letter.toUpperCase();
-            tile.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleLetterTap(letter, idx);
-            });
-            gridContainer.appendChild(tile);
-        });
-    }
-}
-
-// ---------- updateActiveWordDisplay ----------
-function updateActiveWordDisplay(targetWord) {
-    const progressWord = targetWord.split('').map((l, i) => 
-        i < currentPosition ? l.toUpperCase() : '_'
-    ).join(' ');
-    
-    const activeWordDisplay = document.getElementById('activeWordDisplay');
-    const nextLetterDisplay = document.getElementById('nextLetterDisplay');
-    
-    if (activeWordDisplay) activeWordDisplay.innerText = progressWord || '—';
-    if (nextLetterDisplay) nextLetterDisplay.innerText = 
-        (currentPosition < targetWord.length) ? targetWord[currentPosition].toUpperCase() : '✅';
-}
-
-// ---------- renderAll ----------
-function renderAll() {
-    const words = getCurrentUnitWords();
-    
-    const wordContainer = document.getElementById('wordListContainer');
-    if (wordContainer) {
-        wordContainer.innerHTML = '';
-        if (words && words.length > 0) {
-            words.forEach((w, idx) => {
-                const chip = document.createElement('div');
-                chip.className = 'word-chip';
-                if (completedWords.includes(idx)) chip.classList.add('completed');
-                else if (activeWordIndex === idx) chip.classList.add('active-word');
-                chip.innerText = w.word;
-                chip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (completedWords.includes(idx) || gameCompleted) return;
-                    if (activeWordIndex !== null && activeWordIndex !== idx) returnTempLetters();
-                    activeWordIndex = idx;
-                    currentPosition = 0;
-                    
-                    currentLetters = generateInitialLetters();
-                    
-                    setUnitSectionVisibility(false);
-                    updateHeaderForGameplay();
-                    renderAll();
-                    tg?.HapticFeedback?.selectionChanged?.();
-                });
-                wordContainer.appendChild(chip);
-            });
-        } else {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'word-chip';
-            placeholder.innerText = "Coming Soon";
-            wordContainer.appendChild(placeholder);
-        }
-    }
-
-    if (activeWordIndex !== null && !completedWords.includes(activeWordIndex) && !gameCompleted && words && words.length > 0) {
-        const w = words[activeWordIndex].word;
-        updateActiveWordDisplay(w);
-    } else {
-        const activeWordDisplay = document.getElementById('activeWordDisplay');
-        const nextLetterDisplay = document.getElementById('nextLetterDisplay');
-        if (activeWordDisplay) activeWordDisplay.innerText = '—';
-        if (nextLetterDisplay) nextLetterDisplay.innerText = '?';
-    }
-
-    updateLetterGridOnly();
-
-    const artifactEl = document.getElementById('artifactText');
-    const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
-    if (artifactEl && unit) {
-        artifactEl.innerText = unit.wordsCompleted === 20 ? '🌟 UNIT COMPLETE! 🌟' : `🔒 ${unit.wordsCompleted}/20`;
-    }
-}
-
-// ---------- RESET HANDLER ----------
-function handleReset() {
-    if (tg) {
-        tg.showConfirm('View success chance before resetting?', (ok) => {
-            if (ok) {
-                showCurrentIngotPreview();
-            }
-        });
-    } else {
-        if (confirm('View success chance before resetting?')) {
-            showCurrentIngotPreview();
-        }
-    }
-}
-
-// ---------- CODEX, SETTINGS, INFO POPUP FUNCTIONS ----------
+// ---------- CODEX POPUP ----------
 function showCodexPopup() {
     const overlay = document.getElementById('popupOverlay');
     const stats = codex.getStats();
@@ -3742,6 +3423,7 @@ function showCodexPopup() {
     });
 }
 
+// ---------- SETTINGS POPUP ----------
 function showSettingsPopup() {
     const overlay = document.getElementById('popupOverlay');
     
@@ -3772,6 +3454,7 @@ function showSettingsPopup() {
     });
 }
 
+// ---------- INFO POPUP ----------
 function showInfoPopup() {
     const overlay = document.getElementById('popupOverlay');
     
@@ -3783,7 +3466,7 @@ function showInfoPopup() {
                 <div style="margin: 15px 0;">⚒️ Spellforge · Master Blacksmith</div>
                 <div style="margin: 15px 0;">Forge words by tapping letters in order</div>
                 <div style="margin: 15px 0;">Complete all 20 words to forge an ingot</div>
-                <div style="margin: 15px 0;">Daily training helps master words forever</div>
+                <div style="margin: 15px 0;">Daily training helps reinforce learning</div>
                 <div style="margin: 25px 0 10px; color: #FFD700;">Created for Telegram Mini Apps</div>
             </div>
             <div class="button-group">
@@ -3802,9 +3485,547 @@ function showInfoPopup() {
         overlay.classList.add('hidden');
     });
 }
+// ---------- WORLD ARTIFACT POPUP ----------
+function showWorldArtifactPopup() {
+    const overlay = document.getElementById('popupOverlay');
+    const world = worlds[currentWorld];
+    
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'world-card';
+    card.innerHTML = `
+        <div class="world-emoji">🏆</div>
+        <div class="world-title">WORLD COMPLETE!</div>
+        <div class="world-sub">${world.name}</div>
+        <div class="ingot-stats">
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">${world.totalWords}</div>
+                <div class="ingot-stat-label">WORDS</div>
+            </div>
+            <div class="ingot-stat">
+                <div class="ingot-stat-value">30</div>
+                <div class="ingot-stat-label">INGOTS</div>
+            </div>
+        </div>
+        <div class="artifact-tap">✨ All 30 ingots forged · tap to continue ✨</div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        overlay.classList.add('hidden');
+        if (currentWorld < 6) {
+            worlds[currentWorld + 1].unlocked = true;
+            setTimeout(() => showWorldUnlockPopup(currentWorld + 1), 100);
+        } else {
+            showLeaderboardPopup();
+        }
+        saveProgress();
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('success');
+}
 
-// ---------- HOME SCREEN NAVIGATION ----------
+// ---------- WORLD UNLOCK POPUP ----------
+function showWorldUnlockPopup(worldId) {
+    const world = worlds[worldId];
+    const overlay = document.getElementById('popupOverlay');
+    
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'artifact-card';
+    card.innerHTML = `
+        <div class="artifact-emoji">${world.icon}</div>
+        <div class="artifact-title">NEW WORLD</div>
+        <div class="artifact-title">UNLOCKED!</div>
+        <div class="artifact-sub">${world.name}</div>
+        <div class="artifact-tap">✨ tap to continue ✨</div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    card.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+}
+
+// ---------- NEXT INGOT PREVIEW POPUP ----------
+function showNextIngotPreview() {
+    const nextIngotId = currentUnit;
+    const world = worlds[currentWorld];
+    if (!world) return;
+    
+    const nextUnitData = MASTER_WORDS[`world${currentWorld}`]?.units[nextIngotId];
+    if (!nextUnitData) return;
+    
+    const chance = calculateSuccessChance(nextIngotId);
+    let chanceColorClass = 'chance-medium';
+    if (chance.final >= 80) chanceColorClass = 'chance-high';
+    else if (chance.final < 50) chanceColorClass = 'chance-low';
+    
+    const unitName = nextUnitData.name || "Unknown";
+    const devotionTier = DEVOTION.getTier(chance.devotionDays);
+    
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.innerHTML = `
+        <div class="preview-title">⚒️ NEXT INGOT</div>
+        <div class="close-x" id="closePopupBtn">✕</div>
+        <div class="preview-ingot">${world.unitName} ${nextIngotId.toString().padStart(2, '0')} · ${unitName}</div>
+        <div class="chance-container">
+            <div class="chance-label">CHANCE OF SUCCESS</div>
+            <div class="chance-value ${chanceColorClass}">${chance.final}%</div>
+            <div class="chance-bar">
+                <div class="chance-bar-fill" style="width: ${chance.final}%"></div>
+            </div>
+            <div class="grace-info">
+                Base: ${chance.base}% · Grace: +${chance.grace}% · Devotion: +${chance.devotion.toFixed(1)}%
+                <div class="grace-badge">
+                    ${devotionTier.icon} ${chance.devotionDays} day${chance.devotionDays !== 1 ? 's' : ''} of devotion
+                </div>
+                ${chance.maxed ? '<div style="color: #ffd966; margin-top: 5px;">⚡ MAXIMUM GRACE REACHED! ⚡</div>' : ''}
+            </div>
+        </div>
+        <div class="preview-buttons">
+            <button class="preview-btn" id="forgeAheadBtn">⚒️ FORGE AHEAD</button>
+            <button class="preview-btn secondary" id="practiceBtn">🔨 PRACTICE</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('forgeAheadBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resetForNewUnit();
+        updateWorldDisplay();
+        saveProgress();
+    });
+    
+    document.getElementById('practiceBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showPracticeMode();
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    tg?.HapticFeedback?.notificationOccurred?.('success');
+}
+
+// ---------- PRACTICE MODE (from next ingot preview) ----------
+function showPracticeMode() {
+    const world = worlds[currentWorld];
+    const overlay = document.getElementById('popupOverlay');
+    const completedIngots = world.units.filter(u => u.wordsCompleted === 20 && u.id !== currentUnit);
+    
+    overlay.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'practice-card';
+    card.innerHTML = `
+        <div class="practice-title">🔨 PRACTICE MODE</div>
+        <div class="close-x" id="closePopupBtn">✕</div>
+        <div class="practice-list" id="practiceList">
+            ${completedIngots.map(unit => {
+                const unitData = MASTER_WORDS[`world${currentWorld}`]?.units[unit.id];
+                const unitName = unitData ? unitData.name : "Unknown";
+                return `
+                    <div class="practice-item" data-id="${unit.id}">
+                        <div class="practice-item-left">
+                            <span class="practice-icon">⚒️</span>
+                            <span class="practice-name">${world.unitName} ${unit.id.toString().padStart(2, '0')} · ${unitName}</span>
+                        </div>
+                        <span class="practice-chance">${unit.wordsCompleted}/20</span>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        <div class="preview-buttons">
+            <button class="preview-btn secondary" id="backBtn">← BACK</button>
+        </div>
+    `;
+    
+    overlay.appendChild(card);
+    overlay.classList.remove('hidden');
+    
+    document.querySelectorAll('.practice-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const practiceId = parseInt(item.dataset.id);
+            overlay.classList.add('hidden');
+            currentUnit = practiceId;
+            isPracticeMode = true;
+            showGameScreen();
+        });
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showNextIngotPreview();
+    });
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        showNextIngotPreview();
+    });
+}
+
+// ---------- HELPER FUNCTIONS FOR NAVIGATION ----------
+function returnToPreviousScreen(returnToLeaderboard) {
+    if (returnToLeaderboard) {
+        showLeaderboardPopup(true);
+    } else {
+        renderAll();
+        updateHomeScreenStats();
+    }
+}
+
+function handleLeaderboardReturn(fromCompletion) {
+    if (fromCompletion) {
+        showIngotCompletePopup();
+    } else {
+        renderAll();
+        updateHomeScreenStats();
+    }
+}
+
+// ---------- PROFILE FUNCTIONS ----------
+function loadProfile() {
+    try {
+        const saved = localStorage.getItem('spellforge_profile');
+        if (saved) {
+            playerProfile = JSON.parse(saved);
+        } else {
+            const user = tg?.initDataUnsafe?.user;
+            if (user) {
+                playerProfile = {
+                    displayName: user.first_name || "Forgemaster",
+                    telegramId: user.id,
+                    firstName: user.first_name || "",
+                    lastName: user.last_name || "",
+                    username: user.username || ""
+                };
+            }
+        }
+    } catch (e) {}
+}
+
+function saveProfile() {
+    localStorage.setItem('spellforge_profile', JSON.stringify(playerProfile));
+}
+
+function validateDisplayName(name) {
+    name = name.trim();
+    if (name.length < 3 || name.length > 20) return false;
+    if (!/^[a-zA-Z0-9 ]+$/.test(name)) return false;
+    return true;
+}
+
+// ---------- SAVE / LOAD PROGRESS ----------
+function saveProgress() {
+    const saveData = {
+        version: "1.3",
+        lastUpdated: new Date().toISOString(),
+        currentWorld: currentWorld,
+        currentUnit: currentUnit,
+        completedWords: completedWords,
+        playerPerformance: playerPerformance,
+        worlds: worlds,
+        ingotGrace: ingotGrace,
+        codex: codex.export()
+    };
+    try {
+        localStorage.setItem('spellforge_save', JSON.stringify(saveData));
+    } catch (e) {}
+}
+
+function loadProgress() {
+    try {
+        const saved = localStorage.getItem('spellforge_save');
+        if (saved) {
+            const saveData = JSON.parse(saved);
+            
+            if (!saveData.playerPerformance.devotion) {
+                saveData.playerPerformance.devotion = {
+                    days: 0,
+                    lastLogin: null,
+                    bonus: 0,
+                    tier: "None",
+                    milestones: {
+                        day30: false,
+                        day100: false,
+                        day200: false,
+                        day365: false
+                    }
+                };
+            }
+            
+            if (!saveData.playerPerformance.lastTrainingTime) {
+                saveData.playerPerformance.lastTrainingTime = null;
+            }
+            
+            if (!saveData.playerPerformance.trainingHistory) {
+                saveData.playerPerformance.trainingHistory = [];
+            }
+            
+            if (saveData.worlds) {
+                Object.keys(saveData.worlds).forEach(key => {
+                    if (worlds[key]) {
+                        const savedWorld = saveData.worlds[key];
+                        worlds[key].unlocked = savedWorld.unlocked;
+                        worlds[key].completed = savedWorld.completed;
+                        
+                        savedWorld.units.forEach(savedUnit => {
+                            const unit = worlds[key].units.find(u => u.id === savedUnit.id);
+                            if (unit) {
+                                unit.wordsCompleted = savedUnit.wordsCompleted;
+                                unit.unlocked = savedUnit.unlocked;
+                            }
+                        });
+                    }
+                });
+            }
+            if (saveData.ingotGrace) {
+                Object.keys(saveData.ingotGrace).forEach(key => {
+                    ingotGrace[key] = saveData.ingotGrace[key];
+                });
+            }
+            if (saveData.currentWorld) currentWorld = saveData.currentWorld;
+            if (saveData.currentUnit) currentUnit = saveData.currentUnit;
+            if (saveData.completedWords) completedWords = saveData.completedWords;
+            if (saveData.playerPerformance) {
+                playerPerformance = { ...playerPerformance, ...saveData.playerPerformance };
+            }
+            if (saveData.codex) {
+                codex.import(saveData.codex);
+            }
+        }
+    } catch (e) {}
+}
+
+function startAutoSave() {
+    setInterval(saveProgress, 60000);
+}
+
+// ---------- UPDATED: updateDevotion with 40-hour grace period ----------
+function updateDevotion() {
+    const today = new Date().toDateString();
+    const lastLogin = playerPerformance.devotion.lastLogin ? new Date(playerPerformance.devotion.lastLogin).toDateString() : null;
+    const oldDays = playerPerformance.devotion.days;
+    
+    if (!lastLogin) {
+        // First time playing
+        playerPerformance.devotion.days = 1;
+        playerPerformance.devotion.lastLogin = new Date().toISOString();
+    } else if (lastLogin !== today) {
+        // Calculate time since last login
+        const lastDate = new Date(playerPerformance.devotion.lastLogin);
+        const currentDate = new Date();
+        const timeDiffMs = currentDate - lastDate;
+        const hoursDiff = timeDiffMs / (1000 * 60 * 60);
+        
+        if (hoursDiff <= 40) {
+            // Within 40 hours - add one
+            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+        } else {
+            // Missed the 40-hour window - decrease by number of missed days
+            const daysMissed = Math.floor(hoursDiff / 24);
+            playerPerformance.devotion.days = Math.max(playerPerformance.devotion.days - daysMissed, 0);
+            // Add today
+            playerPerformance.devotion.days = Math.min(playerPerformance.devotion.days + 1, DEVOTION.MAX_DAYS);
+        }
+        
+        playerPerformance.devotion.lastLogin = new Date().toISOString();
+    }
+    
+    // Calculate bonus and tier
+    playerPerformance.devotion.bonus = DEVOTION.calculateBonus(playerPerformance.devotion.days);
+    const tier = DEVOTION.getTier(playerPerformance.devotion.days);
+    playerPerformance.devotion.tier = tier.name;
+    
+    // Check for milestones
+    const newMilestones = DEVOTION.checkMilestones(playerPerformance.devotion.days, oldDays);
+    newMilestones.forEach(day => {
+        const milestoneKey = `day${day}`;
+        if (!playerPerformance.devotion.milestones[milestoneKey]) {
+            playerPerformance.devotion.milestones[milestoneKey] = true;
+            showMilestoneNotification(day, tier);
+        }
+    });
+    
+    // Show daily devotion notification if days changed
+    if (playerPerformance.devotion.days !== oldDays) {
+        showDevotionNotification();
+    }
+    
+    saveProgress();
+    updateHomeScreenStats();
+}
+
+// ---------- calculateSuccessChance ----------
+function calculateSuccessChance(ingotId) {
+    const difficulty = ingotDifficulty[ingotId] || { baseChance: 50, tier: "Unknown" };
+    const grace = ingotGrace[ingotId] || 0;
+    const devotionBonus = playerPerformance.devotion?.bonus || 0;
+    
+    const finalChance = Math.min(difficulty.baseChance + grace + devotionBonus, 99);
+    
+    return {
+        final: finalChance,
+        base: difficulty.baseChance,
+        grace: grace,
+        devotion: devotionBonus,
+        devotionDays: playerPerformance.devotion?.days || 0,
+        tier: difficulty.tier,
+        maxed: finalChance === 99
+    };
+}
+
+// ---------- handleWordCompletion ----------
+function handleWordCompletion(wordIndex) {
+    if (!completedWords.includes(wordIndex)) {
+        completedWords.push(wordIndex);
+        const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
+        if (unit) unit.wordsCompleted = completedWords.length;
+        
+        const words = getCurrentUnitWords();
+        if (words && words.length > 0 && words[wordIndex]) {
+            const wordData = words[wordIndex];
+            showWordCard(wordData);
+            
+            if (!isPracticeMode) {
+                const wordId = `w${currentWorld}u${currentUnit}w${wordIndex}`;
+                let wordMemory = codex.getWord(wordId);
+                if (!wordMemory) {
+                    wordMemory = codex.addWord(wordId, {
+                        ...wordData,
+                        world: currentWorld,
+                        ingot: currentUnit
+                    });
+                }
+                
+                // Record successful forge with response time
+                const responseTime = 3.0; // Average response time for main game
+                wordMemory.recordTraining(1, responseTime, true, 'good');
+                fsrsManager.processResult(wordMemory, 'good', responseTime);
+            }
+        }
+        
+        QUICK_RESUME.saveSession();
+        updateHomeScreenStats();
+    }
+
+    activeWordIndex = null;
+    currentPosition = 0;
+    tempUsedLetters = [];
+    
+    if (activeWordIndex === null) {
+        setUnitSectionVisibility(true);
+        updateHeaderForSelection();
+    }
+    
+    renderAll();
+    updateWorldDisplay();
+    
+    const unit = worlds[currentWorld].units.find(u => u.id === currentUnit);
+    if (unit && unit.wordsCompleted === 20) {
+        if (isPracticeMode) {
+            showPracticeCompletePopup();
+            return;
+        }
+        
+        const accuracy = totalTaps === 0 ? 100 : Math.round((correctTaps / totalTaps) * 100);
+        const chance = calculateSuccessChance(currentUnit);
+        const roll = Math.random() * 100;
+        const success = roll <= chance.final;
+        
+        tg?.HapticFeedback?.impactOccurred?.('heavy');
+        showForgeMessage('Hammer strikes the anvil...', '⚒️', 3000);
+        document.body.style.transition = 'background-color 0.5s';
+        document.body.style.backgroundColor = success ? '#4ade80' : '#f87171';
+        
+        setTimeout(() => {
+            updateForgeMessage(success ? 'The metal holds...' : 'A crack forms...', success ? '✨' : '💔');
+        }, 1500);
+        
+        setTimeout(() => {
+            document.body.style.backgroundColor = '';
+            hideForgeMessage();
+            
+            if (success) {
+                saveScoreToGoogleSheetsWithCallback(() => {});
+                
+                playerPerformance.currentStreak++;
+                playerPerformance.bestStreak = Math.max(playerPerformance.bestStreak, playerPerformance.currentStreak);
+                playerPerformance.lastAccuracy = accuracy;
+                playerPerformance.lastAttemptFailed = false;
+                playerPerformance.lastPlayedDate = new Date().toISOString();
+                playerPerformance.worldProgress[currentWorld].completed++;
+                playerPerformance.totalRiskBonus += calculateRiskBonus(chance.base, chance.final, true);
+                playerPerformance.ingotHistory.push({
+                    id: currentUnit,
+                    success: true,
+                    accuracy: accuracy,
+                    time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
+                    sfr: calculateSFR(gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0, accuracy, totalTaps, correctTaps),
+                    date: new Date().toISOString()
+                });
+                onSuccess(currentUnit);
+                
+                // Unlock next ingot and advance current unit
+                const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
+                if (nextUnit) {
+                    nextUnit.unlocked = true;
+                    currentUnit = currentUnit + 1; // Advance to next ingot
+                }
+                
+                showIngotCompletePopup();
+                saveProgress();
+            } else {
+                onFailure(currentUnit);
+                playerPerformance.lastAttemptFailed = true;
+                playerPerformance.lastPlayedDate = new Date().toISOString();
+                playerPerformance.worldProgress[currentWorld].failed++;
+                playerPerformance.ingotHistory.push({
+                    id: currentUnit,
+                    success: false,
+                    accuracy: accuracy,
+                    time: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0,
+                    sfr: 0,
+                    date: new Date().toISOString()
+                });
+                showFailurePopup();
+            }
+            updateHomeScreenStats();
+        }, 3000);
+    }
+}
+
+function onSuccess(unitId) {
+    ingotGrace[unitId] = 0;
+}
+
+function onFailure(unitId) {
+    ingotGrace[unitId] = (ingotGrace[unitId] || 0) + 5;
+    ingotGrace[unitId] = Math.min(ingotGrace[unitId], 25);
+}
+
+// ---------- UPDATED: HOME SCREEN NAVIGATION with highest unlocked ingot ----------
 function showHomeScreen() {
+    // Set currentUnit to highest unlocked ingot
+    const highest = getHighestUnlockedIngot();
+    currentWorld = highest.world;
+    currentUnit = highest.unit;
+    
     document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('gameContainer').classList.add('hidden');
     document.getElementById('unitSection').classList.add('hidden');
@@ -3817,6 +4038,11 @@ function showGameScreen() {
     document.getElementById('gameContainer').classList.remove('hidden');
     document.getElementById('unitSection').classList.remove('hidden');
     resetForNewUnit();
+}
+
+// ---------- RESET HANDLER ----------
+function handleReset() {
+    showResetIngotPopup();
 }
 
 // ---------- INITIALIZATION FUNCTION ----------
@@ -3839,9 +4065,10 @@ function initializeGame() {
 
 // ---------- EVENT LISTENERS ----------
 document.addEventListener('DOMContentLoaded', function() {
-    const forgeSelectedBtn = document.getElementById('forgeSelectedBtn');
-    if (forgeSelectedBtn) {
-        forgeSelectedBtn.addEventListener('click', showGameScreen);
+    // Home screen buttons
+    const readyBtn = document.getElementById('readyBtn');
+    if (readyBtn) {
+        readyBtn.addEventListener('click', showReadyToForgePopup);
     }
     
     const backToHomeBtn = document.getElementById('backToHomeBtn');
@@ -3849,26 +4076,14 @@ document.addEventListener('DOMContentLoaded', function() {
         backToHomeBtn.addEventListener('click', showHomeScreen);
     }
     
-    const profileIconBtn = document.getElementById('profileIconBtn');
-    if (profileIconBtn) {
-        profileIconBtn.addEventListener('click', () => showProfilePopup(false));
-    }
-    
+    // Profile button (footer only - top right removed per agreement)
     const homeFooterProfileBtn = document.getElementById('homeFooterProfileBtn');
     if (homeFooterProfileBtn) {
         homeFooterProfileBtn.addEventListener('click', () => showProfilePopup(false));
     }
     
-    const homeLeaderboardBtn = document.getElementById('homeLeaderboardBtn');
-    if (homeLeaderboardBtn) {
-        homeLeaderboardBtn.addEventListener('click', () => showLeaderboardPopup(false));
-    }
-    
-    const homeCodexBtn = document.getElementById('homeCodexBtn');
-    if (homeCodexBtn) {
-        homeCodexBtn.addEventListener('click', showCodexPopup);
-    }
-    
+    // QUICK ACTIONS - CORRECT ORDER AS AGREED
+    // 1. Daily Train (first)
     const homeTrainBtn = document.getElementById('homeTrainBtn');
     if (homeTrainBtn) {
         homeTrainBtn.addEventListener('click', () => {
@@ -3886,6 +4101,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // 2. Practice (second) - button text changed to PRACTICE in HTML
+    const forgeSelectedBtn = document.getElementById('forgeSelectedBtn');
+    if (forgeSelectedBtn) {
+        forgeSelectedBtn.addEventListener('click', showPracticeModePopup);
+    }
+    
+    // 3. Leaderboard (third)
+    const homeLeaderboardBtn = document.getElementById('homeLeaderboardBtn');
+    if (homeLeaderboardBtn) {
+        homeLeaderboardBtn.addEventListener('click', () => showLeaderboardPopup(false));
+    }
+    
+    // 4. View Codex (fourth)
+    const homeCodexBtn = document.getElementById('homeCodexBtn');
+    if (homeCodexBtn) {
+        homeCodexBtn.addEventListener('click', showCodexPopup);
+    }
+    
+    // Footer buttons
     const homeFooterSettingsBtn = document.getElementById('homeFooterSettingsBtn');
     if (homeFooterSettingsBtn) {
         homeFooterSettingsBtn.addEventListener('click', showSettingsPopup);
@@ -3896,11 +4130,13 @@ document.addEventListener('DOMContentLoaded', function() {
         homeFooterInfoBtn.addEventListener('click', showInfoPopup);
     }
     
+    // Game screen buttons
     const resetButton = document.getElementById('resetButton');
     if (resetButton) {
         resetButton.addEventListener('click', handleReset);
     }
     
+    // Unit selector (kept for compatibility but hidden in UI)
     const unitSelector = document.getElementById('unitSelector');
     if (unitSelector) {
         unitSelector.addEventListener('change', (e) => {
@@ -3911,22 +4147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    const ingotDropdownBtn = document.getElementById('ingotDropdownBtn');
-    const ingotDropdownMenu = document.getElementById('ingotDropdownMenu');
-    if (ingotDropdownBtn && ingotDropdownMenu) {
-        ingotDropdownBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            populateIngotDropdown();
-            ingotDropdownMenu.classList.toggle('hidden');
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!ingotDropdownMenu.contains(e.target) && !ingotDropdownBtn.contains(e.target)) {
-                ingotDropdownMenu.classList.add('hidden');
-            }
-        });
-    }
-    
+    // Click outside to return to selection
     document.addEventListener('click', (e) => {
         if (activeWordIndex !== null && 
             !e.target.closest('.word-chip') && 
@@ -3942,9 +4163,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Load profile and initialize
     loadProfile();
     initializeGame();
     
+    // Telegram integration
     if (tg) {
         tg.onEvent('backButtonClicked', () => {
             saveProgress();
