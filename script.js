@@ -995,7 +995,7 @@ const MASTER_WORDS = {
     },
     // WORLD 3: CRYSTAL CAVERNS (600 words) - Placeholder structure
     world3: {
-        name: "Crystal Caverns",
+                name: "Crystal Caverns",
         icon: "💎",
         unitType: "Geode",
         units: {}
@@ -1920,49 +1920,50 @@ function updateStreakTimerDisplay() {
     }
 }
 
-// ---------- BACKFILL CODEX FROM PROGRESS ----------
+// ---------- BACKFILL CODEX FROM PROGRESS (UPDATED) ----------
 function backfillCodexFromProgress() {
     for (let worldId = 1; worldId <= 6; worldId++) {
         const world = worlds[worldId];
         if (!world || !world.unlocked) continue;
         
         world.units.forEach(unit => {
+            // Skip if no words completed
             if (unit.wordsCompleted === 0) return;
             
             const unitWords = MASTER_WORDS[`world${worldId}`]?.units[unit.id]?.words;
             if (!unitWords) return;
             
-            unitWords.forEach((wordData, wordIndex) => {
+            // For each word up to the number completed
+            for (let wordIndex = 0; wordIndex < unit.wordsCompleted; wordIndex++) {
+                const wordData = unitWords[wordIndex];
+                if (!wordData) continue;
+                
                 const wordId = `w${worldId}u${unit.id}w${wordIndex}`;
                 
-                const isCompleted = (worldId === currentWorld && 
-                                     unit.id === currentUnit && 
-                                     completedWords.includes(wordIndex)) ||
-                                    unit.wordsCompleted > wordIndex;
+                // Check if already in codex
+                let wordMemory = codex.getWord(wordId);
+                if (!wordMemory) {
+                    wordMemory = codex.addWord(wordId, {
+                        ...wordData,
+                        world: worldId,
+                        ingot: unit.id
+                    });
+                }
                 
-                if (isCompleted) {
-                    let wordMemory = codex.getWord(wordId);
-                    if (!wordMemory) {
-                        wordMemory = codex.addWord(wordId, {
-                            ...wordData,
-                            world: worldId,
-                            ingot: unit.id
-                        });
-                    }
-                    
-                    if (wordMemory.correctCount === 0) {
-                        wordMemory.correctCount = 1;
-                        wordMemory.recordTraining(1, 3000, true, 'good');
-                    }
-                    
-                    if (unit.wordsCompleted === 20) {
-                        const baseProgress = Math.min(15, Math.floor(unit.wordsCompleted / 2));
-                        if (wordMemory.correctCount < baseProgress) {
-                            wordMemory.correctCount = baseProgress;
-                        }
+                // If this is a newly added word, give it initial progress
+                if (wordMemory.correctCount === 0) {
+                    wordMemory.correctCount = 1;
+                    wordMemory.recordTraining(1, 3000, true, 'good');
+                }
+                
+                // If the entire ingot is completed, give bonus progress
+                if (unit.wordsCompleted === 20) {
+                    const baseProgress = Math.min(15, Math.floor(unit.wordsCompleted / 2));
+                    if (wordMemory.correctCount < baseProgress) {
+                        wordMemory.correctCount = baseProgress;
                     }
                 }
-            });
+            }
         });
     }
     
@@ -3446,6 +3447,7 @@ function displayLeaderboard(leaderboard, fromCompletion) {
         showLeaderboardPopup(fromCompletion);
     });
 }
+
 // ---------- WORLD ARTIFACT POPUP ----------
 function showWorldArtifactPopup() {
     const overlay = document.getElementById('popupOverlay');
@@ -3640,27 +3642,44 @@ function showPracticeMode() {
     });
 }
 
-// ---------- RESTORED: CODEX POPUP (Original version) ----------
+// ---------- CODEX POPUP WITH DRILL-DOWN (UPDATED) ----------
+let currentCodexView = 'worlds';
+let selectedCodexWorld = 1;
+let selectedCodexIngot = 1;
+let selectedCodexWord = null;
+
 function showCodexPopup() {
+    currentCodexView = 'worlds';
+    selectedCodexWorld = 1;
+    renderCodexWorlds();
+}
+
+function renderCodexWorlds() {
     const overlay = document.getElementById('popupOverlay');
-    const stats = codex.getStats();
+    const worldNames = ['Grand Forge', 'Enchanted Forest', 'Crystal Caverns', 'Sky Citadel', 'Dragon\'s Peak', 'Star Forge'];
+    const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
     
-    let ingotsHtml = '';
-    for (let i = 1; i <= 30; i++) {
-        const unit = worlds[1].units.find(u => u.id === i);
-        const unitData = MASTER_WORDS.world1.units[i];
-        const wordsInIngot = codex.getWordsByIngot(1, i);
-        const masteredInIngot = wordsInIngot.filter(w => w.mastered).length;
-        const totalInIngot = unitData ? unitData.words.length : 20;
+    let worldsHtml = '';
+    for (let worldId = 1; worldId <= 6; worldId++) {
+        const world = worlds[worldId];
+        if (!world || !world.unlocked) continue;
         
-        ingotsHtml += `
-            <div class="codex-ingot-item">
-                <div class="codex-ingot-header">
-                    <span>INGOT ${i.toString().padStart(2, '0')}: ${unitData?.name || 'Unknown'}</span>
-                    <span>${unit?.wordsCompleted || 0}/20 · ${masteredInIngot}/${totalInIngot}⭐</span>
+        const worldTotal = world.units.reduce((sum, unit) => sum + unit.wordsCompleted, 0);
+        const worldPercent = Math.round((worldTotal / world.totalWords) * 100);
+        const dueCount = codex.getDueWordsByWorld(worldId);
+        
+        worldsHtml += `
+            <div class="codex-world-item" data-world="${worldId}">
+                <div class="codex-world-header">
+                    <span class="codex-world-icon">${worldIcons[worldId-1]}</span>
+                    <span class="codex-world-name">${world.name}</span>
+                    <span class="codex-world-stats">${worldTotal}/${world.totalWords}</span>
                 </div>
-                <div class="codex-ingot-bar">
-                    <div class="codex-ingot-fill" style="width: ${((unit?.wordsCompleted || 0)/20)*100}%"></div>
+                <div class="codex-world-progress">
+                    <div class="codex-world-progress-bar">
+                        <div class="codex-world-progress-fill" style="width: ${worldPercent}%"></div>
+                    </div>
+                    ${dueCount > 0 ? `<span class="codex-world-due">${dueCount} due</span>` : ''}
                 </div>
             </div>
         `;
@@ -3669,29 +3688,29 @@ function showCodexPopup() {
     overlay.innerHTML = `
         <div class="profile-card" style="max-width: 500px;">
             <button class="profile-close" id="closeBtn">✕</button>
-            <div class="profile-title">📚 CODEX</div>
+            <div class="profile-title">📚 LIVING CODEX</div>
             
             <div style="display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #0E2938; border-radius: 40px;">
                 <div style="text-align: center;">
-                    <div style="font-size: 24px; color: #FFD700;">${stats.mastered}</div>
+                    <div style="font-size: 24px; color: #FFD700;" id="codexMasteredDisplay">${codex.getMasteredCount()}</div>
                     <div style="font-size: 12px; color: #ACCCDD;">Mastered</div>
                 </div>
                 <div style="text-align: center;">
-                    <div style="font-size: 24px; color: #FFB347;">${stats.learning}</div>
+                    <div style="font-size: 24px; color: #FFB347;" id="codexLearningDisplay">${codex.getStats().learning}</div>
                     <div style="font-size: 12px; color: #ACCCDD;">Learning</div>
                 </div>
                 <div style="text-align: center;">
-                    <div style="font-size: 24px; color: #4ADE80;">${stats.due}</div>
+                    <div style="font-size: 24px; color: #4ADE80;" id="codexDueDisplay">${codex.getDueCount()}</div>
                     <div style="font-size: 12px; color: #ACCCDD;">Due Now</div>
                 </div>
                 <div style="text-align: center;">
-                    <div style="font-size: 24px; color: #C0C0C0;">${stats.total}</div>
+                    <div style="font-size: 24px; color: #C0C0C0;" id="codexTotalDisplay">${codex.getStats().total}</div>
                     <div style="font-size: 12px; color: #ACCCDD;">Total</div>
                 </div>
             </div>
             
-            <div class="codex-ingots-list" style="max-height: 300px; overflow-y: auto; padding: 10px; background: #0E2938; border-radius: 40px;">
-                ${ingotsHtml}
+            <div class="codex-worlds-list" style="max-height: 400px; overflow-y: auto; padding: 10px; background: #0E2938; border-radius: 40px;">
+                ${worldsHtml || '<div style="text-align: center; padding: 20px; color: #ACCCDD;">No worlds unlocked yet.</div>'}
             </div>
             
             <div class="button-group" style="margin-top: 20px;">
@@ -3702,12 +3721,242 @@ function showCodexPopup() {
     
     overlay.classList.remove('hidden');
     
+    document.querySelectorAll('.codex-world-item').forEach(item => {
+        item.addEventListener('click', () => {
+            selectedCodexWorld = parseInt(item.dataset.world);
+            renderCodexIngots();
+        });
+    });
+    
     document.getElementById('closeBtn').addEventListener('click', () => {
         overlay.classList.add('hidden');
     });
     
     document.getElementById('closeBtn2').addEventListener('click', () => {
         overlay.classList.add('hidden');
+    });
+}
+
+function renderCodexIngots() {
+    const overlay = document.getElementById('popupOverlay');
+    const world = worlds[selectedCodexWorld];
+    const worldNames = ['Grand Forge', 'Enchanted Forest', 'Crystal Caverns', 'Sky Citadel', 'Dragon\'s Peak', 'Star Forge'];
+    const worldIcons = ['⚒️', '🌳', '💎', '☁️', '🐉', '⭐'];
+    
+    let ingotsHtml = '';
+    world.units.forEach(unit => {
+        if (!unit.unlocked) return;
+        
+        const unitData = MASTER_WORDS[`world${selectedCodexWorld}`]?.units[unit.id];
+        const unitName = unitData ? unitData.name : "Unknown";
+        const wordsInIngot = codex.getWordsByIngot(selectedCodexWorld, unit.id);
+        const masteredInIngot = wordsInIngot.filter(w => w.mastered).length;
+        const totalInIngot = unitData ? unitData.words.length : 20;
+        
+        ingotsHtml += `
+            <div class="codex-ingot-item" data-ingot="${unit.id}">
+                <div class="codex-ingot-header">
+                    <span>${world.unitName} ${unit.id.toString().padStart(2, '0')}: ${unitName}</span>
+                    <span>${unit.wordsCompleted}/${totalInIngot} · ${masteredInIngot}⭐</span>
+                </div>
+                <div class="codex-ingot-bar">
+                    <div class="codex-ingot-fill" style="width: ${(unit.wordsCompleted/totalInIngot)*100}%"></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    overlay.innerHTML = `
+        <div class="profile-card" style="max-width: 500px;">
+            <button class="profile-close" id="backBtn">←</button>
+            <button class="profile-close" id="closeBtn" style="right: 60px;">✕</button>
+            <div class="profile-title">${worldIcons[selectedCodexWorld-1]} ${world.name}</div>
+            
+            <div class="codex-ingots-list" style="max-height: 500px; overflow-y: auto; padding: 10px; background: #0E2938; border-radius: 40px;">
+                ${ingotsHtml}
+            </div>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="action-btn" id="worldsBtn">← ALL WORLDS</button>
+            </div>
+        </div>
+    `;
+    
+    document.querySelectorAll('.codex-ingot-item').forEach(item => {
+        item.addEventListener('click', () => {
+            selectedCodexIngot = parseInt(item.dataset.ingot);
+            renderCodexWords();
+        });
+    });
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        renderCodexWorlds();
+    });
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('worldsBtn').addEventListener('click', () => {
+        renderCodexWorlds();
+    });
+}
+
+function renderCodexWords() {
+    const overlay = document.getElementById('popupOverlay');
+    const world = worlds[selectedCodexWorld];
+    const unitData = MASTER_WORDS[`world${selectedCodexWorld}`]?.units[selectedCodexIngot];
+    const unitName = unitData ? unitData.name : "Unknown";
+    const wordsInIngot = codex.getWordsByIngot(selectedCodexWorld, selectedCodexIngot);
+    
+    let wordsHtml = '';
+    if (unitData && unitData.words) {
+        unitData.words.forEach((wordData, index) => {
+            const wordId = `w${selectedCodexWorld}u${selectedCodexIngot}w${index}`;
+            const wordMemory = codex.getWord(wordId);
+            const mastered = wordMemory ? wordMemory.mastered : false;
+            const progress = wordMemory ? wordMemory.getMasteryPercent() : 0;
+            
+            wordsHtml += `
+                <div class="codex-word-tile ${mastered ? 'mastered' : ''}" data-word="${index}">
+                    <span class="codex-word-emoji">${wordData.emoji}</span>
+                    <span class="codex-word">${wordData.word}</span>
+                    ${wordMemory ? `
+                        <div class="codex-word-progress">
+                            <div class="codex-word-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+    }
+    
+    overlay.innerHTML = `
+        <div class="profile-card" style="max-width: 500px;">
+            <button class="profile-close" id="backBtn">←</button>
+            <button class="profile-close" id="closeBtn" style="right: 60px;">✕</button>
+            <div class="profile-title">${world.unitName} ${selectedCodexIngot.toString().padStart(2, '0')}: ${unitName}</div>
+            
+            <div class="codex-word-grid">
+                ${wordsHtml}
+            </div>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="action-btn" id="ingotsBtn">← BACK TO INGOTS</button>
+            </div>
+        </div>
+    `;
+    
+    document.querySelectorAll('.codex-word-tile').forEach(item => {
+        item.addEventListener('click', () => {
+            const wordIndex = parseInt(item.dataset.word);
+            selectedCodexWord = wordIndex;
+            renderCodexWordDetail();
+        });
+    });
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        renderCodexIngots();
+    });
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('ingotsBtn').addEventListener('click', () => {
+        renderCodexIngots();
+    });
+}
+
+function renderCodexWordDetail() {
+    const overlay = document.getElementById('popupOverlay');
+    const unitData = MASTER_WORDS[`world${selectedCodexWorld}`]?.units[selectedCodexIngot];
+    const wordData = unitData.words[selectedCodexWord];
+    const wordId = `w${selectedCodexWorld}u${selectedCodexIngot}w${selectedCodexWord}`;
+    const wordMemory = codex.getWord(wordId);
+    
+    const mastered = wordMemory ? wordMemory.mastered : false;
+    const progress = wordMemory ? wordMemory.getMasteryPercent() : 0;
+    const correctCount = wordMemory ? wordMemory.correctCount : 0;
+    const bestTime = wordMemory && wordMemory.bestTime ? wordMemory.bestTime.toFixed(1) : '--';
+    const firstForged = wordMemory ? new Date(wordMemory.firstForged).toLocaleDateString() : 'Not yet recorded';
+    
+    let historyHtml = '';
+    if (wordMemory && wordMemory.trainingHistory.length > 0) {
+        const recentHistory = wordMemory.trainingHistory.slice(-5).reverse();
+        recentHistory.forEach(h => {
+            const date = new Date(h.date).toLocaleDateString();
+            historyHtml += `
+                <div class="word-history-item">
+                    <span>${date} · Flash ${h.flashNumber}</span>
+                    <span style="color: ${h.isCorrect ? '#4ADE80' : '#F87171'}">${h.isCorrect ? '✓' : '✗'} ${h.responseTime.toFixed(1)}s</span>
+                </div>
+            `;
+        });
+    } else {
+        historyHtml = '<div style="text-align: center; padding: 10px; color: #ACCCDD;">No training history yet.</div>';
+    }
+    
+    overlay.innerHTML = `
+        <div class="profile-card" style="max-width: 500px;">
+            <button class="profile-close" id="backBtn">←</button>
+            <button class="profile-close" id="closeBtn" style="right: 60px;">✕</button>
+            
+            <div class="word-detail-emoji">${wordData.emoji}</div>
+            <div class="word-detail-word">${wordData.word}</div>
+            
+            <div class="word-detail-section">
+                <div class="word-detail-label">MASTERY PROGRESS</div>
+                <div class="word-detail-progress-bar">
+                    <div class="word-detail-progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <div class="word-detail-progress-text">${correctCount}/30 correct (${Math.round(progress)}%)</div>
+                ${mastered ? '<div style="color: #FFD700; font-weight: 700; margin-top: 5px;">✨ MASTERED ✨</div>' : ''}
+            </div>
+            
+            <div class="word-detail-stats">
+                <div class="word-detail-stat">
+                    <div class="word-detail-stat-value">${bestTime}s</div>
+                    <div class="word-detail-stat-label">Best Time</div>
+                </div>
+                <div class="word-detail-stat">
+                    <div class="word-detail-stat-value">${wordMemory ? wordMemory.fsrsCard.reps : 0}</div>
+                    <div class="word-detail-stat-label">Reviews</div>
+                </div>
+            </div>
+            
+            <div class="word-detail-section">
+                <div class="word-detail-label">SENTENCE</div>
+                <div style="color: #FFDCAA; font-size: 16px; line-height: 1.4; padding: 5px;">${wordData.sentence}</div>
+            </div>
+            
+            <div class="word-detail-section">
+                <div class="word-detail-label">TRAINING HISTORY</div>
+                <div class="word-history-list">
+                    ${historyHtml}
+                </div>
+            </div>
+            
+            <div class="word-detail-section">
+                <div style="color: #ACCCDD; font-size: 12px;">First Forged: ${firstForged}</div>
+            </div>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="action-btn" id="wordsBtn">← BACK TO WORDS</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        renderCodexWords();
+    });
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('wordsBtn').addEventListener('click', () => {
+        renderCodexWords();
     });
 }
 
@@ -3762,7 +4011,7 @@ function validateDisplayName(name) {
     return true;
 }
 
-// ---------- SAVE / LOAD PROGRESS ----------
+// ---------- SAVE / LOAD PROGRESS (UPDATED) ----------
 function saveProgress() {
     const saveData = {
         version: "1.3",
@@ -3813,6 +4062,7 @@ function loadProgress() {
                 saveData.playerPerformance.lastStreakUpdate = null;
             }
             
+            // CRITICAL FIX: Restore world data with proper unit progress for ALL ingots
             if (saveData.worlds) {
                 Object.keys(saveData.worlds).forEach(key => {
                     if (worlds[key]) {
@@ -3820,6 +4070,7 @@ function loadProgress() {
                         worlds[key].unlocked = savedWorld.unlocked;
                         worlds[key].completed = savedWorld.completed;
                         
+                        // Ensure ALL units are properly restored (both odd and even)
                         savedWorld.units.forEach(savedUnit => {
                             const unit = worlds[key].units.find(u => u.id === savedUnit.id);
                             if (unit) {
@@ -3830,6 +4081,7 @@ function loadProgress() {
                     }
                 });
             }
+            
             if (saveData.ingotGrace) {
                 Object.keys(saveData.ingotGrace).forEach(key => {
                     ingotGrace[key] = saveData.ingotGrace[key];
@@ -4140,7 +4392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         homeLeaderboardBtn.addEventListener('click', () => showLeaderboardPopup(false));
     }
     
-    // 4. Codex - RESTORED to original function
+    // 4. Codex - UPDATED to enhanced version
     const homeCodexBtn = document.getElementById('homeCodexBtn');
     if (homeCodexBtn) {
         homeCodexBtn.addEventListener('click', showCodexPopup);
