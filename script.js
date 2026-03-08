@@ -6,6 +6,27 @@ if (tg) {
     tg.setHeaderColor?.('#1a2f3f');
 }
 
+// ---------- ADSGRAM INITIALIZATION ----------
+let adsgramAdController = null;
+let adsgramInitialized = false;
+
+function initAdsGram() {
+    if (typeof Adsgram !== 'undefined' && !adsgramInitialized) {
+        try {
+            adsgramAdController = Adsgram.init({ 
+                blockId: "8377185755" // Your Block ID
+            });
+            adsgramInitialized = true;
+            console.log("✅ AdsGram initialized successfully");
+        } catch (error) {
+            console.log("❌ AdsGram init error:", error);
+        }
+    }
+}
+
+// Initialize when app loads
+setTimeout(initAdsGram, 3000);
+
 // ---------- LOADING SCREEN ----------
 const loadingTips = [
     '"Every word forged strengthens the crystal"',
@@ -3038,6 +3059,77 @@ function showFailurePopup() {
     
     tg?.HapticFeedback?.notificationOccurred?.('error');
 }
+// ---------- TRAINING AD POPUP ----------
+function showTrainingAdPopup() {
+    const overlay = document.getElementById('popupOverlay');
+    
+    overlay.innerHTML = `
+        <div class="profile-card">
+            <button class="profile-close" id="closeBtn">✕</button>
+            <div class="profile-title">📺 WATCH AD TO TRAIN</div>
+            <div style="text-align: center; padding: 20px; color: #FFD700; font-size: 48px;">🎬</div>
+            <div style="text-align: center; color: #FFDCAA; margin: 20px 0; font-size: 18px;">
+                Watch a short ad to unlock your daily training.<br><br>
+                <span style="color: #4ADE80;">✨ Supports the forge ✨</span>
+            </div>
+            <div class="button-group" style="flex-direction: column; gap: 10px;">
+                <button class="action-btn" id="watchAdBtn">🎬 WATCH AD</button>
+                <button class="action-btn secondary" id="cancelBtn">CANCEL</button>
+            </div>
+        </div>
+    `;
+    
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('watchAdBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        playTrainingAd();
+    });
+}
+
+// ---------- PLAY TRAINING AD ----------
+function playTrainingAd() {
+    if (!adsgramInitialized) {
+        initAdsGram();
+    }
+    
+    if (adsgramAdController) {
+        showForgeMessage('Loading ad...', '📺', 2000);
+        
+        adsgramAdController.show().then(() => {
+            // Ad completed successfully
+            tg?.HapticFeedback?.notificationOccurred?.('success');
+            showForgeMessage('Ad complete! Training unlocked!', '🎁', 1500);
+            
+            setTimeout(() => {
+                showTrainingDifficultyPopup();
+            }, 1500);
+            
+        }).catch((error) => {
+            console.log("❌ Ad failed:", error);
+            tg?.HapticFeedback?.notificationOccurred?.('error');
+            showForgeMessage('Ad failed. Please try again.', '❌', 2000);
+            
+            setTimeout(() => {
+                showTrainingAdPopup();
+            }, 2000);
+        });
+    } else {
+        showForgeMessage('Ads system loading...', '⏳', 2000);
+        setTimeout(() => {
+            initAdsGram();
+            showTrainingAdPopup();
+        }, 2000);
+    }
+}
 // ---------- TRAINING DIFFICULTY POPUP ----------
 function showTrainingDifficultyPopup() {
     const overlay = document.getElementById('popupOverlay');
@@ -4527,23 +4619,13 @@ document.addEventListener('DOMContentLoaded', function() {
         homeFooterProfileBtn.addEventListener('click', () => showProfilePopup(false));
     }
     
-    // 1. Daily Train
-    const homeTrainBtn = document.getElementById('homeTrainBtn');
-    if (homeTrainBtn) {
-        homeTrainBtn.addEventListener('click', () => {
-            if (isTrainingAvailable()) {
-                showTrainingDifficultyPopup();
-            } else {
-                const remaining = getTimeRemaining();
-                showForgeMessage(
-                    `Training available in ${remaining.hours}h ${remaining.minutes}m`,
-                    '⏳',
-                    3000
-                );
-                tg?.HapticFeedback?.notificationOccurred?.('warning');
-            }
-        });
-    }
+    // 1. Daily Train - Watch Ad Required
+const homeTrainBtn = document.getElementById('homeTrainBtn');
+if (homeTrainBtn) {
+    homeTrainBtn.addEventListener('click', () => {
+        showTrainingAdPopup();
+    });
+}
     
     // 2. Practice
     const forgeSelectedBtn = document.getElementById('forgeSelectedBtn');
