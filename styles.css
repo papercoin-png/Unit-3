@@ -103,6 +103,7 @@ button:hover .icon {
 .icon-md { width: 24px; height: 24px; }
 .icon-lg { width: 32px; height: 32px; }
 .icon-xl { width: 48px; height: 48px; }
+
 /* ---------- RESUME NOTIFICATION ---------- */
 .resume-notification {
     position: fixed;
@@ -263,7 +264,6 @@ button:hover .icon {
     color: var(--steel-light);
     line-height: 1.4;
 }
-
 /* ---------- LOADING SCREEN ---------- */
 .loading-screen {
     position: fixed;
@@ -535,6 +535,7 @@ button:hover .icon {
     from { width: 0%; }
     to { width: 100%; }
 }
+
 /* ---------- HOME SCREEN ---------- */
 .home-screen {
     max-width: 600px;
@@ -558,8 +559,7 @@ button:hover .icon {
     backdrop-filter: blur(4px);
     display: inline-flex;
 }
-
-/* ---------- STREAK CARD (with timer) ---------- */
+/* ---------- STREAK CARD ---------- */
 .streak-card {
     background: linear-gradient(145deg, #4A3E32, #2A1E12);
     border-radius: 38px;
@@ -598,7 +598,6 @@ button:hover .icon {
     margin-bottom: var(--space-xs);
 }
 
-/* NEW: Streak Timer */
 .streak-timer {
     font-size: 16px;
     color: var(--warning-yellow);
@@ -2511,7 +2510,7 @@ button:hover .icon {
     background: #557A8B;
     box-shadow: 0 5px 0 #2E4A57;
 }
-/* ---------- PROFILE POPUP ---------- */
+/* ---------- PROFILE POPUP (Telegram ID Removed) ---------- */
 .profile-card {
     max-width: 480px;
     width: 100%;
@@ -2790,16 +2789,6 @@ button:hover .icon {
     border-color: #F87171;
 }
 
-.profile-id {
-    background: #0E2938;
-    border-radius: 40px;
-    padding: 12px 20px;
-    font-size: 16px;
-    color: #ACCCDD;
-    font-family: monospace;
-    border: 2px solid #B8944A;
-}
-
 .profile-stats-grid {
     background: #0E2938;
     border-radius: 40px;
@@ -2840,7 +2829,95 @@ button:hover .icon {
     display: none !important;
 }
 
-/* ---------- CODEX INGOT LIST ---------- */
+/* ---------- CODEX PROGRESSIVE DISCLOSURE STYLES ---------- */
+.codex-worlds-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--forge-bronze) #1D3F4F;
+}
+
+.codex-worlds-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.codex-worlds-list::-webkit-scrollbar-track {
+    background: #1D3F4F;
+    border-radius: 10px;
+}
+
+.codex-worlds-list::-webkit-scrollbar-thumb {
+    background: var(--forge-bronze);
+    border-radius: 10px;
+}
+
+.codex-world-item {
+    background: #1D3F4F;
+    border-radius: 30px;
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.codex-world-item:hover {
+    background: #2C5A6E;
+    transform: translateX(5px);
+}
+
+.codex-world-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.codex-world-icon {
+    font-size: 24px;
+}
+
+.codex-world-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forge-glow);
+    flex: 1;
+    text-align: left;
+    font-family: 'Cinzel', serif;
+}
+
+.codex-world-stats {
+    font-size: 14px;
+    color: #FFDCAA;
+    font-weight: 600;
+}
+
+.codex-world-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.codex-world-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #0E2938;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+}
+
+.codex-world-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.codex-world-due {
+    font-size: 12px;
+    color: #4ADE80;
+    min-width: 70px;
+    text-align: right;
+}
+
 .codex-ingots-list {
     scrollbar-width: thin;
     scrollbar-color: var(--forge-bronze) #1D3F4F;
@@ -2865,6 +2942,13 @@ button:hover .icon {
     border-radius: 30px;
     padding: 12px 15px;
     margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.codex-ingot-item:hover {
+    background: #2C5A6E;
+    transform: translateX(5px);
 }
 
 .codex-ingot-header {
@@ -2889,6 +2973,170 @@ button:hover .icon {
     background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
     border-radius: 30px;
     transition: width 0.3s ease;
+}
+
+.codex-word-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
+    background: #0E2938;
+    border-radius: 40px;
+    margin: 15px 0;
+}
+
+.codex-word-tile {
+    background: #1D3F4F;
+    border-radius: 20px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.codex-word-tile:hover {
+    background: #2C5A6E;
+    transform: scale(1.05);
+}
+
+.codex-word-tile.mastered {
+    border: 2px solid var(--forge-gold);
+    box-shadow: 0 0 10px gold;
+}
+
+.codex-word-emoji {
+    font-size: 24px;
+}
+
+.codex-word {
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFDCAA;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+}
+
+.codex-word-progress {
+    width: 100%;
+    height: 4px;
+    background: #0E2938;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.codex-word-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.word-detail-emoji {
+    font-size: 80px;
+    margin: 10px 0;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+}
+
+.word-detail-word {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--forge-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+}
+
+.word-detail-section {
+    background: #0E2938;
+    border-radius: 40px;
+    padding: 15px;
+    margin: 15px 0;
+    border: 2px solid #B8944A;
+    text-align: left;
+}
+
+.word-detail-label {
+    font-size: 14px;
+    color: #ACCCDD;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.word-detail-progress-bar {
+    width: 100%;
+    height: 16px;
+    background: #1D3F4F;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.word-detail-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.word-detail-progress-text {
+    font-size: 14px;
+    color: #FFDCAA;
+    font-weight: 600;
+    text-align: center;
+}
+
+.word-detail-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+}
+
+.word-detail-stat {
+    text-align: center;
+    background: #0E2938;
+    border-radius: 30px;
+    padding: 10px;
+    flex: 1;
+    margin: 0 5px;
+    border: 2px solid #B8944A;
+}
+
+.word-detail-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forge-glow);
+}
+
+.word-detail-stat-label {
+    font-size: 12px;
+    color: #ACCCDD;
+}
+
+.word-history-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.word-history-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: #1D3F4F;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #FFDCAA;
+    display: flex;
+    justify-content: space-between;
 }
 
 /* ---------- RESPONSIVE DESIGN ---------- */
@@ -3027,6 +3275,10 @@ button:hover .icon {
     .streak-timer {
         font-size: 14px;
     }
+    
+    .codex-word-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* ---------- ACCESSIBILITY - REDUCE MOTION ---------- */
@@ -3063,7 +3315,10 @@ button:hover .icon {
     .practice-item,
     .leaderboard-row,
     .profile-trophy,
-    .footer-icon {
+    .footer-icon,
+    .codex-world-item,
+    .codex-ingot-item,
+    .codex-word-tile {
         animation: none !important;
         transition: none !important;
         transform: none !important;
@@ -3082,8 +3337,304 @@ button:hover .icon {
     .practice-item:hover,
     .leaderboard-row:hover,
     .profile-trophy:hover,
-    .footer-icon:hover {
+    .footer-icon:hover,
+    .codex-world-item:hover,
+    .codex-ingot-item:hover,
+    .codex-word-tile:hover {
         transform: none !important;
         filter: brightness(1.2) !important;
     }
+}
+/* ---------- CODEX DRILL-DOWN STYLES ---------- */
+.codex-worlds-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--forge-bronze) #1D3F4F;
+}
+
+.codex-worlds-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.codex-worlds-list::-webkit-scrollbar-track {
+    background: #1D3F4F;
+    border-radius: 10px;
+}
+
+.codex-worlds-list::-webkit-scrollbar-thumb {
+    background: var(--forge-bronze);
+    border-radius: 10px;
+}
+
+.codex-world-item {
+    background: #1D3F4F;
+    border-radius: 30px;
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.codex-world-item:hover {
+    background: #2C5A6E;
+    transform: translateX(5px);
+}
+
+.codex-world-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.codex-world-icon {
+    font-size: 24px;
+}
+
+.codex-world-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forge-glow);
+    flex: 1;
+    text-align: left;
+    font-family: 'Cinzel', serif;
+}
+
+.codex-world-stats {
+    font-size: 14px;
+    color: #FFDCAA;
+    font-weight: 600;
+}
+
+.codex-world-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.codex-world-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #0E2938;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+}
+
+.codex-world-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.codex-world-due {
+    font-size: 12px;
+    color: #4ADE80;
+    min-width: 70px;
+    text-align: right;
+}
+
+.codex-ingots-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--forge-bronze) #1D3F4F;
+}
+
+.codex-ingots-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.codex-ingots-list::-webkit-scrollbar-track {
+    background: #1D3F4F;
+    border-radius: 10px;
+}
+
+.codex-ingots-list::-webkit-scrollbar-thumb {
+    background: var(--forge-bronze);
+    border-radius: 10px;
+}
+
+.codex-ingot-item {
+    background: #1D3F4F;
+    border-radius: 30px;
+    padding: 12px 15px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.codex-ingot-item:hover {
+    background: #2C5A6E;
+    transform: translateX(5px);
+}
+
+.codex-ingot-header {
+    display: flex;
+    justify-content: space-between;
+    color: #FFDCAA;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.codex-ingot-bar {
+    width: 100%;
+    height: 8px;
+    background: #0E2938;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+}
+
+.codex-ingot-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.codex-word-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
+    background: #0E2938;
+    border-radius: 40px;
+    margin: 15px 0;
+}
+
+.codex-word-tile {
+    background: #1D3F4F;
+    border-radius: 20px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.codex-word-tile:hover {
+    background: #2C5A6E;
+    transform: scale(1.05);
+}
+
+.codex-word-tile.mastered {
+    border: 2px solid var(--forge-gold);
+    box-shadow: 0 0 10px gold;
+}
+
+.codex-word-emoji {
+    font-size: 24px;
+}
+
+.codex-word {
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFDCAA;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+}
+
+.word-detail-emoji {
+    font-size: 80px;
+    margin: 10px 0;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+}
+
+.word-detail-word {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--forge-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+}
+
+.word-detail-section {
+    background: #0E2938;
+    border-radius: 40px;
+    padding: 15px;
+    margin: 15px 0;
+    border: 2px solid #B8944A;
+    text-align: left;
+}
+
+.word-detail-label {
+    font-size: 14px;
+    color: #ACCCDD;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.word-detail-progress-bar {
+    width: 100%;
+    height: 16px;
+    background: #1D3F4F;
+    border-radius: 30px;
+    border: 1px solid #B8944A;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.word-detail-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forge-orange), var(--forge-glow));
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.word-detail-progress-text {
+    font-size: 14px;
+    color: #FFDCAA;
+    font-weight: 600;
+    text-align: center;
+}
+
+.word-detail-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+}
+
+.word-detail-stat {
+    text-align: center;
+    background: #0E2938;
+    border-radius: 30px;
+    padding: 10px;
+    flex: 1;
+    margin: 0 5px;
+    border: 2px solid #B8944A;
+}
+
+.word-detail-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forge-glow);
+}
+
+.word-detail-stat-label {
+    font-size: 12px;
+    color: #ACCCDD;
+}
+
+.word-history-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.word-history-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: #1D3F4F;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #FFDCAA;
+    display: flex;
+    justify-content: space-between;
 }
