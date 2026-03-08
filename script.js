@@ -2107,7 +2107,7 @@ function scrollToWordGrid() {
     }, 100);
 }
 
-// ---------- SETTINGS POPUP (NEW) ----------
+// ---------- SETTINGS POPUP WITH RESET ----------
 function showSettingsPopup() {
     const overlay = document.getElementById('popupOverlay');
     
@@ -2119,7 +2119,10 @@ function showSettingsPopup() {
             <div style="text-align: center; color: #FFDCAA; margin: 20px 0;">
                 <div style="margin-bottom: 15px;">Sound: ON</div>
                 <div style="margin-bottom: 15px;">Haptic Feedback: ON</div>
-                <div>Version 1.3.0</div>
+                <div style="margin-bottom: 25px;">Version 1.3.0</div>
+                <hr style="border: 1px solid #B8944A; margin: 20px 0;">
+                <button class="reset-game-btn" id="resetGameBtn" style="background: #8B3A3A; color: white; border: 2px solid #FF6666; border-radius: 40px; padding: 15px 25px; font-size: 18px; font-weight: 700; cursor: pointer; width: 100%;">⚠️ RESET ALL PROGRESS ⚠️</button>
+                <div style="font-size: 12px; color: #F87171; margin-top: 10px;">This cannot be undone</div>
             </div>
             <div class="button-group">
                 <button class="action-btn" id="closeBtn2">CLOSE</button>
@@ -2135,6 +2138,169 @@ function showSettingsPopup() {
     
     document.getElementById('closeBtn2').addEventListener('click', () => {
         overlay.classList.add('hidden');
+    });
+    
+    // Add reset functionality
+    document.getElementById('resetGameBtn').addEventListener('click', () => {
+        showResetConfirmationPopup();
+    });
+}
+
+// ---------- RESET CONFIRMATION POPUP ----------
+function showResetConfirmationPopup() {
+    const overlay = document.getElementById('popupOverlay');
+    
+    overlay.innerHTML = `
+        <div class="profile-card" style="border-color: #FF6666;">
+            <button class="profile-close" id="closeBtn">✕</button>
+            <div class="profile-title" style="color: #FF6666;">⚠️ WARNING ⚠️</div>
+            <div style="text-align: center; padding: 20px; color: #FFDCAA; font-size: 48px;">💔</div>
+            <div style="text-align: center; color: #FFDCAA; margin: 20px 0; font-size: 18px;">
+                This will permanently delete:
+                <div style="margin-top: 15px; text-align: left; background: #0E2938; padding: 15px; border-radius: 20px;">
+                    ✓ All world progress<br>
+                    ✓ All ingots completed<br>
+                    ✓ Codex mastery data<br>
+                    ✓ Training history<br>
+                    ✓ Devotion streak<br>
+                    ✓ Player profile
+                </div>
+            </div>
+            <div class="button-group" style="flex-direction: column; gap: 10px;">
+                <button class="action-btn" id="confirmResetBtn" style="background: #8B3A3A; box-shadow: 0 5px 0 #4A1A1A;">💥 YES, RESET EVERYTHING</button>
+                <button class="action-btn secondary" id="cancelBtn">CANCEL</button>
+            </div>
+        </div>
+    `;
+    
+    overlay.classList.remove('hidden');
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+    
+    document.getElementById('confirmResetBtn').addEventListener('click', () => {
+        performHardReset();
+    });
+}
+
+// ---------- PERFORM HARD RESET ----------
+function performHardReset() {
+    // Clear all localStorage
+    localStorage.removeItem('spellforge_save');
+    localStorage.removeItem('spellforge_profile');
+    localStorage.removeItem('spellforge_quicksave');
+    localStorage.removeItem('spellforge_local_id');
+    
+    // Reset all in-memory data structures
+    currentWorld = 1;
+    currentUnit = 1;
+    currentLetters = [];
+    completedWords = [];
+    activeWordIndex = null;
+    currentPosition = 0;
+    tempUsedLetters = [];
+    gameStartTime = null;
+    totalTaps = 0;
+    correctTaps = 0;
+    gameCompleted = false;
+    isPracticeMode = false;
+    
+    // Reset worlds data structure
+    worlds[1].unlocked = true;
+    worlds[1].units.forEach((unit, index) => {
+        unit.wordsCompleted = 0;
+        unit.unlocked = index === 0;
+    });
+    
+    for (let i = 2; i <= 6; i++) {
+        worlds[i].unlocked = false;
+        worlds[i].units.forEach(unit => {
+            unit.wordsCompleted = 0;
+            unit.unlocked = false;
+        });
+    }
+    
+    // Reset player performance
+    playerPerformance = {
+        currentStreak: 0,
+        bestStreak: 0,
+        lastAccuracy: 100,
+        lastAttemptFailed: false,
+        lastPlayedDate: new Date().toISOString(),
+        totalRiskBonus: 0,
+        ingotHistory: [],
+        lastTrainingTime: null,
+        trainingHistory: [],
+        worldProgress: {
+            1: { completed: 0, failed: 0, bestTime: null },
+            2: { completed: 0, failed: 0, bestTime: null },
+            3: { completed: 0, failed: 0, bestTime: null },
+            4: { completed: 0, failed: 0, bestTime: null },
+            5: { completed: 0, failed: 0, bestTime: null },
+            6: { completed: 0, failed: 0, bestTime: null }
+        },
+        devotion: {
+            days: 0,
+            lastLogin: null,
+            bonus: 0,
+            tier: "None",
+            milestones: {
+                day30: false,
+                day100: false,
+                day200: false,
+                day365: false
+            }
+        },
+        lastStreakUpdate: null
+    };
+    
+    // Reset ingot grace
+    for (let i = 1; i <= 180; i++) {
+        ingotGrace[i] = 0;
+    }
+    
+    // Reset codex
+    codex.words.clear();
+    
+    // Reset player profile
+    playerProfile = {
+        displayName: "Forgemaster",
+        telegramId: null,
+        firstName: "",
+        lastName: "",
+        username: ""
+    };
+    
+    // Save the reset state
+    saveProgress();
+    saveProfile();
+    
+    // Show confirmation
+    const overlay = document.getElementById('popupOverlay');
+    overlay.innerHTML = `
+        <div class="profile-card">
+            <div class="profile-title">✨ RESET COMPLETE ✨</div>
+            <div style="text-align: center; padding: 30px; color: #4ADE80; font-size: 48px;">⚒️</div>
+            <div style="text-align: center; color: #FFDCAA; margin: 20px 0; font-size: 18px;">
+                The forge is empty and ready for a new journey.
+            </div>
+            <div class="button-group">
+                <button class="action-btn" id="closeBtn">START FRESH</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        // Reload the game state
+        resetForNewUnit();
+        showHomeScreen();
+        updateHomeScreenStats();
     });
 }
 
@@ -4267,7 +4433,6 @@ function handleWordCompletion(wordIndex) {
                 const nextUnit = worlds[currentWorld].units.find(u => u.id === currentUnit + 1);
                 if (nextUnit) {
                     nextUnit.unlocked = true;
-                    currentUnit = currentUnit + 1;
                 }
                 
                 showIngotCompletePopup();
